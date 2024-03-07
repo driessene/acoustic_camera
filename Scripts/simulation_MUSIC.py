@@ -3,14 +3,11 @@ from realtime_MUSIC import RTMUSIC
 
 
 def main():
-    # Print audio devices
-    recorders.print_audio_devices()
-
     # Components
     recorder = recorders.AudioSimulator(
-        frequencies=[500, 600],
+        frequencies=[675, 500],
         doas=[10, 30],
-        spacing=0.5,
+        spacing=0.254,
         snr=50,
         samplerate=44100,
         channels=6,

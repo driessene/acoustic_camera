@@ -50,13 +50,14 @@ class AudioSimulator:
     def __init__(self,
                  frequencies: list = [500, 600],
                  doas: list = [30, 50],
-                 spacing: float = 0.5,
+                 spacing: float = 0.5,  # In meters. Causes spacing to scale with frequency like in real life
                  snr: float = 50,
                  samplerate: int = 44100,
                  channels: int = 6,
                  blocksize: int = 1024,
                  queue_size: int = 8,
-                 positions: list = [0, 0.254, 0.508, 0.762, 1.016, 1.27]
+                 positions: list = [0, 0.254, 0.508, 0.762, 1.016, 1.27],
+                 speed_of_sound: float = 343.0
                  ):
 
         self.frequencies = frequencies
@@ -67,6 +68,7 @@ class AudioSimulator:
         self.channels = channels
         self.blocksize = blocksize
         self.positions = positions
+        self.speed_of_sound = speed_of_sound
         self.q = queue.Queue(queue_size)
         self.recording_thread = threading.Thread(target=self._audio_callback)
 
@@ -87,7 +89,8 @@ class AudioSimulator:
         # Signal
         self.time_vector = np.arange(self.blocksize) / self.samplerate
         signals = [np.exp(2j * np.pi * freq * self.time_vector) for freq in self.frequencies]
-        array_factors = [np.exp(-2j * np.pi * self.spacing * np.arange(self.channels) * np.sin(np.deg2rad(doa))) for doa in self.doas]
+
+        array_factors = [np.exp(-2j * np.pi * (self.spacing / (self.speed_of_sound / freq)) * np.arange(self.channels) * np.sin(np.deg2rad(doa))) for (doa, freq) in zip(self.doas, self.frequencies)]
         self.signal_matrix = np.sum([np.outer(sig, af) for sig, af in zip(signals, array_factors)], axis=0)
         self.signal_matrix /= np.max(np.abs(self.signal_matrix))
         self.signal_power = np.mean(np.abs(self.signal_matrix) ** 2)

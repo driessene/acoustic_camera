@@ -25,7 +25,7 @@ class LinePlotter:
         self.data = data
 
     def _update(self, frame):
-        line_data = self.data.flatten()
+        line_data = self.data
         self.line.set_data(np.linspace(self.xlim[0], self.xlim[1], len(line_data)), line_data)
         return self.line,
 
