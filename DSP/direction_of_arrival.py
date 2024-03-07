@@ -25,6 +25,7 @@ class Beamform:
         # Normalize results
         results = 10 * np.log10(np.var(r_weighted, axis=1))  # Power in signal, in dB
         results -= np.max(results)
+        return results
 
 
 class MUSIC:
