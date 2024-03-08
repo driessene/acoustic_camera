@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 class BAFilter:
-    def __init__(self, b_coefficients, a_coefficients, samplerate=55100, remove_offset=True, normalize=True):
+    def __init__(self, b_coefficients, a_coefficients, samplerate=44100, remove_offset=True, normalize=True):
         self.b = b_coefficients
         self.a = a_coefficients
         self.samplerate = samplerate
