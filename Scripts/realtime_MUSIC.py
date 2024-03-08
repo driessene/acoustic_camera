@@ -3,18 +3,19 @@ from DSP import pipeline, plotters, filters, recorders, direction_of_arrival
 class RTMUSIC(pipeline.AudioPipeline):
     def __init__(self,
                  recorder: recorders,
-                 filter: filters.ButterLowpassFilter,
+                 filters: list[filters],
                  music: direction_of_arrival.MUSIC,
-                 plotters: list):  # One plot for waveforms, one for music
-        super(RTMUSIC, self).__init__(recorder, [filter], [music], plotters)
+                 plotters: list[plotters]):  # One plot for waveforms, one for music
+        super(RTMUSIC, self).__init__(recorder, filters, [music], plotters)
 
 
     def flowpath(self):
         # Get data
         data = self.recorder.pop()
 
-        # Apply filter
-        data = self.filters[0].process(data)
+        # Apply filters in order
+        for f in self.filters:
+            data = f.process(data)
 
         # Apply MUSIC
         music = self.dsp_algorithms[0].process(data)
@@ -36,7 +37,7 @@ def main():
         blocksize=512,
         queue_size=2
     )
-    filter = filters.ButterLowpassFilter(N=2, Wn=1000)
+    fs = [filters.FIRWINFilter(51, 2000), filters.HanningFilter()]
     doa = direction_of_arrival.MUSIC(
         spacing=0.5,
         test_angles=1000,
@@ -49,7 +50,7 @@ def main():
     # Pipeline
     pipe = RTMUSIC(
         recorder=recorder,
-        filter=filter,
+        filters=fs,
         music=doa,
         plotters=[wave_plotter, music_plotter]
     )

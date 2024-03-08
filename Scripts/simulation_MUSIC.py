@@ -14,7 +14,10 @@ def main():
         blocksize=512,
         queue_size=2,
     )
-    filter = filters.ButterLowpassFilter(N=2, Wn=1000)
+    fs = [filters.FIRWINFilter(51, 2000), filters.HanningFilter()]
+
+    fs[0].plot_response()
+
     doa = direction_of_arrival.MUSIC(
         spacing=0.5,
         test_angles=1000,
@@ -27,7 +30,7 @@ def main():
     # Pipeline
     pipe = RTMUSIC(
         recorder=recorder,
-        filter=filter,
+        filters=fs,
         music=doa,
         plotters=[wave_plotter, music_plotter]
     )
