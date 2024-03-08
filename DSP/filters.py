@@ -35,7 +35,7 @@ class BAFilter:
         plt.show()
 
 
-class ButterLowpassFilter(BAFilter):
+class ButterFilter(BAFilter):
     def __init__(self, N:int, cutoff:int, samplerate=44100, remove_offset=True, normalize=True):
         b, a = sig.butter(N=N, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
         BAFilter.__init__(self, b, a, samplerate=samplerate, remove_offset=remove_offset, normalize=normalize)
