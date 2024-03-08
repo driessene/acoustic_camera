@@ -29,8 +29,9 @@ class AudioPipeline:
         for algo in self.dsp_algorithms:
             results.append(algo.process())
 
-        # DO NOT PROCESS RESULTS IN HERE!!!
-        # rather, call self.sink()
+        # Plot
+        for (result, plot) in zip(results, self.plotters):
+            plot.set_data(result)
         """
         raise NotImplementedError   # subclass must implement this
 

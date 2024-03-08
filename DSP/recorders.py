@@ -1,8 +1,10 @@
 import sounddevice as sd
-import queue
+#from queue import Queue
+from multiprocessing import Queue
 import numpy as np
 from time import sleep
 import threading
+import multiprocessing as mp
 
 
 def print_audio_devices():
@@ -19,7 +21,7 @@ class AudioRecorder:
         self.samplerate = samplerate
         self.channels = channels
         self.blocksize = blocksize
-        self.q = queue.Queue(queue_size)
+        self.q = Queue(queue_size)
         self.stream = None
 
     def _audio_callback(self, indata, frames, time, status):
@@ -69,8 +71,8 @@ class AudioSimulator:
         self.blocksize = blocksize
         self.positions = positions
         self.speed_of_sound = speed_of_sound
-        self.q = queue.Queue(queue_size)
-        self.recording_thread = threading.Thread(target=self._audio_callback)
+        self.q = Queue(queue_size)
+        self.recording_process = mp.Process(target=self._audio_callback)
 
         # Mock inherited properties
         self.virtual_channels = self.channels
@@ -105,21 +107,13 @@ class AudioSimulator:
                     + 1j * np.random.normal(0, np.sqrt(self.noise_power), (self.blocksize, self.channels))
             signal = self.signal_matrix + noise
             sleep(self.blocksize / self.samplerate)  # simulate delay for recording
-            try:
-                self.q.put(signal, block=False)
-            except queue.Full:
-                pass
+            self.q.put(signal)
 
     def start(self):
-        self.recording_thread.start()
+        self.recording_process.start()
 
     def stop(self):
-        if self.recording_thread:
-            self.recording_thread.join(timeout=1)  # Wait for thread to finish
-            if self.recording_thread.is_alive():
-                self.recording_thread.terminate()
-                self.recording_thread.join()
-                raise RuntimeError("Recording thread did not terminate cleanly.")
+        self.recording_process.terminate()
 
     def pop(self):
         return self.q.get()
