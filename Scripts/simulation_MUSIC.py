@@ -11,10 +11,10 @@ def main():
         snr=50,
         samplerate=44100,
         channels=6,
-        blocksize=512,
+        blocksize=1024,
         queue_size=2,
     )
-    fs = [filters.FIRWINFilter(51, 2000), filters.HanningFilter()]
+    fs = [filters.FIRWINFilter(300, 1000), filters.HanningFilter()]
 
     fs[0].plot_response()
 

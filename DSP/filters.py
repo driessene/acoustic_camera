@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 
 
 class BAFilter:
-    def __init__(self, b_coefficients, a_coefficients, sample_rate=55100, remove_offset=True, normalize=True):
+    def __init__(self, b_coefficients, a_coefficients, samplerate=55100, remove_offset=True, normalize=True):
         self.b = b_coefficients
         self.a = a_coefficients
-        self.sample_rate = sample_rate
+        self.samplerate = samplerate
         self.remove_offset = remove_offset
         self.normazlize = normalize
 
@@ -18,9 +18,9 @@ class BAFilter:
             data /= np.max(np.abs(data), axis=0, keepdims=True)
         return sig.lfilter(self.b, self.a, data, axis=0)
 
-    def plot_response(self, samplerate=44100):
+    def plot_response(self):
         w, h = sig.freqz(self.b, self.a)
-        freq_hz = w * samplerate / (2 * np.pi)  # Convert frequency axis to Hz
+        freq_hz = w * self.samplerate / (2 * np.pi)  # Convert frequency axis to Hz
         fig, ax1 = plt.subplots()
         ax1.set_title('Digital filter frequency response')
         ax1.plot(freq_hz, 20 * np.log10(abs(h)), 'b')
@@ -38,13 +38,13 @@ class BAFilter:
 class ButterLowpassFilter(BAFilter):
     def __init__(self, N:int, cutoff:int, samplerate=44100, remove_offset=True, normalize=True):
         b, a = sig.butter(N=N, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
-        BAFilter.__init__(self, b, a, sample_rate=samplerate, remove_offset=remove_offset, normalize=normalize)
+        BAFilter.__init__(self, b, a, samplerate=samplerate, remove_offset=remove_offset, normalize=normalize)
 
 
 class FIRWINFilter(BAFilter):
     def __init__(self, N:int, cutoff:int, samplerate=44100, remove_offset=True, normalize=True):
         b = sig.firwin(N, cutoff, fs=samplerate)
-        BAFilter.__init__(self, b, 1, sample_rate=samplerate, remove_offset=remove_offset, normalize=normalize)
+        BAFilter.__init__(self, b, 1, samplerate=samplerate, remove_offset=remove_offset, normalize=normalize)
 
 
 class HanningFilter:
