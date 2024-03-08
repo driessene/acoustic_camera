@@ -14,7 +14,7 @@ def main():
         blocksize=1024,
         queue_size=2,
     )
-    fs = [filters.FIRWINFilter(300, 1000), filters.HanningFilter()]
+    fs = [filters.FIRWINFilter(100, 1500, type='filtfilt'), filters.HanningFilter()]
 
     fs[0].plot_response()
 

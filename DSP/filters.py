@@ -3,11 +3,12 @@ import scipy.signal as sig
 import matplotlib.pyplot as plt
 
 
-class BAFilter:
-    def __init__(self, b_coefficients, a_coefficients, samplerate=44100, remove_offset=True, normalize=True):
+class Filter:
+    def __init__(self, b_coefficients, a_coefficients, samplerate=44100, type='ba', remove_offset=True, normalize=True):
         self.b = b_coefficients
         self.a = a_coefficients
         self.samplerate = samplerate
+        self.type = type
         self.remove_offset = remove_offset
         self.normazlize = normalize
 
@@ -16,7 +17,12 @@ class BAFilter:
             data -= np.mean(data, axis=0, keepdims=True)
         if self.normazlize:
             data /= np.max(np.abs(data), axis=0, keepdims=True)
-        return sig.lfilter(self.b, self.a, data, axis=0)
+        if self.type == 'ba':
+            return sig.lfilter(self.b, self.a, data, axis=0)
+        elif self.type == 'filtfilt':
+            return sig.filtfilt(self.b, self.a, data, axis=0)
+        else:
+            raise NotImplementedError
 
     def plot_response(self):
         w, h = sig.freqz(self.b, self.a)
@@ -35,16 +41,16 @@ class BAFilter:
         plt.show()
 
 
-class ButterFilter(BAFilter):
-    def __init__(self, N:int, cutoff:int, samplerate=44100, remove_offset=True, normalize=True):
+class ButterFilter(Filter):
+    def __init__(self, N:int, cutoff:int, samplerate=44100, type='ba', remove_offset=True, normalize=True):
         b, a = sig.butter(N=N, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
-        BAFilter.__init__(self, b, a, samplerate=samplerate, remove_offset=remove_offset, normalize=normalize)
+        Filter.__init__(self, b, a, samplerate=samplerate, type=type,  remove_offset=remove_offset, normalize=normalize)
 
 
-class FIRWINFilter(BAFilter):
-    def __init__(self, N:int, cutoff:int, samplerate=44100, remove_offset=True, normalize=True):
+class FIRWINFilter(Filter):
+    def __init__(self, N:int, cutoff:int, samplerate=44100, type='ba', remove_offset=True, normalize=True):
         b = sig.firwin(N, cutoff, fs=samplerate)
-        BAFilter.__init__(self, b, 1, samplerate=samplerate, remove_offset=remove_offset, normalize=normalize)
+        Filter.__init__(self, b, 1, samplerate=samplerate, type=type, remove_offset=remove_offset, normalize=normalize)
 
 
 class HanningFilter:
