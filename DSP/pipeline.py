@@ -1,5 +1,4 @@
 import multiprocessing as mp
-from DSP import plotters, filters, recorders, direction_of_arrival
 
 
 class Source:
@@ -33,10 +32,10 @@ class Process(Source, Sink):
 
 class AudioPipeline:
     def __init__(self,
-                 recorder: recorders,
-                 filters: list[filters],
-                 algorithms: list[direction_of_arrival],
-                 plotters: list[plotters]):
+                 recorder,          # recorders type
+                 filters: list,     # filters type
+                 algorithms: list,  # direction_of_arrival type
+                 plotters: list):   # plotters type
         self.recorder = recorder
         self.filters = filters
         self.algorithms = algorithms
@@ -44,7 +43,7 @@ class AudioPipeline:
         self.process = mp.Process(target=self._process)
 
     def flowpath(self):
-        # THIS IS EXTREMLY GENEARIC!!
+        # THIS IS EXTREMELY GENERIC!!
         # Make a subclass to alter this
         # Each object in this path must inherit a sink, source, or process from above
         # Use the corresponding queues to manage multiprocessing

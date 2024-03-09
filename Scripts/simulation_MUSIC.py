@@ -1,5 +1,5 @@
-from DSP import plotters, filters, recorders, direction_of_arrival
-from realtime_MUSIC import RTMUSIC
+from DSP import direction_of_arrival, filters, plotters, recorders, pipeline
+from realtime_MUSIC import MusicPipeline
 
 
 def main():
@@ -28,7 +28,7 @@ def main():
     music_plotter = plotters.LinePlotter(xlim=(-90, 90), ylim=(0, 1), interval=1000 * 512 / 44100)
 
     # Pipeline
-    pipe = RTMUSIC(
+    pipe = MusicPipeline(
         recorder=recorder,
         filters=fs,
         music=doa,

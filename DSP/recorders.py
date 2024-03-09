@@ -1,5 +1,4 @@
 import sounddevice as sd
-import queue
 import numpy as np
 from time import sleep
 import multiprocessing as mp

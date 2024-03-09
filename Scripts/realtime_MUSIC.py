@@ -1,13 +1,13 @@
-from DSP import pipeline, plotters, filters, recorders, direction_of_arrival
+from DSP import direction_of_arrival, filters, plotters, recorders, pipeline
 
-class RTMUSIC(pipeline.AudioPipeline):
+
+class MusicPipeline(pipeline.AudioPipeline):
     def __init__(self,
                  recorder: recorders,
                  filters: list[filters],
                  music: direction_of_arrival.MUSIC,
                  plotters: list[plotters]):  # One plot for waveforms, one for music
-        super(RTMUSIC, self).__init__(recorder, filters, [music], plotters)
-
+        super(MusicPipeline, self).__init__(recorder, filters, [music], plotters)
 
     def flowpath(self):
         # Get data
@@ -50,7 +50,7 @@ def main():
     music_plotter = plotters.LinePlotter(xlim=(-90, 90), ylim=(0, 1), interval=1000 * 512 / 44100)
 
     # Pipeline
-    pipe = RTMUSIC(
+    pipe = MusicPipeline(
         recorder=recorder,
         filters=fs,
         music=doa,
