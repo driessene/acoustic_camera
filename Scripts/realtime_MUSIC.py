@@ -11,14 +11,16 @@ class RTMUSIC(pipeline.AudioPipeline):
 
     def flowpath(self):
         # Get data
-        data = self.recorder.pop()
+        data = self.recorder.get()
 
         # Apply filters in order
         for f in self.filters:
-            data = f.process(data)
+            f.put(data)
+            data = f.get()
 
         # Apply MUSIC
-        music = self.dsp_algorithms[0].process(data)
+        self.algorithms[0].put(data)
+        music = self.algorithms[0].get()
 
         # Plot
         self.plotters[0].set_data(data)

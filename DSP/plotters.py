@@ -1,10 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
+from pipeline import Sink
 
 
-class LinePlotter:
-    def __init__(self, xlim, ylim, interval):
+class LinePlotter(Sink):
+    def __init__(self, xlim, ylim, interval, queue_size=4):
+        super().__init__(queue_size)
         self.fig, self.ax = plt.subplots(figsize=(10, 6))
         self.line, = self.ax.plot([], [], lw=2)
         self.xlim = xlim
@@ -19,13 +21,9 @@ class LinePlotter:
             interval=self.interval,
             blit=False
         )
-        self.data = []
-
-    def set_data(self, data):
-        self.data = data
 
     def _update(self, frame):
-        line_data = self.data
+        line_data = self.in_queue.get()
         self.line.set_data(np.linspace(self.xlim[0], self.xlim[1], len(line_data)), line_data)
         return self.line,
 
@@ -38,7 +36,8 @@ class LinePlotter:
         plt.close()
 
 class MultiLinePlotter:
-    def __init__(self, xlim, ylim, lines, interval):
+    def __init__(self, xlim, ylim, lines, interval, queue_size=4):
+        super().__init__(queue_size)
         self.fig, self.ax = plt.subplots(figsize=(10, 6))
         self.lines = [self.ax.plot([], [], lw=2, label=f'Channel {i}')[0] for i in range(lines)]
         self.xlim = xlim
@@ -53,15 +52,12 @@ class MultiLinePlotter:
             interval=self.interval,
             blit=False
         )
-        self.data = []
         self.ax.legend(loc='upper right')
 
-    def set_data(self, data):
-        self.data = data
-
     def _update(self, frame):
+        data = self.in_queue.get()
         for i, line in enumerate(self.lines):
-            line_data = self.data[:, i]
+            line_data = data[:, i]
             line.set_data(np.linspace(self.xlim[0], self.xlim[1], len(line_data)), line_data)
         return self.lines,
 

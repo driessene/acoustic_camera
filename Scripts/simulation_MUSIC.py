@@ -1,4 +1,4 @@
-from DSP import pipeline, plotters, filters, recorders, direction_of_arrival
+from DSP import plotters, filters, recorders, direction_of_arrival
 from realtime_MUSIC import RTMUSIC
 
 

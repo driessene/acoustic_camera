@@ -1,28 +1,35 @@
 import numpy as np
 import scipy.signal as sig
 import matplotlib.pyplot as plt
+from pipeline import Process
+import multiprocessing as mp
 
 
-class Filter:
-    def __init__(self, b_coefficients, a_coefficients, samplerate=44100, type='ba', remove_offset=True, normalize=True):
+class Filter(Process):
+    def __init__(self, b_coefficients, a_coefficients, samplerate=44100, type='ba', remove_offset=True, normalize=True, queue_size=4):
+        super().__init__(queue_size)
         self.b = b_coefficients
         self.a = a_coefficients
         self.samplerate = samplerate
         self.type = type
         self.remove_offset = remove_offset
         self.normazlize = normalize
+        self.process = mp.Process(target=self._process)
+        self.process.start()
 
-    def process(self, data):
-        if self.remove_offset:
-            data -= np.mean(data, axis=0, keepdims=True)
-        if self.normazlize:
-            data /= np.max(np.abs(data), axis=0, keepdims=True)
-        if self.type == 'ba':
-            return sig.lfilter(self.b, self.a, data, axis=0)
-        elif self.type == 'filtfilt':
-            return sig.filtfilt(self.b, self.a, data, axis=0)
-        else:
-            raise NotImplementedError
+    def _process(self):
+        while True:
+            data = self.get()
+            if self.remove_offset:
+                data -= np.mean(data, axis=0, keepdims=True)
+            if self.normazlize:
+                data /= np.max(np.abs(data), axis=0, keepdims=True)
+            if self.type == 'ba':
+                self.put(sig.lfilter(self.b, self.a, data, axis=0))
+            elif self.type == 'filtfilt':
+                self.put(sig.filtfilt(self.b, self.a, data, axis=0))
+            else:
+                raise NotImplementedError
 
     def plot_response(self):
         w, h = sig.freqz(self.b, self.a)
@@ -53,7 +60,13 @@ class FIRWINFilter(Filter):
         Filter.__init__(self, b, 1, samplerate=samplerate, type=type, remove_offset=remove_offset, normalize=normalize)
 
 
-class HanningFilter:
-    @staticmethod
-    def process(data):
-        return data * np.hanning(len(data))[:, np.newaxis]
+class HanningFilter(Process):
+    def __init__(self, queue_size):
+        super().__init__(queue_size)
+        self.process = mp.Process(target=self._process)
+        self.process.start()
+
+    def _process(self):
+        while True:
+            data = self.get()
+            self.put(data * np.hanning(len(data))[:, np.newaxis])
