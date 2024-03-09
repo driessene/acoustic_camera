@@ -1,6 +1,6 @@
 import numpy as np
 import multiprocessing as mp
-from pipeline import Process
+from Management.pipeline import Process
 
 
 class Beamform(Process):
@@ -10,13 +10,15 @@ class Beamform(Process):
         self.spacing = spacing
         self.test_angles = test_angles
         self.num_mics = num_mics
-        self.process = mp.Process(target=self._process)
-        self.process.start()
 
         # Pre-compute
         self.theta_scan = None
         self.steering_matrix = None
         self.precompute()
+
+        # Process
+        self.process = mp.Process(target=self._process)
+        self.process.start()
 
     def precompute(self):
         self.theta_scan = np.linspace(-1 * np.pi, np.pi, self.test_angles)
@@ -26,13 +28,13 @@ class Beamform(Process):
     def _process(self):
         while True:
             # Beamformer
-            data = self.get()
+            data = self.in_queue_get()
             r_weighted = np.abs(self.steering_matrix.conj().T @ data.T) ** 2  # Beamforming output
 
             # Normalize results
             results = 10 * np.log10(np.var(r_weighted, axis=1))  # Power in signal, in dB
             results -= np.max(results)
-            self.put(results)
+            self.out_queue_put(results)
 
 
 class MUSIC(Process):
@@ -43,13 +45,17 @@ class MUSIC(Process):
         self.test_angles = test_angles
         self.num_mics = num_mics
         self.num_sources = num_sources
+
+        # Pre-compute
+        self.theta_scan = np.linspace(-np.pi / 2, np.pi / 2, self.test_angles)
+        self.steering_matrix = np.exp(
+            -2j * np.pi * self.spacing * np.arange(self.num_mics)[:, np.newaxis] * np.sin(self.theta_scan))
+        self.precompute()
+
+        # Process
         self.process = mp.Process(target=self._process)
         self.process.start()
 
-        # Pre-compute
-        self.theta_scan = None
-        self.steering_matrix = None
-        self.precompute()
 
     def precompute(self):
         # Steering matrix
@@ -60,7 +66,7 @@ class MUSIC(Process):
     def _process(self):
         while True:
             # Calculate the covariance matrix
-            data = self.get()
+            data = self.in_queue_get()
             Rx = np.cov(data.T)
 
             # Decompose into eigenvalues and vectors
@@ -79,4 +85,4 @@ class MUSIC(Process):
 
             # Normalize and return results
             music_spectrum /= np.max(music_spectrum)
-            self.put(music_spectrum)
+            self.out_queue_put(music_spectrum)

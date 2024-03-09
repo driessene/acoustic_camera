@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.signal as sig
 import matplotlib.pyplot as plt
-from pipeline import Process
+from Management.pipeline import Process
 import multiprocessing as mp
 
 
@@ -19,15 +19,15 @@ class Filter(Process):
 
     def _process(self):
         while True:
-            data = self.get()
+            data = self.in_queue_get()
             if self.remove_offset:
                 data -= np.mean(data, axis=0, keepdims=True)
             if self.normazlize:
                 data /= np.max(np.abs(data), axis=0, keepdims=True)
             if self.type == 'ba':
-                self.put(sig.lfilter(self.b, self.a, data, axis=0))
+                self.out_queue_put(sig.lfilter(self.b, self.a, data, axis=0))
             elif self.type == 'filtfilt':
-                self.put(sig.filtfilt(self.b, self.a, data, axis=0))
+                self.out_queue_put(sig.filtfilt(self.b, self.a, data, axis=0))
             else:
                 raise NotImplementedError
 
@@ -61,12 +61,12 @@ class FIRWINFilter(Filter):
 
 
 class HanningFilter(Process):
-    def __init__(self, queue_size):
+    def __init__(self, queue_size=4):
         super().__init__(queue_size)
         self.process = mp.Process(target=self._process)
         self.process.start()
 
     def _process(self):
         while True:
-            data = self.get()
-            self.put(data * np.hanning(len(data))[:, np.newaxis])
+            data = self.in_queue_get()
+            self.out_queue_put(data * np.hanning(len(data))[:, np.newaxis])

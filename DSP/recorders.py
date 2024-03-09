@@ -2,7 +2,7 @@ import sounddevice as sd
 import numpy as np
 from time import sleep
 import multiprocessing as mp
-from pipeline import Source
+from Management.pipeline import Source
 
 
 def print_audio_devices():
@@ -25,7 +25,7 @@ class AudioRecorder(Source):
     def _audio_callback(self, indata, frames, time, status):
         if status:
             print(status)
-        self.put(indata)
+        self.out_queue_put(indata)
 
     def start(self):
         self.stream = sd.InputStream(
@@ -68,7 +68,6 @@ class AudioSimulator(Source):
         self.positions = positions
         self.speed_of_sound = speed_of_sound
         self.process = mp.Process(target=self._audio_callback)
-        self.process.start()
 
         # Mock inherited properties
         self.virtual_channels = self.channels
@@ -103,7 +102,7 @@ class AudioSimulator(Source):
                     + 1j * np.random.normal(0, np.sqrt(self.noise_power), (self.blocksize, self.channels))
             signal = self.signal_matrix + noise
             sleep(self.blocksize / self.samplerate)  # simulate delay for recording
-            self.put(signal)
+            self.out_queue_put(signal)
 
     def start(self):
         self.process.start()

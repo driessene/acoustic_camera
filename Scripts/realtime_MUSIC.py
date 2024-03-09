@@ -1,4 +1,5 @@
-from DSP import direction_of_arrival, filters, plotters, recorders, pipeline
+from DSP import direction_of_arrival, filters, plotters, recorders
+from Management import pipeline
 
 
 class MusicPipeline(pipeline.AudioPipeline):
@@ -11,20 +12,20 @@ class MusicPipeline(pipeline.AudioPipeline):
 
     def flowpath(self):
         # Get data
-        data = self.recorder.get()
+        data = self.recorder.out_queue_get()
 
         # Apply filters in order
         for f in self.filters:
-            f.put(data)
-            data = f.get()
+            f.in_queue_put(data)
+            data = f.out_queue_get()
 
         # Apply MUSIC
-        self.algorithms[0].put(data)
-        music = self.algorithms[0].get()
+        self.algorithms[0].in_queue_put(data)
+        music = self.algorithms[0].out_queue_get()
 
         # Plot
-        self.plotters[0].set_data(data)
-        self.plotters[1].set_data(music)
+        self.plotters[0].in_queue_put(data)
+        self.plotters[1].in_queue_put(music)
 
 
 def main():

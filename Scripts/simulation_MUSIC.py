@@ -1,4 +1,4 @@
-from DSP import direction_of_arrival, filters, plotters, recorders, pipeline
+from DSP import direction_of_arrival, filters, plotters, recorders
 from realtime_MUSIC import MusicPipeline
 
 
@@ -34,7 +34,9 @@ def main():
         music=doa,
         plotters=[wave_plotter, music_plotter]
     )
+
     pipe.start()
+    print('Pipe started')
 
 if __name__ == '__main__':
     main()

@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from _queue import Empty
 from matplotlib.animation import FuncAnimation
-from pipeline import Sink
+from Management.pipeline import Sink
 
 
 class LinePlotter(Sink):
@@ -23,7 +24,12 @@ class LinePlotter(Sink):
         )
 
     def _update(self, frame):
-        line_data = self.in_queue.get()
+        try:
+            line_data = self.in_queue_get(block=False)
+        except Empty:
+            # Handle the case when the queue is empty
+            return self.line,
+
         self.line.set_data(np.linspace(self.xlim[0], self.xlim[1], len(line_data)), line_data)
         return self.line,
 
@@ -35,7 +41,8 @@ class LinePlotter(Sink):
     def close():
         plt.close()
 
-class MultiLinePlotter:
+
+class MultiLinePlotter(Sink):
     def __init__(self, xlim, ylim, lines, interval, queue_size=4):
         super().__init__(queue_size)
         self.fig, self.ax = plt.subplots(figsize=(10, 6))
@@ -55,10 +62,16 @@ class MultiLinePlotter:
         self.ax.legend(loc='upper right')
 
     def _update(self, frame):
-        data = self.in_queue.get()
+        try:
+            data = self.in_queue_get(block=False)
+        except Empty:
+            # Handle the case when the queue is empty
+            return self.lines,
+
         for i, line in enumerate(self.lines):
             line_data = data[:, i]
-            line.set_data(np.linspace(self.xlim[0], self.xlim[1], len(line_data)), line_data)
+            line.set_xdata(np.linspace(self.xlim[0], self.xlim[1], len(line_data)))
+            line.set_ydata(line_data)
         return self.lines,
 
     @staticmethod
