@@ -2,7 +2,6 @@ import sounddevice as sd
 import numpy as np
 from time import sleep
 import multiprocessing as mp
-from Management.pipeline import Source
 
 
 def print_audio_devices():
@@ -13,19 +12,19 @@ def print_audio_devices():
             print(f"Device {i}: {device['name']}, Channels: {device['max_input_channels']}")
 
 
-class AudioRecorder(Source):
+class AudioRecorder:
     def __init__(self, device_id, samplerate=44100, channels=8, blocksize=1024, queue_size=8):
-        super().__init__(queue_size)
         self.device_id = device_id
         self.samplerate = samplerate
         self.channels = channels
         self.blocksize = blocksize
+        self.out_queue = mp.Queue(queue_size)
         self.stream = None
 
     def _audio_callback(self, indata, frames, time, status):
         if status:
             print(status)
-        self.out_queue_put(indata)
+        self.out_queue.put(indata)
 
     def start(self):
         self.stream = sd.InputStream(
@@ -43,21 +42,21 @@ class AudioRecorder(Source):
             self.stream.close()
 
 
-class AudioSimulator(Source):
+class AudioSimulator(mp.Process):
     def __init__(self,
-                 frequencies: list[int],
-                 doas: list[int],
-                 spacing: float = 0.5,  # In meters. Causes spacing to scale with frequency like in real life
+                 frequencies: tuple,
+                 doas: tuple,
+                 spacing: float = 0.25,  # In meters. Causes spacing to scale with frequency like in real life
                  snr: float = 50,
                  samplerate: int = 44100,
                  channels: int = 6,
                  blocksize: int = 1024,
-                 queue_size: int = 8,
-                 positions: list = [0, 0.254, 0.508, 0.762, 1.016, 1.27],
-                 speed_of_sound: float = 343.0
+                 queue_size: int = 4,
+                 speed_of_sound: float = 343.0,
+                 sleep: bool = True
                  ):
 
-        super().__init__(queue_size)
+        super().__init__()
         self.frequencies = frequencies
         self.doas = doas
         self.spacing = spacing
@@ -65,9 +64,9 @@ class AudioSimulator(Source):
         self.samplerate = samplerate
         self.channels = channels
         self.blocksize = blocksize
-        self.positions = positions
         self.speed_of_sound = speed_of_sound
-        self.process = mp.Process(target=self._audio_callback)
+        self.sleep = sleep
+        self.out_queue = mp.Queue(queue_size)
 
         # Mock inherited properties
         self.virtual_channels = self.channels
@@ -95,22 +94,14 @@ class AudioSimulator(Source):
         # Noise
         self.noise_power = 10 ** ((10 * np.log10(self.signal_power) - self.snr) / 20)
 
-    def _audio_callback(self):
+    def run(self):
         while True:
             # Generate noise
             noise = np.random.normal(0, np.sqrt(self.noise_power), (self.blocksize, self.channels)) \
                     + 1j * np.random.normal(0, np.sqrt(self.noise_power), (self.blocksize, self.channels))
             signal = self.signal_matrix + noise
-            sleep(self.blocksize / self.samplerate)  # simulate delay for recording
-            self.out_queue_put(signal)
 
-    def start(self):
-        self.process.start()
+            if self.sleep:
+                sleep(self.blocksize / self.samplerate)  # simulate delay for recording
 
-    def stop(self):
-        if self.process:
-            self.process.join(timeout=1)  # Wait for thread to finish
-            if self.process.is_alive():
-                self.process.terminate()
-                self.process.join()
-                raise RuntimeError("Recording thread did not terminate cleanly.")
+            self.out_queue.put(signal)

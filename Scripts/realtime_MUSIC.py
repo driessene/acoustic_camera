@@ -40,7 +40,7 @@ def main():
         blocksize=512,
         queue_size=2
     )
-    fs = [filters.FIRWINFilter(11, 2000), filters.HanningFilter()]
+    fs = [filters.FIRWINFilter(11, 2000), filters.HanningWindow()]
     doa = direction_of_arrival.MUSIC(
         spacing=0.5,
         test_angles=1000,

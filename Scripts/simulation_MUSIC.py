@@ -1,42 +1,30 @@
-from DSP import direction_of_arrival, filters, plotters, recorders
-from realtime_MUSIC import MusicPipeline
+from DSP import recorders, filters, direction_of_arrival, plotters
+import matplotlib.pyplot as plt
 
 
 def main():
     # Components
     recorder = recorders.AudioSimulator(
-        frequencies=[675, 500],
-        doas=[10, 30],
+        frequencies=(675, 500),
+        doas=(10, 30),
         spacing=0.254,
         snr=50,
         samplerate=44100,
         channels=6,
         blocksize=1024,
-        queue_size=2,
+        sleep=False
     )
-    fs = [filters.FIRWINFilter(100, 1500, type='filtfilt'), filters.HanningFilter()]
+    fir = filters.FIRWINFilter(recorder.out_queue, N=100, cutoff=1200, type='filtfilt')
+    hanning = filters.HanningWindow(fir.out_queue)
+    music = direction_of_arrival.MUSIC(hanning.out_queue, spacing=0.5, num_mics=6)
+    plotter = plotters.LinePlotter(music.out_queue, xlim=(-90, 90), ylim=(0, 1), interval=1000 * 512 / 44100)
 
-    fs[0].plot_response()
+    recorder.start()
+    fir.start()
+    hanning.start()
+    music.start()
+    plt.show()
 
-    doa = direction_of_arrival.MUSIC(
-        spacing=0.5,
-        test_angles=1000,
-        num_mics=6,
-        num_sources=2
-    )
-    wave_plotter = plotters.MultiLinePlotter(xlim=(0, 512), ylim=(-1, 1), lines=6, interval=1000 * 512 / 44100)
-    music_plotter = plotters.LinePlotter(xlim=(-90, 90), ylim=(0, 1), interval=1000 * 512 / 44100)
-
-    # Pipeline
-    pipe = MusicPipeline(
-        recorder=recorder,
-        filters=fs,
-        music=doa,
-        plotters=[wave_plotter, music_plotter]
-    )
-
-    pipe.start()
-    print('Pipe started')
 
 if __name__ == '__main__':
     main()

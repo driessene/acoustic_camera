@@ -1,12 +1,13 @@
 import numpy as np
 import multiprocessing as mp
-from Management.pipeline import Process
 
 
-class Beamform(Process):
-    def __init__(self, spacing=0.5, test_angles=1000, num_mics=6, queue_size=4):
+class Beamform(mp.Process):
+    def __init__(self, in_queue: mp.Queue, spacing=0.5, test_angles=1000, num_mics=6, queue_size=4):
         # Properties
-        super().__init__(queue_size)
+        super().__init__()
+        self.in_queue = in_queue
+        self.out_queue = mp.Queue(queue_size)
         self.spacing = spacing
         self.test_angles = test_angles
         self.num_mics = num_mics
@@ -16,31 +17,29 @@ class Beamform(Process):
         self.steering_matrix = None
         self.precompute()
 
-        # Process
-        self.process = mp.Process(target=self._process)
-        self.process.start()
-
     def precompute(self):
         self.theta_scan = np.linspace(-1 * np.pi, np.pi, self.test_angles)
         theta_grid, mic_grid = np.meshgrid(self.theta_scan, np.arange(self.num_mics))
         self.steering_matrix = np.exp(-2j * np.pi * self.spacing * mic_grid * np.sin(theta_grid))
 
-    def _process(self):
+    def run(self):
         while True:
             # Beamformer
-            data = self.in_queue_get()
+            data = self.in_queue.get()
             r_weighted = np.abs(self.steering_matrix.conj().T @ data.T) ** 2  # Beamforming output
 
             # Normalize results
             results = 10 * np.log10(np.var(r_weighted, axis=1))  # Power in signal, in dB
             results -= np.max(results)
-            self.out_queue_put(results)
+            self.out_queue.put(results)
 
 
-class MUSIC(Process):
-    def __init__(self, spacing=0.5, test_angles=1000, num_mics=6, num_sources=1, queue_size=4):
+class MUSIC(mp.Process):
+    def __init__(self, in_queue: mp.Queue, spacing=0.5, test_angles=1000, num_mics=6, num_sources=1, queue_size=4):
         # Properties
-        super().__init__(queue_size)
+        super().__init__()
+        self.in_queue = in_queue
+        self.out_queue = mp.Queue(queue_size)
         self.spacing = spacing
         self.test_angles = test_angles
         self.num_mics = num_mics
@@ -52,10 +51,6 @@ class MUSIC(Process):
             -2j * np.pi * self.spacing * np.arange(self.num_mics)[:, np.newaxis] * np.sin(self.theta_scan))
         self.precompute()
 
-        # Process
-        self.process = mp.Process(target=self._process)
-        self.process.start()
-
 
     def precompute(self):
         # Steering matrix
@@ -63,10 +58,10 @@ class MUSIC(Process):
         self.steering_matrix = np.exp(
             -2j * np.pi * self.spacing * np.arange(self.num_mics)[:, np.newaxis] * np.sin(self.theta_scan))
 
-    def _process(self):
+    def run(self):
         while True:
             # Calculate the covariance matrix
-            data = self.in_queue_get()
+            data = self.in_queue.get()
             Rx = np.cov(data.T)
 
             # Decompose into eigenvalues and vectors
@@ -85,4 +80,4 @@ class MUSIC(Process):
 
             # Normalize and return results
             music_spectrum /= np.max(music_spectrum)
-            self.out_queue_put(music_spectrum)
+            self.out_queue.put(music_spectrum)

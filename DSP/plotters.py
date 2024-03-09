@@ -1,13 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from _queue import Empty
 from matplotlib.animation import FuncAnimation
-from Management.pipeline import Sink
+import multiprocessing as mp
 
 
-class LinePlotter(Sink):
-    def __init__(self, xlim, ylim, interval, queue_size=4):
-        super().__init__(queue_size)
+class LinePlotter:
+    def __init__(self, in_queue: mp.Queue, xlim: tuple, ylim: tuple, interval: float, queue_size=4):
+        self.in_queue = in_queue
         self.fig, self.ax = plt.subplots(figsize=(10, 6))
         self.line, = self.ax.plot([], [], lw=2)
         self.xlim = xlim
@@ -17,34 +16,22 @@ class LinePlotter(Sink):
         self.interval = interval
         self.ani = FuncAnimation(
             fig=self.fig,
-            func=self._update,
+            func=self.run,
             frames=None,
             interval=self.interval,
             blit=False
         )
 
-    def _update(self, frame):
-        try:
-            line_data = self.in_queue_get(block=False)
-        except Empty:
-            # Handle the case when the queue is empty
-            return self.line,
-
+    def run(self, frame):
+        line_data = self.in_queue.get()
         self.line.set_data(np.linspace(self.xlim[0], self.xlim[1], len(line_data)), line_data)
         return self.line,
 
-    @staticmethod
-    def show():
-        plt.show()
 
-    @staticmethod
-    def close():
-        plt.close()
-
-
-class MultiLinePlotter(Sink):
-    def __init__(self, xlim, ylim, lines, interval, queue_size=4):
+class MultiLinePlotter:
+    def __init__(self, in_queue: mp.Queue, xlim: tuple, ylim: tuple, lines: int, interval: float, queue_size=4):
         super().__init__(queue_size)
+        self.in_queue = in_queue
         self.fig, self.ax = plt.subplots(figsize=(10, 6))
         self.lines = [self.ax.plot([], [], lw=2, label=f'Channel {i}')[0] for i in range(lines)]
         self.xlim = xlim
@@ -54,30 +41,18 @@ class MultiLinePlotter(Sink):
         self.interval = interval
         self.ani = FuncAnimation(
             fig=self.fig,
-            func=self._update,
+            func=self.run,
             frames=None,
             interval=self.interval,
             blit=False
         )
         self.ax.legend(loc='upper right')
 
-    def _update(self, frame):
-        try:
-            data = self.in_queue_get(block=False)
-        except Empty:
-            # Handle the case when the queue is empty
-            return self.lines,
+    def run(self, frame):
+        data = self.in_queue.get()
 
         for i, line in enumerate(self.lines):
             line_data = data[:, i]
             line.set_xdata(np.linspace(self.xlim[0], self.xlim[1], len(line_data)))
             line.set_ydata(line_data)
         return self.lines,
-
-    @staticmethod
-    def show():
-        plt.show()
-
-    @staticmethod
-    def close():
-        plt.close()

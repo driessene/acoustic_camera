@@ -49,6 +49,14 @@ class AudioPipeline:
         self.algorithms = algorithms
         self.plotters = plotters
 
+        # Start processes
+        self.recorder.start()
+        for filter in self.filters:
+            filter.start()
+        for algorithm in self.algorithms:
+            algorithm.start()
+
+
     def flowpath(self):
         # THIS IS EXTREMELY GENERIC!!
         # Make a subclass to alter this
