@@ -16,7 +16,7 @@ def main():
     )
     fir = filters.FIRWINFilter(recorder.out_queue, N=100, cutoff=1200, type='filtfilt')
     hanning = filters.HanningWindow(fir.out_queue)
-    music = direction_of_arrival.MUSIC(hanning.out_queue, spacing=0.5, num_mics=6)
+    music = direction_of_arrival.MUSIC(hanning.out_queue, spacing=0.5, num_mics=6, num_sources=2)
     plotter = plotters.LinePlotter(music.out_queue, xlim=(-90, 90), ylim=(0, 1), interval=1000 * 512 / 44100)
 
     recorder.start()
