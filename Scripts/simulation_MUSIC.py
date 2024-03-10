@@ -4,10 +4,11 @@ import matplotlib.pyplot as plt
 
 def main():
     # Components
-    plotter = plotters.LinePlotter(xlim=(-90, 90), ylim=(0, 1), interval=1000 * 512 / 44100)
-    music = direction_of_arrival.MUSIC((plotter.in_queue,), spacing=0.5, num_mics=6, num_sources=2)
-    hanning = filters.HanningWindow((music.in_queue,))
-    fir = filters.FIRWINFilter((hanning.in_queue,), N = 100, cutoff = 1200, type = 'filtfilt')
+    music_plotter = plotters.LinePlotter(xlim=(-90, 90), ylim=(0, 1), interval=1000 * 512 / 44100)
+    channel_plotter = plotters.MultiLinePlotter(xlim=(0, 1034), ylim=(-1, 1), interval=1000 * 512 / 44100, lines=6)
+    music = direction_of_arrival.MUSIC((music_plotter.in_queue,), spacing=0.5, num_mics=6, num_sources=2)
+    hanning = filters.HanningWindow((music.in_queue, channel_plotter.in_queue))
+    fir = filters.FIRWINFilter((hanning.in_queue,), N=100, cutoff=1200, type='filtfilt')
     recorder = recorders.AudioSimulator(
         destinations=(fir.in_queue,),
         frequencies=(675, 500),
