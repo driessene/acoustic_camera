@@ -5,9 +5,11 @@ import multiprocessing as mp
 
 
 class Filter(mp.Process):
-    def __init__(self, in_queue: mp.Queue, b_coefficients, a_coefficients, samplerate=44100, type='ba', remove_offset=True, normalize=True, queue_size=4):
+    def __init__(self, destinations: tuple, b_coefficients, a_coefficients, samplerate=44100, type='ba',
+                 remove_offset=True, normalize=True, queue_size=4):
         super().__init__()
-        self.in_queue = in_queue
+        self.destinations = destinations
+        self.in_queue = mp.Queue(queue_size)
         self.out_queue = mp.Queue(queue_size)
         self.b = b_coefficients
         self.a = a_coefficients
@@ -30,7 +32,8 @@ class Filter(mp.Process):
             else:
                 raise NotImplementedError
 
-            self.out_queue.put(data)
+            for destination in self.destinations:
+                destination.put(data)
 
     def plot_response(self):
         w, h = sig.freqz(self.b, self.a)
@@ -50,25 +53,30 @@ class Filter(mp.Process):
 
 
 class ButterFilter(Filter):
-    def __init__(self, in_queue: mp.Queue, N:int, cutoff:int, samplerate=44100, type='ba', remove_offset=True, normalize=True):
+    def __init__(self, destinations: tuple, N: int, cutoff: int, samplerate=44100, type='ba', remove_offset=True,
+                 normalize=True, queue_size=4):
         b, a = sig.butter(N=N, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
-        Filter.__init__(self, in_queue, b, a, samplerate=samplerate, type=type,  remove_offset=remove_offset, normalize=normalize)
+        super().__init__(self, destinations, b, a, samplerate, type, remove_offset, normalize, queue_size)
 
 
 class FIRWINFilter(Filter):
-    def __init__(self, in_queue: mp.Queue, N:int, cutoff:int, samplerate=44100, type='ba', remove_offset=True, normalize=True):
+    def __init__(self, destinations: tuple, N: int, cutoff: int, samplerate=44100, type='ba', remove_offset=True,
+                 normalize=True, queue_size=4):
         b = sig.firwin(N, cutoff, fs=samplerate)
-        Filter.__init__(self, in_queue, b, 1, samplerate=samplerate, type=type, remove_offset=remove_offset, normalize=normalize)
+        Filter.__init__(self, destinations, b, 1, samplerate, type, remove_offset, normalize, queue_size)
 
 
 class HanningWindow(mp.Process):
-    def __init__(self, in_queue: mp.Queue, queue_size=4):
+    def __init__(self, destinations: tuple, queue_size=4):
         super().__init__()
-        self.in_queue = in_queue
+        self.destinations = destinations
+        self.in_queue = mp.Queue(queue_size)
         self.out_queue = mp.Queue(queue_size)
 
     def run(self):
         while True:
             data = self.in_queue.get()
-            self.out_queue.put(data * np.hanning(len(data))[:, np.newaxis])
+            data *= np.hanning(len(data))[:, np.newaxis]
 
+            for destination in self.destinations:
+                destination.put(data)

@@ -5,8 +5,8 @@ import multiprocessing as mp
 
 
 class LinePlotter:
-    def __init__(self, in_queue: mp.Queue, xlim: tuple, ylim: tuple, interval: float):
-        self.in_queue = in_queue
+    def __init__(self, xlim: tuple, ylim: tuple, interval: float, queue_size=4):
+        self.in_queue = mp.Queue(queue_size)
         self.fig, self.ax = plt.subplots(figsize=(10, 6))
         self.line, = self.ax.plot([], [], lw=2)
         self.xlim = xlim
@@ -29,8 +29,8 @@ class LinePlotter:
 
 
 class MultiLinePlotter:
-    def __init__(self, in_queue: mp.Queue, xlim: tuple, ylim: tuple, lines: int, interval: float):
-        self.in_queue = in_queue
+    def __init__(self, xlim: tuple, ylim: tuple, lines: int, interval: float, queue_size=4):
+        self.in_queue = mp.Queue(queue_size)
         self.fig, self.ax = plt.subplots(figsize=(10, 6))
         self.lines = [self.ax.plot([], [], lw=2, label=f'Channel {i}')[0] for i in range(lines)]
         self.xlim = xlim

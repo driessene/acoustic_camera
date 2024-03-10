@@ -3,10 +3,11 @@ import multiprocessing as mp
 
 
 class Beamform(mp.Process):
-    def __init__(self, in_queue: mp.Queue, spacing=0.5, test_angles=1000, num_mics=6, queue_size=4):
+    def __init__(self, destinations: tuple, spacing=0.5, test_angles=1000, num_mics=6, queue_size=4):
         # Properties
         super().__init__()
-        self.in_queue = in_queue
+        self.destinations = destinations
+        self.in_queue = mp.Queue(queue_size)
         self.out_queue = mp.Queue(queue_size)
         self.spacing = spacing
         self.test_angles = test_angles
@@ -31,14 +32,17 @@ class Beamform(mp.Process):
             # Normalize results
             results = 10 * np.log10(np.var(r_weighted, axis=1))  # Power in signal, in dB
             results -= np.max(results)
-            self.out_queue.put(results)
+
+            for destination in self.destinations:
+                destination.put(results)
 
 
 class MUSIC(mp.Process):
-    def __init__(self, in_queue: mp.Queue, spacing=0.5, test_angles=1000, num_mics=6, num_sources=1, queue_size=4):
+    def __init__(self, destinations, spacing=0.5, test_angles=1000, num_mics=6, num_sources=1, queue_size=4):
         # Properties
         super().__init__()
-        self.in_queue = in_queue
+        self.destinations = destinations
+        self.in_queue = mp.Queue(4)
         self.out_queue = mp.Queue(queue_size)
         self.spacing = spacing
         self.test_angles = test_angles
@@ -80,4 +84,6 @@ class MUSIC(mp.Process):
 
             # Normalize and return results
             music_spectrum /= np.max(music_spectrum)
-            self.out_queue.put(music_spectrum)
+
+            for destination in self.destinations:
+                destination.put(music_spectrum)

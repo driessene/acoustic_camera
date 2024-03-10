@@ -13,7 +13,8 @@ def print_audio_devices():
 
 
 class AudioRecorder:
-    def __init__(self, device_id, samplerate=44100, channels=8, blocksize=1024, queue_size=8):
+    def __init__(self, destinations: tuple, device_id, samplerate=44100, channels=8, blocksize=1024, queue_size=8):
+        self.destinations = destinations
         self.device_id = device_id
         self.samplerate = samplerate
         self.channels = channels
@@ -24,7 +25,8 @@ class AudioRecorder:
     def _audio_callback(self, indata, frames, time, status):
         if status:
             print(status)
-        self.out_queue.put(indata)
+        for destination in self.destinations:
+            destination.put(indata)
 
     def start(self):
         self.stream = sd.InputStream(
@@ -44,6 +46,7 @@ class AudioRecorder:
 
 class AudioSimulator(mp.Process):
     def __init__(self,
+                 destinations: tuple,
                  frequencies: tuple,
                  doas: tuple,
                  spacing: float = 0.25,  # In meters. Causes spacing to scale with frequency like in real life
@@ -57,6 +60,7 @@ class AudioSimulator(mp.Process):
                  ):
 
         super().__init__()
+        self.destinations = destinations
         self.frequencies = frequencies
         self.doas = doas
         self.spacing = spacing
@@ -66,7 +70,6 @@ class AudioSimulator(mp.Process):
         self.blocksize = blocksize
         self.speed_of_sound = speed_of_sound
         self.sleep = sleep
-        self.out_queue = mp.Queue(queue_size)
 
         # Mock inherited properties
         self.virtual_channels = self.channels
@@ -104,4 +107,5 @@ class AudioSimulator(mp.Process):
             if self.sleep:
                 sleep(self.blocksize / self.samplerate)  # simulate delay for recording
 
-            self.out_queue.put(signal)
+            for destination in self.destinations:
+                destination.put(signal)
