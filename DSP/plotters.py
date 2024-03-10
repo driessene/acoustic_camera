@@ -1,10 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
+import multiprocessing as mp
 
 
 class LinePlotter:
-    def __init__(self, xlim, ylim, interval):
+    def __init__(self, in_queue: mp.Queue, xlim: tuple, ylim: tuple, interval: float):
+        self.in_queue = in_queue
         self.fig, self.ax = plt.subplots(figsize=(10, 6))
         self.line, = self.ax.plot([], [], lw=2)
         self.xlim = xlim
@@ -14,31 +16,21 @@ class LinePlotter:
         self.interval = interval
         self.ani = FuncAnimation(
             fig=self.fig,
-            func=self._update,
+            func=self.run,
             frames=None,
             interval=self.interval,
             blit=False
         )
-        self.data = []
 
-    def set_data(self, data):
-        self.data = data
-
-    def _update(self, frame):
-        line_data = self.data.flatten()
+    def run(self, frame):
+        line_data = self.in_queue.get()
         self.line.set_data(np.linspace(self.xlim[0], self.xlim[1], len(line_data)), line_data)
         return self.line,
 
-    @staticmethod
-    def show():
-        plt.show()
-
-    @staticmethod
-    def close():
-        plt.close()
 
 class MultiLinePlotter:
-    def __init__(self, xlim, ylim, lines, interval):
+    def __init__(self, in_queue: mp.Queue, xlim: tuple, ylim: tuple, lines: int, interval: float):
+        self.in_queue = in_queue
         self.fig, self.ax = plt.subplots(figsize=(10, 6))
         self.lines = [self.ax.plot([], [], lw=2, label=f'Channel {i}')[0] for i in range(lines)]
         self.xlim = xlim
@@ -48,27 +40,18 @@ class MultiLinePlotter:
         self.interval = interval
         self.ani = FuncAnimation(
             fig=self.fig,
-            func=self._update,
+            func=self.run,
             frames=None,
             interval=self.interval,
             blit=False
         )
-        self.data = []
         self.ax.legend(loc='upper right')
 
-    def set_data(self, data):
-        self.data = data
+    def run(self, frame):
+        data = self.in_queue.get()
 
-    def _update(self, frame):
         for i, line in enumerate(self.lines):
-            line_data = self.data[:, i]
-            line.set_data(np.linspace(self.xlim[0], self.xlim[1], len(line_data)), line_data)
+            line_data = data[:, i]
+            line.set_xdata(np.linspace(self.xlim[0], self.xlim[1], len(line_data)))
+            line.set_ydata(line_data)
         return self.lines,
-
-    @staticmethod
-    def show():
-        plt.show()
-
-    @staticmethod
-    def close():
-        plt.close()

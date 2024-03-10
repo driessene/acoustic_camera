@@ -1,10 +1,14 @@
 import numpy as np
 import scipy.signal as sig
 import matplotlib.pyplot as plt
+import multiprocessing as mp
 
 
-class Filter:
-    def __init__(self, b_coefficients, a_coefficients, samplerate=44100, type='ba', remove_offset=True, normalize=True):
+class Filter(mp.Process):
+    def __init__(self, in_queue: mp.Queue, b_coefficients, a_coefficients, samplerate=44100, type='ba', remove_offset=True, normalize=True, queue_size=4):
+        super().__init__()
+        self.in_queue = in_queue
+        self.out_queue = mp.Queue(queue_size)
         self.b = b_coefficients
         self.a = a_coefficients
         self.samplerate = samplerate
@@ -12,17 +16,21 @@ class Filter:
         self.remove_offset = remove_offset
         self.normazlize = normalize
 
-    def process(self, data):
-        if self.remove_offset:
-            data -= np.mean(data, axis=0, keepdims=True)
-        if self.normazlize:
-            data /= np.max(np.abs(data), axis=0, keepdims=True)
-        if self.type == 'ba':
-            return sig.lfilter(self.b, self.a, data, axis=0)
-        elif self.type == 'filtfilt':
-            return sig.filtfilt(self.b, self.a, data, axis=0)
-        else:
-            raise NotImplementedError
+    def run(self):
+        while True:
+            data = self.in_queue.get()
+            if self.remove_offset:
+                data -= np.mean(data, axis=0, keepdims=True)
+            if self.normazlize:
+                data /= np.max(np.abs(data), axis=0, keepdims=True)
+            if self.type == 'ba':
+                data = sig.lfilter(self.b, self.a, data, axis=0)
+            elif self.type == 'filtfilt':
+                data = sig.filtfilt(self.b, self.a, data, axis=0)
+            else:
+                raise NotImplementedError
+
+            self.out_queue.put(data)
 
     def plot_response(self):
         w, h = sig.freqz(self.b, self.a)
@@ -42,18 +50,25 @@ class Filter:
 
 
 class ButterFilter(Filter):
-    def __init__(self, N:int, cutoff:int, samplerate=44100, type='ba', remove_offset=True, normalize=True):
+    def __init__(self, in_queue: mp.Queue, N:int, cutoff:int, samplerate=44100, type='ba', remove_offset=True, normalize=True):
         b, a = sig.butter(N=N, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
-        Filter.__init__(self, b, a, samplerate=samplerate, type=type,  remove_offset=remove_offset, normalize=normalize)
+        Filter.__init__(self, in_queue, b, a, samplerate=samplerate, type=type,  remove_offset=remove_offset, normalize=normalize)
 
 
 class FIRWINFilter(Filter):
-    def __init__(self, N:int, cutoff:int, samplerate=44100, type='ba', remove_offset=True, normalize=True):
+    def __init__(self, in_queue: mp.Queue, N:int, cutoff:int, samplerate=44100, type='ba', remove_offset=True, normalize=True):
         b = sig.firwin(N, cutoff, fs=samplerate)
-        Filter.__init__(self, b, 1, samplerate=samplerate, type=type, remove_offset=remove_offset, normalize=normalize)
+        Filter.__init__(self, in_queue, b, 1, samplerate=samplerate, type=type, remove_offset=remove_offset, normalize=normalize)
 
 
-class HanningFilter:
-    @staticmethod
-    def process(data):
-        return data * np.hanning(len(data))[:, np.newaxis]
+class HanningWindow(mp.Process):
+    def __init__(self, in_queue: mp.Queue, queue_size=4):
+        super().__init__()
+        self.in_queue = in_queue
+        self.out_queue = mp.Queue(queue_size)
+
+    def run(self):
+        while True:
+            data = self.in_queue.get()
+            self.out_queue.put(data * np.hanning(len(data))[:, np.newaxis])
+
