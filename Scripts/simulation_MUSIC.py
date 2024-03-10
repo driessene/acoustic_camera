@@ -1,4 +1,4 @@
-from DSP import recorders, filters, direction_of_arrival, plotters
+from DSP_CUDA import recorders, filters, direction_of_arrival, plotters
 import matplotlib.pyplot as plt
 
 

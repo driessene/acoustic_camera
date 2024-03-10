@@ -1,5 +1,5 @@
 import sounddevice as sd
-import numpy as np
+import cupy as np
 from time import sleep
 import multiprocessing as mp
 
