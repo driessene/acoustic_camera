@@ -1,5 +1,6 @@
 import cupy as np
 import multiprocessing as mp
+import Management
 
 
 class Beamform(mp.Process):
@@ -8,7 +9,6 @@ class Beamform(mp.Process):
         super().__init__()
         self.destinations = destinations
         self.in_queue = mp.Queue(queue_size)
-        self.out_queue = mp.Queue(queue_size)
         self.spacing = spacing
         self.test_angles = test_angles
         self.num_mics = num_mics
@@ -43,8 +43,7 @@ class MUSIC(mp.Process):
         # Properties
         super().__init__()
         self.destinations = destinations
-        self.in_queue = mp.Queue(4)
-        self.out_queue = mp.Queue(queue_size)
+        self.in_queue = mp.Queue(queue_size)
         self.spacing = spacing
         self.test_angles = test_angles
         self.num_mics = num_mics
@@ -74,7 +73,6 @@ class MUSIC(mp.Process):
 
             # Sort eigenvalues and corresponding eigenvectors
             sorted_indices = np.argsort(eigvals)[::-1]  # Sort indices in descending order
-            eigvals_sorted = eigvals[sorted_indices]
             eigvecs_sorted = eigvecs[:, sorted_indices]
 
             # Calculate noise subspace

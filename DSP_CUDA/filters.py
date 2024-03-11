@@ -10,7 +10,6 @@ class Filter(mp.Process):
         super().__init__()
         self.destinations = destinations
         self.in_queue = mp.Queue(queue_size)
-        self.out_queue = mp.Queue(queue_size)
         self.b = b_coefficients
         self.a = a_coefficients
         self.samplerate = samplerate
@@ -71,7 +70,6 @@ class HanningWindow(mp.Process):
         super().__init__()
         self.destinations = destinations
         self.in_queue = mp.Queue(queue_size)
-        self.out_queue = mp.Queue(queue_size)
 
     def run(self):
         while True:

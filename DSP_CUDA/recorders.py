@@ -13,13 +13,12 @@ def print_audio_devices():
 
 
 class AudioRecorder:
-    def __init__(self, destinations: tuple, device_id, samplerate=44100, channels=8, blocksize=1024, queue_size=8):
+    def __init__(self, destinations: tuple, device_id, samplerate=44100, channels=8, blocksize=1024):
         self.destinations = destinations
         self.device_id = device_id
         self.samplerate = samplerate
         self.channels = channels
         self.blocksize = blocksize
-        self.out_queue = mp.Queue(queue_size)
         self.stream = None
 
     def _audio_callback(self, indata, frames, time, status):
@@ -54,7 +53,6 @@ class AudioSimulator(mp.Process):
                  samplerate: int = 44100,
                  channels: int = 6,
                  blocksize: int = 1024,
-                 queue_size: int = 4,
                  speed_of_sound: float = 343.0,
                  sleep: bool = True
                  ):
