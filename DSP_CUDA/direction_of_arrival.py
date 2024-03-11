@@ -3,9 +3,9 @@ from Management import pipeline
 
 
 class Beamform(pipeline.Stage):
-    def __init__(self, destinations: tuple, spacing=0.5, test_angles=1000, num_mics=6, queue_size=4):
+    def __init__(self, spacing=0.5, test_angles=1000, num_mics=6, queue_size=4, destinations=None):
         # Properties
-        super().__init__(destinations, 1, queue_size)
+        super().__init__(1, queue_size, destinations)
         self.spacing = spacing
         self.test_angles = test_angles
         self.num_mics = num_mics
@@ -34,9 +34,9 @@ class Beamform(pipeline.Stage):
 
 
 class MUSIC(pipeline.Stage):
-    def __init__(self, destinations, spacing=0.5, test_angles=1000, num_mics=6, num_sources=1, queue_size=4):
+    def __init__(self, spacing=0.5, test_angles=1000, num_mics=6, num_sources=1, queue_size=4, destinations=None):
         # Properties
-        super().__init__(destinations, 1, queue_size)
+        super().__init__(1, queue_size, destinations)
         self.spacing = spacing
         self.test_angles = test_angles
         self.num_mics = num_mics

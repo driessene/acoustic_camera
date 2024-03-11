@@ -13,8 +13,8 @@ def print_audio_devices():
 
 
 class AudioRecorder(pipeline.Stage):
-    def __init__(self, destinations: tuple, device_id, samplerate=44100, channels=8, blocksize=1024):
-        super().__init__(destinations, 0, 0)
+    def __init__(self, device_id, samplerate=44100, channels=8, blocksize=1024, destinations=None):
+        super().__init__(0, 0, destinations)
         self.device_id = device_id
         self.samplerate = samplerate
         self.channels = channels
@@ -44,7 +44,6 @@ class AudioRecorder(pipeline.Stage):
 
 class AudioSimulator(pipeline.Stage):
     def __init__(self,
-                 destinations: tuple,
                  frequencies: tuple,
                  doas: tuple,
                  spacing: float = 0.25,  # In meters. Causes spacing to scale with frequency like in real life
@@ -53,10 +52,11 @@ class AudioSimulator(pipeline.Stage):
                  channels: int = 6,
                  blocksize: int = 1024,
                  speed_of_sound: float = 343.0,
-                 sleep: bool = True
+                 sleep: bool = True,
+                 destinations=None
                  ):
 
-        super().__init__(destinations, 0, 0)
+        super().__init__(0, 0, destinations)
         self.frequencies = frequencies
         self.doas = doas
         self.spacing = spacing

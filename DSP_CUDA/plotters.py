@@ -12,7 +12,7 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
                  y_label: str,
                  x_range: tuple,
                  y_range: tuple,
-                 interval: int,
+                 interval: int = 0,
                  queue_size=4
                  ):
         QtWidgets.QMainWindow.__init__(self)

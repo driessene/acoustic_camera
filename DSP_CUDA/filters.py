@@ -5,9 +5,16 @@ from Management import pipeline
 
 
 class Filter(pipeline.Stage):
-    def __init__(self, destinations: tuple, b_coefficients, a_coefficients, samplerate=44100, type='ba',
-                 remove_offset=True, normalize=True, queue_size=4):
-        super().__init__(destinations, 1, queue_size)
+    def __init__(self,
+                 b_coefficients,
+                 a_coefficients,
+                 samplerate=44100,
+                 type='filtfilt',
+                 remove_offset=True,
+                 normalize=True,
+                 queue_size=4,
+                 destinations=None):
+        super().__init__(1, queue_size, destinations)
         self.b = b_coefficients
         self.a = a_coefficients
         self.samplerate = samplerate
@@ -49,23 +56,22 @@ class Filter(pipeline.Stage):
 
 
 class ButterFilter(Filter):
-    def __init__(self, destinations: tuple, N: int, cutoff: int, samplerate=44100, type='ba', remove_offset=True,
-                 normalize=True, queue_size=4):
+    def __init__(self, N: int, cutoff: int, samplerate=44100, type='filtfilt', remove_offset=True,
+                 normalize=True, queue_size=4, destinations = None):
         b, a = sig.butter(N=N, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
-        super().__init__(self, destinations, b, a, samplerate, type, remove_offset, normalize, queue_size)
+        super().__init__(b, a, samplerate, type, remove_offset, normalize, queue_size, destinations)
 
 
 class FIRWINFilter(Filter):
-    def __init__(self, destinations: tuple, N: int, cutoff: int, samplerate=44100, type='ba', remove_offset=True,
-                 normalize=True, queue_size=4):
+    def __init__(self, N: int, cutoff: int, samplerate=44100, type='filtfilt', remove_offset=True,
+                 normalize=True, queue_size=4, destinations=None):
         b = sig.firwin(N, cutoff, fs=samplerate)
-        Filter.__init__(self, destinations, b, 1, samplerate, type, remove_offset, normalize, queue_size)
+        super().__init__(b, 1, samplerate, type, remove_offset, normalize, queue_size, destinations)
 
 
 class HanningWindow(pipeline.Stage):
-    def __init__(self, destinations: tuple, queue_size=4):
-        super().__init__(destinations, 1, queue_size)
-        self.destinations = destinations
+    def __init__(self, queue_size=4, destinations=None):
+        super().__init__(1, queue_size, destinations)
 
     def run(self):
         while True:
