@@ -1,7 +1,7 @@
 import sounddevice as sd
 import cupy as np
 from time import sleep
-import multiprocessing as mp
+from Management import pipeline
 
 
 def print_audio_devices():
@@ -12,9 +12,9 @@ def print_audio_devices():
             print(f"Device {i}: {device['name']}, Channels: {device['max_input_channels']}")
 
 
-class AudioRecorder:
+class AudioRecorder(pipeline.Stage):
     def __init__(self, destinations: tuple, device_id, samplerate=44100, channels=8, blocksize=1024):
-        self.destinations = destinations
+        super().__init__(destinations, 0, 0)
         self.device_id = device_id
         self.samplerate = samplerate
         self.channels = channels
@@ -24,8 +24,7 @@ class AudioRecorder:
     def _audio_callback(self, indata, frames, time, status):
         if status:
             print(status)
-        for destination in self.destinations:
-            destination.put(indata)
+        self.stream.write(indata)
 
     def start(self):
         self.stream = sd.InputStream(
@@ -43,7 +42,7 @@ class AudioRecorder:
             self.stream.close()
 
 
-class AudioSimulator(mp.Process):
+class AudioSimulator(pipeline.Stage):
     def __init__(self,
                  destinations: tuple,
                  frequencies: tuple,
@@ -57,8 +56,7 @@ class AudioSimulator(mp.Process):
                  sleep: bool = True
                  ):
 
-        super().__init__()
-        self.destinations = destinations
+        super().__init__(destinations, 0, 0)
         self.frequencies = frequencies
         self.doas = doas
         self.spacing = spacing
@@ -106,5 +104,4 @@ class AudioSimulator(mp.Process):
             if self.sleep:
                 sleep(self.blocksize / self.samplerate)  # simulate delay for recording
 
-            for destination in self.destinations:
-                destination.put(signal)
+            self.destination_queue_put(signal)

@@ -1,15 +1,13 @@
 import cupy as np
 import cupyx.scipy.signal as sig
 import matplotlib.pyplot as plt
-import multiprocessing as mp
+from Management import pipeline
 
 
-class Filter(mp.Process):
+class Filter(pipeline.Stage):
     def __init__(self, destinations: tuple, b_coefficients, a_coefficients, samplerate=44100, type='ba',
                  remove_offset=True, normalize=True, queue_size=4):
-        super().__init__()
-        self.destinations = destinations
-        self.in_queue = mp.Queue(queue_size)
+        super().__init__(destinations, 1, queue_size)
         self.b = b_coefficients
         self.a = a_coefficients
         self.samplerate = samplerate
@@ -19,7 +17,7 @@ class Filter(mp.Process):
 
     def run(self):
         while True:
-            data = self.in_queue.get()
+            data = self.input_queue_get()[0]
             if self.remove_offset:
                 data -= np.mean(data, axis=0, keepdims=True)
             if self.normazlize:
@@ -31,8 +29,7 @@ class Filter(mp.Process):
             else:
                 raise NotImplementedError
 
-            for destination in self.destinations:
-                destination.put(data)
+            self.destination_queue_put(data)
 
     def plot_response(self):
         w, h = sig.freqz(self.b, self.a)
@@ -65,16 +62,13 @@ class FIRWINFilter(Filter):
         Filter.__init__(self, destinations, b, 1, samplerate, type, remove_offset, normalize, queue_size)
 
 
-class HanningWindow(mp.Process):
+class HanningWindow(pipeline.Stage):
     def __init__(self, destinations: tuple, queue_size=4):
-        super().__init__()
+        super().__init__(destinations, 1, queue_size)
         self.destinations = destinations
-        self.in_queue = mp.Queue(queue_size)
 
     def run(self):
         while True:
-            data = self.in_queue.get()
+            data = self.input_queue_get()[0]
             data *= np.hanning(len(data))[:, np.newaxis]
-
-            for destination in self.destinations:
-                destination.put(data)
+            self.destination_queue_put(data)

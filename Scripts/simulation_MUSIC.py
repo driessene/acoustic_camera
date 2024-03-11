@@ -24,11 +24,11 @@ def main():
         y_range=(0, 1),
         interval=0
     )
-    music = direction_of_arrival.MUSIC((plotter.in_queue,), spacing=0.5, num_mics=6, num_sources=2)
-    hanning = filters.HanningWindow((music.in_queue,))
-    fir = filters.FIRWINFilter((hanning.in_queue,), N=100, cutoff=1200, type='filtfilt')
+    music = direction_of_arrival.MUSIC((plotter.input_queue[0],), spacing=0.5, num_mics=6, num_sources=2)
+    hanning = filters.HanningWindow((music.input_queue[0],))
+    fir = filters.FIRWINFilter((hanning.input_queue[0],), N=100, cutoff=1200, type='filtfilt')
     recorder = recorders.AudioSimulator(
-        destinations=(fir.in_queue, ),
+        destinations=(fir.input_queue[0], ),
         frequencies=frequencies,
         doas=doas,
         spacing=spacing,
