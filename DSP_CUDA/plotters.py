@@ -21,6 +21,7 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         # Performance tracking
         self.last_time = perf_counter()
         self.delta_time = 0
+        self.fps_array = np.zeros(100)
 
         # Styling
         self.plot_graph = pg.PlotWidget()
@@ -58,9 +59,12 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         self.timer.start()
 
     def run(self):
+        # Update FPS
         self.delta_time = perf_counter() - self.last_time
         self.last_time = perf_counter()
-        fps = 1 / self.delta_time  # Calculate FPS
+        self.fps_array = np.append(self.fps_array, 1 / self.delta_time)
+        self.fps_array = np.delete(self.fps_array, 0)
+        fps = np.average(self.fps_array)
 
         # Update footer
         queue_size = self.input_queue[0].qsize()  # Get current queue size
