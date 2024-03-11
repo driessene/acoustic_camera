@@ -65,7 +65,7 @@ class SingleLinePlotter(QtWidgets.QMainWindow):
         self.footer.setText(f'Update Rate: {fps:.2f} FPS\nQueue Size: {queue_size}')
 
         # Update data queue
-        data = self.in_queue.get().get()
+        data = self.in_queue.get()
         self.line_data = (np.linspace(self.x_range[0], self.x_range[1], len(data)), data)
         self.line.setData(*self.line_data)
 
@@ -116,7 +116,7 @@ class MultiLinePlotter(QtWidgets.QMainWindow):
         self.timer.start()
 
     def run(self):
-        data = self.in_queue.get().get()    # git call one is to get from queue, get call two is to get a numpy array
+        data = self.in_queue.get()
         for i, col in enumerate(data.T):
             self.lines_data[i] = (np.linspace(self.x_range[0], self.x_range[1], len(data)), data)
             self.lines[i].setData(*self.lines_data)
