@@ -1,7 +1,8 @@
 import pyqtgraph as pg
+import matplotlib.cm as cm
 from Management import pipeline
 import numpy as np
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 from time import perf_counter
 
 
@@ -128,15 +129,20 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
         QtWidgets.QMainWindow.__init__(self)
         pipeline.Stage.__init__(self, 9, queue_size, None)
 
-        # Port 0: 0,0 - x music
-        # Port 1: 1,0 - x filter
-        # Port 2: 2,0 - x source
-        # Port 3: 0,1 - y music
-        # Port 4: 1,1 - y filter
-        # Port 5: 2,1 - y source
-        # Port 6: 0,2 - z music
-        # Port 7: 1,2 - z filter
-        # Port 8: 2,3 - z source
+        # ------------------------------------------------------|--------------------------|
+        # |                          |                          |                          |
+        # | Plot 0 : x music         | Plot 1 : y music         | Plot 2 : z music         |
+        # |                          |                          |                          |
+        # |-----------------------------------------------------|--------------------------|
+        # |                          |                          |                          |
+        # | Plot 3 : x after filter  | Plot 4 : y after filter  | Plot 5 : z after filter  |
+        # |                          |                          |                          |
+        # |-----------------------------------------------------|--------------------------|
+        # |                          |                          |                          |
+        # | Plot 6 : x before filter | Plot 7 : y before filter | Plot 8 : z before filter |
+        # |                          |                          |                          |
+        # |-----------------------------------------------------|--------------------------|
+
 
         # Properties
         self.blocksize = blocksize
@@ -148,19 +154,24 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
         # Window
         self.setWindowTitle('ThreeAxisApplication')
         self.layout = QtWidgets.QGridLayout()
+        self.palette = QtGui.QPalette()
+        self.setAutoFillBackground(True)
+
 
         # Plots
-        self.plots = [[pg.PlotWidget() for _ in range(3)] for _ in range(3)]    # a 3x3 matrix of plots
-        for i, plot_row in enumerate(self.plots):
-            for j, plot in enumerate(plot_row):
-                self.layout.addWidget(plot, i, j)
+        self.plots = [pg.PlotWidget() for _ in range(9)]  # a 3x3 matrix of plots
+        for i, plot in enumerate(self.plots):
+            self.layout.addWidget(plot, i // 3, i % 3)
 
         # Plot Data
         self.lines = []
         self.y_data = []
         self.x_data = []
-        self.colors = ('white', 'red', 'green', 'blue', 'darkRed', 'darkGreen', 'darkBlue' 'cyan', 'magenta', 'yellow',
-                  'grey', 'darkCyan', 'darkMagenta', 'darkYellow', 'darkGrey')
+
+        # Line colors
+        colormapper = cm.get_cmap('tab10')  # Choose a colormap
+        num_colors = max(self.x_num_channels, self.y_num_channels, self.z_num_channels)
+        self.colors = [np.multiply(colormapper(i / num_colors)[0:3], 255) for i in range(num_colors)]
 
         # Widget
         self.widget = QtWidgets.QWidget()
@@ -168,20 +179,20 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
         self.setCentralWidget(self.widget)
 
         def init_plot(plot, title, x_label, y_label, x_range, y_range, num_lines, num_points):
-            plot.setBackground('black')
+            plot.setBackground('white')
             plot.setTitle(title)
             plot.setLabel('left', y_label)
             plot.setLabel('bottom', x_label)
             plot.setXRange(*x_range)
             plot.setYRange(*y_range)
-            plot.addLegend()
+            # plot.addLegend()
 
             self.x_data.append(np.linspace(*x_range, num_points))
 
             if num_lines == 1:
                 self.y_data.append(np.zeros(num_points))
             else:
-                self.y_data.append(np.zeros((num_lines, num_points)))
+                self.y_data.append(np.zeros((num_points, num_points)))
 
             x_data = self.x_data[len(self.x_data) - 1]
             y_data = self.y_data[len(self.y_data) - 1]
@@ -201,10 +212,10 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
                     pen=pg.mkPen(color=self.colors[i], width=2),
                 ) for i in range(num_lines)])
             else:
-                raise ValueError('y_data can only be 1D or 2D')
+                raise ValueError('data can only be 1D or 2D')
 
-        # Plot 0,0 - x music
-        init_plot(plot=self.plots[0][0],
+        # Plot 0 - x music
+        init_plot(plot=self.plots[0],
                   title='X MUSIC',
                   x_label='Angle (Deg)',
                   y_label='MUSIC',
@@ -212,26 +223,8 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
                   y_range=(0, 1),
                   num_lines=1,
                   num_points=self.num_music_angles)
-        # Plot 1,0 - x filter
-        init_plot(plot=self.plots[0][1],
-                  title='X After Filters',
-                  x_label='Sample',
-                  y_label='Amplitude',
-                  x_range=(0, self.blocksize),
-                  y_range=(0, 1),
-                  num_lines=self.x_num_channels,
-                  num_points=self.blocksize)
-        # Plot 2,0 - x source
-        init_plot(plot=self.plots[0][2],
-                  title='X Before Filters',
-                  x_label='Sample',
-                  y_label='Amplitude',
-                  x_range=(0, self.blocksize),
-                  y_range=(0, 1),
-                  num_lines=self.x_num_channels,
-                  num_points=self.blocksize)
-        # Plot 0,1 - y music
-        init_plot(plot=self.plots[1][0],
+        # Plot 1 - y music
+        init_plot(plot=self.plots[1],
                   title='Y MUSIC',
                   x_label='Angle (Deg)',
                   y_label='MUSIC',
@@ -239,26 +232,9 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
                   y_range=(0, 1),
                   num_lines=1,
                   num_points=self.num_music_angles)
-        # Plot 1,1 - y filter
-        init_plot(plot=self.plots[1][1],
-                  title='Y After Filters',
-                  x_label='Sample',
-                  y_label='Amplitude',
-                  x_range=(0, self.blocksize),
-                  y_range=(0, 1),
-                  num_lines=self.z_num_channels,
-                  num_points=self.blocksize)
-        # Plot 2,1 - y source
-        init_plot(plot=self.plots[1][2],
-                  title='Y Before Filters',
-                  x_label='Sample',
-                  y_label='Amplitude',
-                  x_range=(0, self.blocksize),
-                  y_range=(0, 1),
-                  num_lines=self.z_num_channels,
-                  num_points=self.blocksize)
-        # Plot 0,2 - z music
-        init_plot(plot=self.plots[2][0],
+
+        # Plot 2 - z music
+        init_plot(plot=self.plots[2],
                   title='Z MUSIC',
                   x_label='Angle (Deg)',
                   y_label='MUSIC',
@@ -266,22 +242,60 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
                   y_range=(0, 1),
                   num_lines=1,
                   num_points=self.num_music_angles)
-        # Plot 1,2 - z filter
-        init_plot(plot=self.plots[2][1],
+
+        # Plot 3 - x filter
+        init_plot(plot=self.plots[3],
+                  title='X After Filters',
+                  x_label='Sample',
+                  y_label='Amplitude',
+                  x_range=(0, self.blocksize),
+                  y_range=(-1, 1),
+                  num_lines=self.x_num_channels,
+                  num_points=self.blocksize)
+        # Plot 4 - y filter
+        init_plot(plot=self.plots[4],
+                  title='Y After Filters',
+                  x_label='Sample',
+                  y_label='Amplitude',
+                  x_range=(0, self.blocksize),
+                  y_range=(-1, 1),
+                  num_lines=self.y_num_channels,
+                  num_points=self.blocksize)
+        # Plot 5 - z filter
+        init_plot(plot=self.plots[5],
                   title='Z After Filters',
                   x_label='Sample',
                   y_label='Amplitude',
                   x_range=(0, self.blocksize),
-                  y_range=(0, 1),
+                  y_range=(-1, 1),
                   num_lines=self.z_num_channels,
                   num_points=self.blocksize)
-        # Plot 2,2 - z source
-        init_plot(plot=self.plots[2][2],
+        # Plot 6 - x source
+        init_plot(plot=self.plots[6],
+                  title='X Before Filters',
+                  x_label='Sample',
+                  y_label='Amplitude',
+                  x_range=(0, self.blocksize),
+                  y_range=(-1, 1),
+                  num_lines=self.x_num_channels,
+                  num_points=self.blocksize)
+        # Plot 7 - y source
+        init_plot(plot=self.plots[7],
+                  title='Y Before Filters',
+                  x_label='Sample',
+                  y_label='Amplitude',
+                  x_range=(0, self.blocksize),
+                  y_range=(-1, 1),
+                  num_lines=self.y_num_channels,
+                  num_points=self.blocksize)
+
+        # Plot 8 - z source
+        init_plot(plot=self.plots[8],
                   title='Z Before Filters',
                   x_label='Sample',
                   y_label='Amplitude',
                   x_range=(0, self.blocksize),
-                  y_range=(0, 1),
+                  y_range=(-1, 1),
                   num_lines=self.z_num_channels,
                   num_points=blocksize)
 
@@ -293,20 +307,20 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
         self.timer.start()
 
     def run(self):
-        data_set = self.input_queue_get()   # 9 cupy lists
-
-        # self.lines is a list of a set of lines per plot
-        # self.plots hold every plot
-        # data_set holds data for every plot in order
+        data_set = self.input_queue_get()  # 9 cupy arrays
 
         # Per plot in window...
-        for i, (plot_data, plot, lines) in enumerate(zip(data_set, self.plots, self.lines)):
-            plot_data = plot_data.get()     # cupy --> numpy
+        for i, (plot_data, plot, lines, x_data) in enumerate(zip(data_set, self.plots, self.lines, self.x_data)):
+            plot_data = plot_data.get()  # cupy --> numpy
             self.y_data[i] = plot_data
 
-            # Per line in plot...
-            if isinstance(lines, list):
-                for (line, channel) in zip(lines, plot_data):
-                    line.setData(self.x_data, self.y_data[channel])
-            elif isinstance(lines, list):
-                lines.setData(self.x_data[i], self.y_data[i])
+            # if several lines
+            if plot_data.ndim == 2:
+                for j, line in enumerate(lines):
+                    line.setData(x_data, self.y_data[i][:, j].real)
+
+            # if one line
+            elif plot_data.ndim == 1:
+                lines.setData(self.x_data[i], self.y_data[i].real)
+            else:
+                raise Exception('data can only be 1D or 2D')

@@ -10,6 +10,7 @@ def main():
     spacing = 0.254
     snr = 50
     channels = 6
+    sleep = False
 
     # Start Qt
     app = QtWidgets.QApplication([])
@@ -23,7 +24,7 @@ def main():
         samplerate=samplerate,
         channels=channels,
         blocksize=blocksize,
-        sleep=True
+        sleep=sleep
     )
     recorder_y = recorders.AudioSimulator(
         frequencies=(675, 600),
@@ -33,7 +34,7 @@ def main():
         samplerate=samplerate,
         channels=channels,
         blocksize=blocksize,
-        sleep=True
+        sleep=sleep
     )
     recorder_z = recorders.AudioSimulator(
         frequencies=(675, 600),
@@ -43,7 +44,7 @@ def main():
         samplerate=samplerate,
         channels=channels,
         blocksize=blocksize,
-        sleep=True
+        sleep=sleep
     )
 
     # FIR window filter to remove noise
@@ -88,15 +89,16 @@ def main():
     hanning_z.link_to_destination(music_z, 0)
 
     # Everything to plotter
-    recorder_x.link_to_destination(plotter, 2)
-    recorder_y.link_to_destination(plotter, 5)
-    recorder_z.link_to_destination(plotter, 8)
-    hanning_x.link_to_destination(plotter, 1)
-    hanning_y.link_to_destination(plotter, 4)
-    hanning_z.link_to_destination(plotter, 7)
     music_x.link_to_destination(plotter, 0)
-    music_y.link_to_destination(plotter, 3)
-    music_z.link_to_destination(plotter, 6)
+    music_y.link_to_destination(plotter, 1)
+    music_z.link_to_destination(plotter, 2)
+    hanning_x.link_to_destination(plotter, 3)
+    hanning_y.link_to_destination(plotter, 4)
+    hanning_z.link_to_destination(plotter, 5)
+    recorder_x.link_to_destination(plotter, 6)
+    recorder_y.link_to_destination(plotter, 7)
+    recorder_z.link_to_destination(plotter, 8)
+
 
     # Start processes
     recorder_x.start()
