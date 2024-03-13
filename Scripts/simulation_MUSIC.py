@@ -1,4 +1,4 @@
-from DSP_CUDA import recorders, filters, direction_of_arrival, plotters
+from DSP import recorders, filters, direction_of_arrival, plotters
 from pyqtgraph.Qt import QtWidgets
 
 
@@ -8,12 +8,9 @@ def main():
     samplerate = 44100
     blocksize = 1024
     spacing = 0.254
-    snr = 50
+    snr = 20
     channels = 6
     sleep = False
-
-    # Start Qt
-    app = QtWidgets.QApplication([])
 
     # Recorder to get data
     recorder_x = recorders.AudioSimulator(
@@ -48,9 +45,10 @@ def main():
     )
 
     # FIR window filter to remove noise
-    fir_x = filters.FIRWINFilter(N=100, cutoff=1200, type='filtfilt')
-    fir_y = filters.FIRWINFilter(N=100, cutoff=1200, type='filtfilt')
-    fir_z = filters.FIRWINFilter(N=100, cutoff=1200, type='filtfilt')
+    fir_x = filters.FIRWINFilter(N=100, cutoff=2000, type='filtfilt')
+    fir_y = filters.FIRWINFilter(N=100, cutoff=2000, type='filtfilt')
+    fir_z = filters.FIRWINFilter(N=100, cutoff=2000, type='filtfilt')
+    # fir_x.plot_response()
 
     # Hanning filter to remove spectral leakage
     hanning_x = filters.HanningWindow()
@@ -63,6 +61,7 @@ def main():
     music_z = direction_of_arrival.MUSIC(spacing=0.5, num_mics=6, num_sources=2)
 
     # Application plotter
+    app = QtWidgets.QApplication([])
     plotter = plotters.ThreeAxisApplication(
         blocksize=blocksize,
         num_music_angles=1000,
@@ -78,7 +77,7 @@ def main():
     recorder_y.link_to_destination(fir_y, 0)
     recorder_z.link_to_destination(fir_z, 0)
 
-    # FIR to hanning
+    # FIR to music
     fir_x.link_to_destination(hanning_x, 0)
     fir_y.link_to_destination(hanning_y, 0)
     fir_z.link_to_destination(hanning_z, 0)
