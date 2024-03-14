@@ -2,11 +2,6 @@ import cupy as np
 from Management import pipeline
 
 
-class MicrophoneArray:
-    def __init__(self, positions):
-
-
-
 class Beamform(pipeline.Stage):
     """
     Applies beamforming to input data
