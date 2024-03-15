@@ -78,6 +78,25 @@ class Filter(pipeline.Stage):
         ax2.axis('tight')
         plt.show()
 
+    def plot_coefficients(self):
+        """
+        Plots the filter coefficients
+        :return: None
+        """
+        fig, ax1 = plt.subplots()
+        if not isinstance(self.b, (float, int)):
+            ax1.set_title('Digital filter frequency response')
+            ax1.plot(np.arange(self.b.shape[0]).get(), self.b.get())
+            ax1.set_ylabel('B Amplitude', color='b')
+            ax1.set_xlabel('N')
+        if not isinstance(self.a, (float, int)):
+            ax2 = ax1.twinx()
+            ax2.plot(np.arange(self.a.shape[0]).get(), self.b.get())
+            ax2.set_ylabel('A Amplitude', color='g')
+            ax2.grid()
+            ax2.axis('tight')
+        plt.show()
+
 
 class ButterFilter(Filter):
     """
@@ -120,7 +139,6 @@ class FIRWINFilter(Filter):
         """
         b = sig.firwin(N, cutoff, fs=samplerate)
         super().__init__(b, 1, samplerate, type, remove_offset, normalize, queue_size, destinations)
-
 
 class HanningWindow(pipeline.Stage):
     """
