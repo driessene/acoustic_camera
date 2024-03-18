@@ -6,20 +6,21 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 10000
-    channels = 8
+    blocksize = 1000
 
     # Recorder to get data
     recorder = recorders.AudioRecorder(
         device_id=14,
         samplerate=samplerate,
-        channels=channels,
+        channels=8,
         blocksize=blocksize,
         channel_map=[2, 3, 4, 5, 6, 7]
     )
 
     # FIR Filter
-    fir_filter = filters.FIRWINFilter(101, 2000)
+    fir_filter = filters.FIRWINFilter(10, 2000, samplerate=samplerate)
+
+    # Window
 
     # MUSIC Algorithm
     music = direction_of_arrival.MUSIC(spacing=0.5, num_mics=6, num_sources=2)
