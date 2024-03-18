@@ -1,26 +1,59 @@
-from DSP import direction_of_arrival, filters, plotters, recorders
-import matplotlib.pyplot as plt
+from DSP import recorders, filters, direction_of_arrival, plotters
+from pyqtgraph.Qt import QtWidgets
 
 
 def main():
-    plotter = plotters.LinePlotter(xlim=(-90, 90), ylim=(0, 1), interval=1000 * 512 / 44100)
-    music = direction_of_arrival.MUSIC((plotter.in_queue,), spacing=0.5, num_mics=6, num_sources=2)
-    hanning = filters.HanningWindow((music.in_queue,))
-    fir = filters.FIRWINFilter((hanning.in_queue,), N=100, cutoff=1200, type='filtfilt')
+
+    # Variables
+    samplerate = 44100
+    blocksize = 10000
+    channels = 8
+
+    # Recorder to get data
     recorder = recorders.AudioRecorder(
-        destinations=(fir.in_queue,),
         device_id=14,
-        samplerate=44100,
-        channels=8,
-        blocksize=512,
-        queue_size=2
+        samplerate=samplerate,
+        channels=channels,
+        blocksize=blocksize,
+        channel_map=[2, 3, 4, 5, 6, 7]
     )
 
+    # FIR Filter
+    fir_filter = filters.FIRWINFilter(101, 2000)
+
+    # MUSIC Algorithm
+    music = direction_of_arrival.MUSIC(spacing=0.5, num_mics=6, num_sources=2)
+
+    # Application plotter
+    app = QtWidgets.QApplication([])
+    # plotter = plotters.MultiLinePlotter(
+    #     title='MUSIC',
+    #     x_label='Angle (deg)',
+    #     y_label='MUSIC',
+    #     x_range=(-90, 90),
+    #     y_range=(-1, 1),
+    #     num_lines=channels,
+    #     blocksize=blocksize
+    # )
+    plotter = plotters.SingleLinePlotter(
+        title='MUSIC',
+        x_label='Angle (deg)',
+        y_label='MUSIC',
+        x_range=(-90, 90),
+        y_range=(0, 1)
+    )
+
+    # Linking
+    recorder.link_to_destination(fir_filter, 0)
+    fir_filter.link_to_destination(music, 0)
+    music.link_to_destination(plotter, 0)
+
+    # Start processes
     recorder.start()
-    fir.start()
-    hanning.start()
+    fir_filter.start()
     music.start()
-    plt.show()
+    plotter.show()
+    app.exec()
 
 
 if __name__ == '__main__':

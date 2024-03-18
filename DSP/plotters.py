@@ -18,7 +18,7 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
                  queue_size: int = 4
                  ):
         QtWidgets.QMainWindow.__init__(self)
-        pipeline.Stage.__init__(self, 1, queue_size, destinations)
+        pipeline.Stage.__init__(self, 1, queue_size, destinations, has_process=False)
 
         # Performance tracking
         self.last_time = perf_counter()
@@ -51,11 +51,11 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         self.interval = interval
         self.timer = QtCore.QTimer()
         self.timer.setInterval(self.interval)
-        self.timer.timeout.connect(self.run)
+        self.timer.timeout.connect(self._on_frame_update)
         self.timer.start()
 
-    def run(self):
-        data = self.input_queue_get()[0].get()
+    def _on_frame_update(self):
+        data = self.input_queue_get()[0]
         self.line_data = (np.linspace(self.x_range[0], self.x_range[1], len(data)), data)
         self.line.setData(*self.line_data)
 
@@ -74,7 +74,7 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
                  queue_size: int = 4
                  ):
         QtWidgets.QMainWindow.__init__(self)
-        pipeline.Stage.__init__(self, 1, queue_size, destinations)
+        pipeline.Stage.__init__(self, 1, queue_size, destinations, has_process=False)
 
         # Styling
         self.plot_graph = pg.PlotWidget()
@@ -91,7 +91,7 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
 
         # Data
         self.line_data = np.zeros((2, blocksize, num_lines))
-        colors = ('white', 'red', 'green', 'blue', 'darkRed', 'darkGreen', 'darkBlue' 'cyan', 'magenta', 'yellow',
+        colors = ('white', 'red', 'green', 'blue', 'darkRed', 'darkGreen', 'darkBlue', 'cyan', 'magenta', 'yellow',
                   'grey', 'darkCyan', 'darkMagenta', 'darkYellow', 'darkGrey')
         self.lines = [self.plot_graph.plot(
             self.line_data[0, :, i],
@@ -104,12 +104,11 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         self.interval = interval
         self.timer = QtCore.QTimer()
         self.timer.setInterval(self.interval)
-        self.timer.timeout.connect(self.run)
+        self.timer.timeout.connect(self._on_frame_update)
         self.timer.start()
 
-    def run(self):
-        data_set = self.input_queue_get()[0].get()
-
+    def _on_frame_update(self):
+        data_set = self.input_queue_get()[0]
         for i, (data, line) in enumerate(zip(data_set.T, self.lines)):
             self.line_data[0, :, i] = np.linspace(self.x_range[0], self.x_range[1], len(data))
             self.line_data[1, :, i] = data.real
@@ -127,7 +126,7 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
                  queue_size=4
                  ):
         QtWidgets.QMainWindow.__init__(self)
-        pipeline.Stage.__init__(self, 9, queue_size, None)
+        pipeline.Stage.__init__(self, 9, queue_size, None, has_process=False)
 
         # ------------------------------------------------------|--------------------------|
         # |                          |                          |                          |
@@ -303,10 +302,10 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
         self.interval = interval
         self.timer = QtCore.QTimer()
         self.timer.setInterval(self.interval)
-        self.timer.timeout.connect(self.run)
+        self.timer.timeout.connect(self._on_frame_update)
         self.timer.start()
 
-    def run(self):
+    def _on_frame_update(self):
         data_set = self.input_queue_get()  # 9 cupy arrays
 
         # Per plot in window...

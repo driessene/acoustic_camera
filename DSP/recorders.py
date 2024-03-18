@@ -13,8 +13,16 @@ def print_audio_devices():
 
 
 class AudioRecorder(pipeline.Stage):
-    def __init__(self, device_id, samplerate=44100, channels=8, blocksize=1024, destinations=None):
-        super().__init__(0, 0, destinations)
+    def __init__(self,
+                 device_id: int,
+                 samplerate=44100,
+                 channels=8,
+                 blocksize=1024,
+                 channel_map=None,  # should be a numpy array if wanted
+                 destinations=None):
+        super().__init__(0, 0, destinations, has_process=False)
+
+        self.channel_map = channel_map
         self.device_id = device_id
         self.samplerate = samplerate
         self.channels = channels
@@ -24,7 +32,10 @@ class AudioRecorder(pipeline.Stage):
     def _audio_callback(self, indata, frames, time, status):
         if status:
             print(status)
-        self.stream.write(indata)
+        data = np.array(indata)
+        if self.channel_map is not None:
+            data = data[:, self.channel_map]
+        self.destination_queue_put(data)
 
     def start(self):
         self.stream = sd.InputStream(

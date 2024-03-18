@@ -41,7 +41,6 @@ def main():
     recorder.link_to_destination(music, 0)
     music.link_to_destination(plotter, 0)
 
-
     # Start processes
     recorder.start()
     music.start()
