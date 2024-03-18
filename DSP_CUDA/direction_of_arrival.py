@@ -1,13 +1,11 @@
 import cupy as np
-import multiprocessing as mp
+from Management import pipeline
 
 
-class Beamform(mp.Process):
-    def __init__(self, destinations: tuple, spacing=0.5, test_angles=1000, num_mics=6, queue_size=4):
+class Beamform(pipeline.Stage):
+    def __init__(self, spacing=0.5, test_angles=1000, num_mics=6, queue_size=4, destinations=None):
         # Properties
-        super().__init__()
-        self.destinations = destinations
-        self.in_queue = mp.Queue(queue_size)
+        super().__init__(1, queue_size, destinations)
         self.spacing = spacing
         self.test_angles = test_angles
         self.num_mics = num_mics
@@ -25,24 +23,20 @@ class Beamform(mp.Process):
     def run(self):
         while True:
             # Beamformer
-            data = self.in_queue.get()
+            data = self.input_queue_get()[0]
             r_weighted = np.abs(self.steering_matrix.conj().T @ data.T) ** 2  # Beamforming output
 
             # Normalize results
             results = 10 * np.log10(np.var(r_weighted, axis=1))  # Power in signal, in dB
             results -= np.max(results)
 
-            for destination in self.destinations:
-                destination.put(results)
-            print()
+            self.destination_queue_put(results)
 
 
-class MUSIC(mp.Process):
-    def __init__(self, destinations, spacing=0.5, test_angles=1000, num_mics=6, num_sources=1, queue_size=4):
+class MUSIC(pipeline.Stage):
+    def __init__(self, spacing=0.5, test_angles=1000, num_mics=6, num_sources=1, queue_size=4, destinations=None):
         # Properties
-        super().__init__()
-        self.destinations = destinations
-        self.in_queue = mp.Queue(queue_size)
+        super().__init__(1, queue_size, destinations)
         self.spacing = spacing
         self.test_angles = test_angles
         self.num_mics = num_mics
@@ -64,7 +58,7 @@ class MUSIC(mp.Process):
     def run(self):
         while True:
             # Calculate the covariance matrix
-            data = self.in_queue.get()
+            data = self.input_queue_get()[0]
             Rx = np.cov(data.T)
 
             # Decompose into eigenvalues and vectors
@@ -83,5 +77,4 @@ class MUSIC(mp.Process):
             # Normalize and return results
             music_spectrum /= np.max(music_spectrum)
 
-            for destination in self.destinations:
-                destination.put(music_spectrum)
+            self.destination_queue_put(music_spectrum)
