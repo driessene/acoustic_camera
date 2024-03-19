@@ -12,10 +12,15 @@ def main():
     channels = 6
     sleep = False
 
+    # Signals
+    signals = [
+        recorders.Signal(675, 10),
+        recorders.Signal(600, 30)
+    ]
+
     # Recorder to get data
     recorder = recorders.AudioSimulator(
-        frequencies=(675, 600),
-        doas=(10, 30),
+        signals=signals,
         spacing=spacing,
         snr=snr,
         samplerate=samplerate,

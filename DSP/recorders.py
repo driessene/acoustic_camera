@@ -4,6 +4,10 @@ from time import sleep
 from Management import pipeline
 
 
+"""
+Real-world recorders
+"""
+
 def print_audio_devices():
     print("Microphone Devices:")
     devices = sd.query_devices()
@@ -53,10 +57,19 @@ class AudioRecorder(pipeline.Stage):
             self.stream.close()
 
 
+"""
+Ideal Simulators
+"""
+
+class Signal:
+    def __init__(self, frequency, angle):
+        self.frequency = frequency
+        self.angle = angle
+
+
 class AudioSimulator(pipeline.Stage):
     def __init__(self,
-                 frequencies: tuple,
-                 doas: tuple,
+                 signals: list[Signal],
                  spacing: float = 0.25,  # In meters. Causes spacing to scale with frequency like in real life
                  snr: float = 50,
                  samplerate: int = 44100,
@@ -68,8 +81,7 @@ class AudioSimulator(pipeline.Stage):
                  ):
 
         super().__init__(0, 0, destinations)
-        self.frequencies = frequencies
-        self.doas = doas
+        self.signals = signals
         self.spacing = spacing
         self.snr = snr
         self.samplerate = samplerate
@@ -83,8 +95,6 @@ class AudioSimulator(pipeline.Stage):
 
         # pre-compute
         self.time_vector = None
-        self.signals = None
-        self.array_factor = None
         self.signal_matrix = np.zeros((self.blocksize, self.channels), dtype=np.complex128)
         self.signal_power = None
         self.noise_power = None
@@ -96,8 +106,11 @@ class AudioSimulator(pipeline.Stage):
         self.time_vector = np.arange(self.blocksize) / self.samplerate
 
         # Signal
-        signals = [np.exp(2j * np.pi * freq * self.time_vector).real for freq in self.frequencies]
-        array_factors = [np.exp(-2j * np.pi * (self.spacing / (self.speed_of_sound / freq)) * np.arange(self.channels) * np.sin(np.deg2rad(doa))) for (doa, freq) in zip(self.doas, self.frequencies)]
+        frequencies = [signal.frequency for signal in self.signals]
+        angles = [signal.angle for signal in self.signals]
+
+        signals = [np.exp(2j * np.pi * freq * self.time_vector).real for freq in frequencies]
+        array_factors = [np.exp(-2j * np.pi * (self.spacing / (self.speed_of_sound / freq)) * np.arange(self.channels) * np.sin(np.deg2rad(doa))) for (doa, freq) in zip(angles, frequencies)]
         self.signal_matrix = np.sum(np.array([np.outer(sig, af) for sig, af in zip(signals, array_factors)]), axis=0)
         self.signal_matrix /= np.max(np.abs(self.signal_matrix))
         self.signal_power = np.mean(np.abs(self.signal_matrix) ** 2)
