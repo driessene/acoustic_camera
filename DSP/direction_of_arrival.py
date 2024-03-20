@@ -3,8 +3,18 @@ from Management import pipeline
 
 
 class Beamform(pipeline.Stage):
+    """
+    A classical beamformer
+    """
     def __init__(self, spacing=0.5, test_angles=1000, num_mics=6, queue_size=4, destinations=None):
-        # Properties
+        """
+        Initialise the beamformer
+        :param spacing: The spacing between microphones in wavelengths
+        :param test_angles: The number of angles to test for
+        :param num_mics: The number of microphones in the array
+        :param queue_size: The size of the input queue
+        :param destinations: Where to push results. Object should inherit from Stage
+        """
         super().__init__(1, queue_size, destinations)
         self.spacing = spacing
         self.test_angles = test_angles
@@ -16,11 +26,19 @@ class Beamform(pipeline.Stage):
         self.precompute()
 
     def precompute(self):
+        """
+        Precomputation. Run every time a property changes
+        :return: None
+        """
         self.theta_scan = np.linspace(-1 * np.pi, np.pi, self.test_angles)
         theta_grid, mic_grid = np.meshgrid(self.theta_scan, np.arange(self.num_mics))
         self.steering_matrix = np.exp(-2j * np.pi * self.spacing * mic_grid * np.sin(theta_grid))
 
     def run(self):
+        """
+        Runs the beamformer on input data. Ran by a process
+        :return: None
+        """
         while True:
             # Beamformer
             data = self.input_queue_get()[0]
@@ -34,8 +52,19 @@ class Beamform(pipeline.Stage):
 
 
 class MUSIC(pipeline.Stage):
+    """
+    Implements the MUSIC (MUltiple SIgnal Classification) algorithm
+    """
     def __init__(self, spacing=0.5, test_angles=1000, num_mics=6, num_sources=1, queue_size=4, destinations=None):
-        # Properties
+        """
+        Initializes the MUSIC
+        :param spacing: The spacing between microphones in wavelengths
+        :param test_angles: The number of angles to test for
+        :param num_mics: The number of microphones from the input data
+        :param num_sources: The number of souces in the environment. Cannot be larger than num_mics - 1
+        :param queue_size: The size of the input queue
+        :param destinations: Where to push output data. Object should inherit Stage
+        """
         super().__init__(1, queue_size, destinations)
         self.spacing = spacing
         self.test_angles = test_angles
@@ -50,12 +79,20 @@ class MUSIC(pipeline.Stage):
 
 
     def precompute(self):
+        """
+        Precomputation. Run every time a property changes
+        :return: None
+        """
         # Steering matrix
         self.theta_scan = np.linspace(-np.pi / 2, np.pi / 2, self.test_angles)
         self.steering_matrix = np.exp(
             -2j * np.pi * self.spacing * np.arange(self.num_mics)[:, np.newaxis] * np.sin(self.theta_scan))
 
     def run(self):
+        """
+        Runs MUSIC on input data. Ran by a process
+        :return: None
+        """
         while True:
             # Calculate the covariance matrix
             data = self.input_queue_get()[0]

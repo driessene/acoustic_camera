@@ -3,6 +3,12 @@ import multiprocessing as mp
 
 class Stage:
     def __init__(self, num_inputs=1, queue_size=4, destinations=None, has_process=True):
+        """
+        Initializes the process
+        :param num_inputs: Number of input queues
+        :param queue_size: The size of an input queue
+        :param destinations: Other object input queues to push results to
+        """
         super().__init__()
 
         if destinations is None:
@@ -14,6 +20,10 @@ class Stage:
             self.process = mp.Process(target=self.run)
 
     def run(self):
+        """
+        Function that the process will run. Must be implemented by a subclass
+        :return: None
+        """
         raise NotImplementedError
 
     def start(self):
@@ -21,11 +31,27 @@ class Stage:
             self.process.start()
 
     def link_to_destination(self, next_stage, port):
+        """
+        Adds a destination to push data too. This is easier to read in scripting rather than providing all destinations
+        at once
+        :param next_stage: The object to send data to
+        :param port: The input queue to send data to
+        :return: None
+        """
         self.destinations.append(next_stage.input_queue[port])
 
     def input_queue_get(self):
+        """
+        Gets data from all input queues in a list
+        :return: list
+        """
         return [queue.get() for queue in self.input_queue]
 
     def destination_queue_put(self, data):
+        """
+        Puts data to all destinations
+        :param data: Data to put
+        :return: None
+        """
         for destination in self.destinations:
             destination.put(data)

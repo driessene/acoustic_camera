@@ -1,4 +1,4 @@
-from DSP import recorders, filters, direction_of_arrival, plotters
+from DSP import source_simulators, filters, direction_of_arrival, plotters
 from pyqtgraph.Qt import QtWidgets
 
 
@@ -12,15 +12,12 @@ def main():
     channels = 6
     sleep = False
 
-    # Signals
-    signals = [
-        recorders.Signal(675, 10),
-        recorders.Signal(600, 30)
-    ]
+    # Sources
+    sources = [source_simulators.Source(675, 10), source_simulators.Source(700, 30)]
 
     # Recorder to get data
-    recorder = recorders.AudioSimulator(
-        signals=signals,
+    recorder = source_simulators.AudioSimulator(
+        sources=sources,
         spacing=spacing,
         snr=snr,
         samplerate=samplerate,

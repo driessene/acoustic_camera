@@ -1,4 +1,4 @@
-from DSP import recorders, filters, direction_of_arrival, plotters
+from DSP import source_recorders, filters, direction_of_arrival, plotters
 from pyqtgraph.Qt import QtWidgets
 
 

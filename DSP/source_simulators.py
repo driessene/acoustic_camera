@@ -1,75 +1,28 @@
-import sounddevice as sd
+from Management import pipeline
 import numpy as np
 from time import sleep
-from Management import pipeline
 
 
-"""
-Real-world recorders
-"""
-
-def print_audio_devices():
-    print("Microphone Devices:")
-    devices = sd.query_devices()
-    for i, device in enumerate(devices):
-        if device['max_input_channels'] > 0:
-            print(f"Device {i}: {device['name']}, Channels: {device['max_input_channels']}")
-
-
-class AudioRecorder(pipeline.Stage):
-    def __init__(self,
-                 device_id: int,
-                 samplerate=44100,
-                 channels=8,
-                 blocksize=1024,
-                 channel_map=None,  # should be a numpy array if wanted
-                 destinations=None):
-        super().__init__(0, 0, destinations, has_process=False)
-
-        self.channel_map = channel_map
-        self.device_id = device_id
-        self.samplerate = samplerate
-        self.channels = channels
-        self.blocksize = blocksize
-        self.stream = None
-
-    def _audio_callback(self, indata, frames, time, status):
-        if status:
-            print(status)
-        data = np.array(indata)
-        if self.channel_map is not None:
-            data = data[:, self.channel_map]
-        self.destination_queue_put(data)
-
-    def start(self):
-        self.stream = sd.InputStream(
-            device=self.device_id,
-            channels=self.channels,
-            samplerate=self.samplerate,
-            blocksize=self.blocksize,
-            callback=self._audio_callback
-        )
-        self.stream.start()
-
-    def stop(self):
-        if self.stream:
-            self.stream.stop()
-            self.stream.close()
-
-
-"""
-Ideal Simulators
-"""
-
-class Signal:
-    def __init__(self, frequency, angle):
+class Source:
+    """
+    Mathematical representation of an audio source in a space
+    """
+    def __init__(self, frequency, theta):
+        """
+        Initializes a source
+        :param frequency: The frequency in Hz of the audio source
+        :param theta: The direction of arrival of the source to a source recorder
+        """
         self.frequency = frequency
-        self.angle = angle
+        self.theta = theta
 
 
 class AudioSimulator(pipeline.Stage):
+    """
+    Simulates audio recordings. Can be used in place of AudioRecorder for testing
+    """
     def __init__(self,
-                 signals: list[Signal],
+                 sources: list[Source],
                  spacing: float = 0.25,  # In meters. Causes spacing to scale with frequency like in real life
                  snr: float = 50,
                  samplerate: int = 44100,
@@ -79,9 +32,21 @@ class AudioSimulator(pipeline.Stage):
                  sleep: bool = True,
                  destinations=None
                  ):
-
+        """
+        Initializes the simulator
+        :param sources: The sources to simulate
+        :param spacing: Spacing, in meters, of the microphone array
+        :param snr: Signal to noise ratio of the simulation
+        :param samplerate: The samplerate of the simulation
+        :param channels: The number of channles of the simulation
+        :param blocksize: The number of samples per block
+        :param speed_of_sound: The speed of sound of the environment
+        :param sleep: If true, sleep between simulations.
+            This represents the acutal time it takes to get data for a recorder
+        :param destinations: Where to push simulation data. Object should inherit from Stage
+        """
         super().__init__(0, 0, destinations)
-        self.signals = signals
+        self.sources = sources
         self.spacing = spacing
         self.snr = snr
         self.samplerate = samplerate
@@ -95,22 +60,28 @@ class AudioSimulator(pipeline.Stage):
 
         # pre-compute
         self.time_vector = None
+        self.signals = None
+        self.array_factor = None
         self.signal_matrix = np.zeros((self.blocksize, self.channels), dtype=np.complex128)
         self.signal_power = None
         self.noise_power = None
         self.update_precompute()
 
-    # Call whenever a system property changes
     def update_precompute(self):
+        """
+        Updates properties that do not need to be updated every frame. Call whenever a property is changed
+        :return: None
+        """
         # Time
         self.time_vector = np.arange(self.blocksize) / self.samplerate
 
         # Signal
-        frequencies = [signal.frequency for signal in self.signals]
-        angles = [signal.angle for signal in self.signals]
+        frequencies = [source.frequency for source in self.sources]
+        doas = [source.theta for source in self.sources]
 
         signals = [np.exp(2j * np.pi * freq * self.time_vector).real for freq in frequencies]
-        array_factors = [np.exp(-2j * np.pi * (self.spacing / (self.speed_of_sound / freq)) * np.arange(self.channels) * np.sin(np.deg2rad(doa))) for (doa, freq) in zip(angles, frequencies)]
+        array_factors = [np.exp(-2j * np.pi * (self.spacing / (self.speed_of_sound / freq)) * np.arange(self.channels)
+                                * np.sin(np.deg2rad(doa))) for (doa, freq) in zip(doas, frequencies)]
         self.signal_matrix = np.sum(np.array([np.outer(sig, af) for sig, af in zip(signals, array_factors)]), axis=0)
         self.signal_matrix /= np.max(np.abs(self.signal_matrix))
         self.signal_power = np.mean(np.abs(self.signal_matrix) ** 2)
@@ -119,6 +90,11 @@ class AudioSimulator(pipeline.Stage):
         self.noise_power = 10 ** ((10 * np.log10(self.signal_power) - self.snr) / 20)
 
     def run(self):
+        """
+        Updated properties that need to be updated every frame (ie. noise). Pushed data to desintations. Called by a
+        process.
+        :return: None
+        """
         while True:
             # Generate noise
             noise = np.random.normal(0, np.sqrt(self.noise_power), (self.blocksize, self.channels))
