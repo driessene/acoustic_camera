@@ -6,36 +6,29 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 1000
+    blocksize = 1024
+    spacing = 0.254
+    snr = 20
+    channels = 6
+    sleep = False
 
     # Recorder to get data
-    recorder = recorders.AudioRecorder(
-        device_id=14,
+    recorder = recorders.AudioSimulator(
+        frequencies=(675, 600),
+        doas=(10, 30),
+        spacing=spacing,
+        snr=snr,
         samplerate=samplerate,
-        channels=8,
+        channels=channels,
         blocksize=blocksize,
-        channel_map=[2, 3, 4, 5, 6, 7]
+        sleep=sleep
     )
-
-    # FIR Filter
-    fir_filter = filters.FIRWINFilter(10, 2000, samplerate=samplerate)
-
-    # Window
 
     # MUSIC Algorithm
     music = direction_of_arrival.MUSIC(spacing=0.5, num_mics=6, num_sources=2)
 
     # Application plotter
     app = QtWidgets.QApplication([])
-    # plotter = plotters.MultiLinePlotter(
-    #     title='MUSIC',
-    #     x_label='Angle (deg)',
-    #     y_label='MUSIC',
-    #     x_range=(-90, 90),
-    #     y_range=(-1, 1),
-    #     num_lines=channels,
-    #     blocksize=blocksize
-    # )
     plotter = plotters.SingleLinePlotter(
         title='MUSIC',
         x_label='Angle (deg)',
@@ -45,13 +38,11 @@ def main():
     )
 
     # Linking
-    recorder.link_to_destination(fir_filter, 0)
-    fir_filter.link_to_destination(music, 0)
+    recorder.link_to_destination(music, 0)
     music.link_to_destination(plotter, 0)
 
     # Start processes
     recorder.start()
-    fir_filter.start()
     music.start()
     plotter.show()
     app.exec()

@@ -1,7 +1,8 @@
 import multiprocessing as mp
 
 
-class Stage(mp.Process):
+class Stage:
+    def __init__(self, num_inputs=1, queue_size=4, destinations=None, has_process=True):
     """
     Manages processes (nodes) in a pipeline. Each node runs in a loop, taking input data, processing it, and pushing
     it to other destinations' input queues. Destinations are not required, such as for plotters. Inputs are not
@@ -21,6 +22,16 @@ class Stage(mp.Process):
             destinations = []
         self.destinations = destinations
         self.input_queue = [mp.Queue(queue_size) for _ in range(num_inputs)]
+
+        if has_process:
+            self.process = mp.Process(target=self.run)
+
+    def run(self):
+        raise NotImplementedError
+
+    def start(self):
+        if self.process:
+            self.process.start()
 
     def link_to_destination(self, next_stage, port):
         """
