@@ -22,7 +22,7 @@ class Stage:
     def run(self):
         """
         Function that the process will run. Must be implemented by a subclass
-        :return:
+        :return: None
         """
         raise NotImplementedError
 
@@ -36,7 +36,7 @@ class Stage:
         at once
         :param next_stage: The object to send data to
         :param port: The input queue to send data to
-        :return:
+        :return: None
         """
         self.destinations.append(next_stage.input_queue[port])
 
