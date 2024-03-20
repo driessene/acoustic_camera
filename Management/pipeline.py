@@ -3,17 +3,10 @@ import multiprocessing as mp
 
 class Stage:
     def __init__(self, num_inputs=1, queue_size=4, destinations=None, has_process=True):
-    """
-    Manages processes (nodes) in a pipeline. Each node runs in a loop, taking input data, processing it, and pushing
-    it to other destinations' input queues. Destinations are not required, such as for plotters. Inputs are not
-    required, such as for audio sources. Each process can have several inputs and destinations, making branching and
-    merging possible.
-    """
-    def __init__(self, num_inputs=1, queue_size=4, destinations=None):
         """
         Initializes the process
         :param num_inputs: Number of input queues
-        :param queue_size: The size of an imput queue
+        :param queue_size: The size of an input queue
         :param destinations: Other object input queues to push results to
         """
         super().__init__()
@@ -27,6 +20,10 @@ class Stage:
             self.process = mp.Process(target=self.run)
 
     def run(self):
+        """
+        Function that the process will run. Must be implemented by a subclass
+        :return:
+        """
         raise NotImplementedError
 
     def start(self):
@@ -36,7 +33,7 @@ class Stage:
     def link_to_destination(self, next_stage, port):
         """
         Adds a destination to push data too. This is easier to read in scripting rather than providing all destinations
-        at onece
+        at once
         :param next_stage: The object to send data to
         :param port: The input queue to send data to
         :return:
@@ -46,7 +43,7 @@ class Stage:
     def input_queue_get(self):
         """
         Gets data from all input queues in a list
-        :return: List
+        :return: list
         """
         return [queue.get() for queue in self.input_queue]
 

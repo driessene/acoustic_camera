@@ -3,10 +3,12 @@ import matplotlib.cm as cm
 from Management import pipeline
 import numpy as np
 from PyQt5 import QtCore, QtWidgets, QtGui
-from time import perf_counter
 
 
 class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
+    """
+    A real-time plotter. Plots a single line
+    """
     def __init__(self,
                  title: str,
                  x_label: str,
@@ -17,13 +19,19 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
                  destinations=None,
                  queue_size: int = 4
                  ):
+        """
+        Initializes a single line plotter
+        :param title: The title of the plotter
+        :param x_label: The x-label of the plotter
+        :param y_label: The y-label for the plotter
+        :param x_range: The x-range of the plotter
+        :param y_range: The y-range for the plotter
+        :param interval: The time between frame updates in milliseconds
+        :param destinations: Optional. This plotter can act as a buffer and can forward plotted data to more stages
+        :param queue_size: Size of the input queue
+        """
         QtWidgets.QMainWindow.__init__(self)
         pipeline.Stage.__init__(self, 1, queue_size, destinations, has_process=False)
-
-        # Performance tracking
-        self.last_time = perf_counter()
-        self.delta_time = 0
-        self.fps_array = np.zeros(100)
 
         # Styling
         self.plot_graph = pg.PlotWidget()
@@ -55,12 +63,19 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         self.timer.start()
 
     def _on_frame_update(self):
+        """
+        Called every frame update. Called by the timer
+        :return: None
+        """
         data = self.input_queue_get()[0]
         self.line_data = (np.linspace(self.x_range[0], self.x_range[1], len(data)), data)
         self.line.setData(*self.line_data)
 
 
 class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
+    """
+    A real-time plotter. Plots multiple lines on a single plot
+    """
     def __init__(self,
                  title: str,
                  x_label: str,
@@ -73,6 +88,19 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
                  destinations=None,
                  queue_size: int = 4
                  ):
+        """
+        Initializes the plotter
+        :param title: Title of the plot
+        :param x_label: The x-label of the plot
+        :param y_label: The y-label for the plot
+        :param x_range: The x-range of the plot
+        :param y_range: The y-range of the plot
+        :param num_lines: The number of lines to plot
+        :param blocksize: The number of points per line
+        :param interval: The time between frame updates in milliseconds
+        :param destinations: Optional. This plotter can act as a buffer and can forward plotted data to more stages
+        :param queue_size: Size of the input queue
+        """
         QtWidgets.QMainWindow.__init__(self)
         pipeline.Stage.__init__(self, 1, queue_size, destinations, has_process=False)
 
@@ -108,6 +136,10 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         self.timer.start()
 
     def _on_frame_update(self):
+        """
+        Called every frame update. Called by the timer
+        :return: None
+        """
         data_set = self.input_queue_get()[0]
         for i, (data, line) in enumerate(zip(data_set.T, self.lines)):
             self.line_data[0, :, i] = np.linspace(self.x_range[0], self.x_range[1], len(data))
@@ -116,6 +148,10 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
 
 
 class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
+    """
+    A pre-made plotter to plot three axes of data in three different stages. Plots souce, after filtering, and doa of
+    three axes
+    """
     def __init__(self,
                  blocksize: int,
                  num_music_angles: int,
@@ -125,8 +161,20 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
                  interval=0,
                  queue_size=4
                  ):
+        """
+        Initializes the ploter
+        :param blocksize: The blocksize of audio data
+        :param num_music_angles: The number of music test angles
+        :param x_num_channels: The number of channels on the x-axis
+        :param y_num_channels: The number of channels on the y-axis
+        :param z_num_channels: The number of channels in the z-axis
+        :param interval: The time between frame updates in milliseconds
+        :param queue_size: The size of the input queue. Note that there are nine input queues
+        """
         QtWidgets.QMainWindow.__init__(self)
         pipeline.Stage.__init__(self, 9, queue_size, None, has_process=False)
+
+        # Mapping of input queues and plots. Queses are linked to the corresponding plot
 
         # ------------------------------------------------------|--------------------------|
         # |                          |                          |                          |
@@ -142,7 +190,6 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
         # |                          |                          |                          |
         # |-----------------------------------------------------|--------------------------|
 
-
         # Properties
         self.blocksize = blocksize
         self.num_music_angles = num_music_angles
@@ -155,7 +202,6 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
         self.layout = QtWidgets.QGridLayout()
         self.palette = QtGui.QPalette()
         self.setAutoFillBackground(True)
-
 
         # Plots
         self.plots = [pg.PlotWidget() for _ in range(9)]  # a 3x3 matrix of plots
@@ -178,6 +224,18 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
         self.setCentralWidget(self.widget)
 
         def init_plot(plot, title, x_label, y_label, x_range, y_range, num_lines, num_points):
+            """
+            Initializes a plot on the window
+            :param plot: The plot to initizlize
+            :param title: The title of the plot
+            :param x_label: The x label of the plot
+            :param y_label: The y label for the plot
+            :param x_range: The x range of the plot
+            :param y_range: The y range for the plot
+            :param num_lines: The number of lines on the plot
+            :param num_points: The number of points on the plot
+            :return: None
+            """
             plot.setBackground('white')
             plot.setTitle(title)
             plot.setLabel('left', y_label)
@@ -306,6 +364,10 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
         self.timer.start()
 
     def _on_frame_update(self):
+        """
+        Updates the window. Called every timer timeout
+        :return: None
+        """
         data_set = self.input_queue_get()  # 9 cupy arrays
 
         # Per plot in window...
