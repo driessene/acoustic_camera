@@ -43,8 +43,8 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         self.plot_graph.showGrid(x=True, y=True)
         self.x_range = x_range
         self.y_range = y_range
-        self.plot_graph.setXRange(x_range[0], x_range[1])
-        self.plot_graph.setYRange(y_range[0], y_range[1])
+        # self.plot_graph.setXRange(x_range[0], x_range[1])
+        # self.plot_graph.setYRange(y_range[0], y_range[1])
 
         # Data
         self.line_data = np.zeros((2, 2))
@@ -71,6 +71,30 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         self.line_data = (np.linspace(self.x_range[0], self.x_range[1], len(data)), data)
         self.line.setData(*self.line_data)
 
+class SingleLinePlotterParametric(SingleLinePlotter):
+    """
+    A single line plotter when both X and Y data are both provided. Data in input queue must be a tuple (X, Y)
+    """
+    def __init__(self,
+                 title: str,
+                 x_label: str,
+                 y_label: str,
+                 x_range: tuple,
+                 y_range: tuple,
+                 interval: int = 0,
+                 destinations=None,
+                 queue_size: int = 4
+                 ):
+        super().__init__(title, x_label, y_label, x_range, y_range, interval, destinations, queue_size)
+
+    def _on_frame_update(self):
+        """
+        Called every frame update. Called by the timer
+        :return: None
+        """
+        data = self.input_queue_get()[0]
+        self.line_data = (data[0], data[1])
+        self.line.setData(*self.line_data)
 
 class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
     """
@@ -146,6 +170,36 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
             self.line_data[1, :, i] = data.real
             line.setData(*self.line_data[:, :, i])
 
+class MultipleLinePlotterParametric(MultiLinePlotter):
+    """
+    A multiple line plotter when both X and Y data are both provided. Data in input queue must be a tuple (X, Y)
+    """
+    def __init__(self,
+                 title: str,
+                 x_label: str,
+                 y_label: str,
+                 x_range: tuple,
+                 y_range: tuple,
+                 num_lines: int,
+                 blocksize: int,
+                 interval: int = 0,
+                 destinations=None,
+                 queue_size: int = 4
+                 ):
+        super().__init__(title, x_label, y_label, x_range, y_range, num_lines,
+                         blocksize, interval, destinations, queue_size)
+
+    def _on_frame_update(self):
+        """
+        Called every frame update. Called by the timer
+        :return: None
+        """
+        x_data, y_data = self.input_queue_get()[0]
+        x_data, y_data = x_data.T.real, y_data.T.real
+        for i, (x, y, line) in enumerate(zip(x_data, y_data, self.lines)):
+            self.line_data[0, :, i] = x
+            self.line_data[1, :, i] = y
+            line.setData(*self.line_data[:, :, i])
 
 class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
     """
