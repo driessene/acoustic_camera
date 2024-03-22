@@ -2,6 +2,7 @@ import numpy as np
 from Management import pipeline
 import scipy.signal as sig
 
+
 class Periodogram(pipeline.Stage):
     """
     Estimates power spectral density for each channel using a periodogram. Pushes a tuple of (f, pxx)
