@@ -40,9 +40,9 @@ def main():
     # Application plotter
     app = QtWidgets.QApplication([])
     plotter = plotters.MultipleLinePlotterParametric(
-        title='MUSIC',
-        x_label='Angle (deg)',
-        y_label='MUSIC',
+        title='Spectrum',
+        x_label='Hz',
+        y_label='Power',
         x_range=(500, 800),
         y_range=(0, 0.04),
         num_lines=channels,

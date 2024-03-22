@@ -24,7 +24,6 @@ class Periodogram(pipeline.Stage):
         """
         while True:
             data = self.input_queue_get()[0]
-            print(data)
             blocksize, channels = data.shape
             f = np.zeros((blocksize // 2 + 1, channels))
             pxx = np.zeros((blocksize // 2 + 1, channels))
