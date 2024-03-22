@@ -6,14 +6,14 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 10240
+    blocksize = 44100
     spacing = 0.254
     snr = 20
     channels = 8
     sleep = False
 
     # Sources
-    sources = [source_simulators.Source(675, 10), source_simulators.Source(1000, 30)]
+    sources = [source_simulators.Source(675, 10), source_simulators.Source(700, 30)]
 
     # Recorder to get data
     recorder = source_simulators.AudioSimulator(
@@ -43,10 +43,10 @@ def main():
         title='MUSIC',
         x_label='Angle (deg)',
         y_label='MUSIC',
-        x_range=(0, 1000),
-        y_range=(0, 0.01),
+        x_range=(500, 800),
+        y_range=(0, 0.04),
         num_lines=channels,
-        blocksize=blocksize,
+        blocksize=blocksize // 2 + 1,
     )
 
     # Linking

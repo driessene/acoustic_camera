@@ -79,11 +79,12 @@ class AudioSimulator(pipeline.Stage):
         frequencies = [source.frequency for source in self.sources]
         doas = [source.theta for source in self.sources]
 
-        signals = [np.exp(2j * np.pi * freq * self.time_vector).real for freq in frequencies]
+        signals = [np.exp(2j * np.pi * freq * self.time_vector) for freq in frequencies]
         array_factors = [np.exp(-2j * np.pi * (self.spacing / (self.speed_of_sound / freq)) * np.arange(self.channels)
                                 * np.sin(np.deg2rad(doa))) for (doa, freq) in zip(doas, frequencies)]
         self.signal_matrix = np.sum(np.array([np.outer(sig, af) for sig, af in zip(signals, array_factors)]), axis=0)
         self.signal_matrix /= np.max(np.abs(self.signal_matrix))
+        self.signal_matrix = self.signal_matrix.real
         self.signal_power = np.mean(np.abs(self.signal_matrix) ** 2)
 
         # Noise

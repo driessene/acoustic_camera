@@ -24,8 +24,10 @@ class Periodogram(pipeline.Stage):
         """
         while True:
             data = self.input_queue_get()[0]
-            f = np.zeros_like(data)
-            pxx = np.zeros_like(data)
+            print(data)
+            blocksize, channels = data.shape
+            f = np.zeros((blocksize // 2 + 1, channels))
+            pxx = np.zeros((blocksize // 2 + 1, channels))
             for i, channel in enumerate(data.T):
                 f[:, i], pxx[:, i] = sig.periodogram(channel, fs=self.samplerate)
             self.destination_queue_put((f, pxx))
