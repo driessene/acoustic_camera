@@ -33,7 +33,7 @@ class AudioPlayback(pipeline.Stage):
         if status:
             print(status)
 
-        outdata[:] = self.input_queue_get()[0][:, self.channel].reshape(self.blocksize, 1)
+        outdata[:, 0] = self.input_queue_get()[0][:, self.channel]
 
     def start(self):
         """
