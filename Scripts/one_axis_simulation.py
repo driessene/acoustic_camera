@@ -1,4 +1,4 @@
-from DSP import source_simulators, filters, spectral, plotters
+from DSP import source_simulators, filters, playback, plotters
 from pyqtgraph.Qt import QtWidgets
 
 
@@ -8,12 +8,12 @@ def main():
     samplerate = 44100
     blocksize = 44100
     spacing = 0.254
-    snr = 20
+    snr = 50
     channels = 8
     sleep = False
 
     # Sources
-    sources = [source_simulators.Source(675, 10), source_simulators.Source(700, 30)]
+    sources = [source_simulators.Source(675, 10), source_simulators.Source(2000, 30)]
 
     # Recorder to get data
     recorder = source_simulators.AudioSimulator(
@@ -29,37 +29,22 @@ def main():
     # Filter
     filt = filters.FIRWINFilter(
         N=101,
-        cutoff=2000,
+        cutoff=1000,
         samplerate=44100,
         type='filtfilt',
     )
 
-    # Spectral
-    spec = spectral.Periodogram(samplerate)
-
-    # Application plotter
-    app = QtWidgets.QApplication([])
-    plotter = plotters.MultipleLinePlotterParametric(
-        title='Spectrum',
-        x_label='Hz',
-        y_label='Power',
-        x_range=(500, 800),
-        y_range=(0, 0.04),
-        num_lines=channels,
-        blocksize=blocksize // 2 + 1,
-    )
+    # Playback
+    play = playback.AudioPlayback(samplerate, blocksize)
 
     # Linking
     recorder.link_to_destination(filt, 0)
-    filt.link_to_destination(spec, 0)
-    spec.link_to_destination(plotter, 0)
+    filt.link_to_destination(play, 0)
 
     # Start processes
     recorder.start()
     filt.start()
-    spec.start()
-    plotter.show()
-    app.exec()
+    play.start()
 
 
 if __name__ == '__main__':

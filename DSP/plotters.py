@@ -16,7 +16,6 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
                  x_range: tuple,
                  y_range: tuple,
                  interval: int = 0,
-                 destinations=None,
                  queue_size: int = 4
                  ):
         """
@@ -31,7 +30,7 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         :param queue_size: Size of the input queue
         """
         QtWidgets.QMainWindow.__init__(self)
-        pipeline.Stage.__init__(self, 1, queue_size, destinations, has_process=False)
+        pipeline.Stage.__init__(self, 1, queue_size, None, has_process=False)
 
         # Styling
         self.plot_graph = pg.PlotWidget()
@@ -82,10 +81,9 @@ class SingleLinePlotterParametric(SingleLinePlotter):
                  x_range: tuple,
                  y_range: tuple,
                  interval: int = 0,
-                 destinations=None,
                  queue_size: int = 4
                  ):
-        super().__init__(title, x_label, y_label, x_range, y_range, interval, destinations, queue_size)
+        super().__init__(title, x_label, y_label, x_range, y_range, interval, queue_size)
 
     def _on_frame_update(self):
         """
@@ -109,7 +107,6 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
                  num_lines: int,
                  blocksize: int,
                  interval: int = 0,
-                 destinations=None,
                  queue_size: int = 4
                  ):
         """
@@ -126,7 +123,7 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         :param queue_size: Size of the input queue
         """
         QtWidgets.QMainWindow.__init__(self)
-        pipeline.Stage.__init__(self, 1, queue_size, destinations, has_process=False)
+        pipeline.Stage.__init__(self, 1, queue_size, None, has_process=False)
 
         # Styling
         self.plot_graph = pg.PlotWidget()
@@ -183,11 +180,10 @@ class MultipleLinePlotterParametric(MultiLinePlotter):
                  num_lines: int,
                  blocksize: int,
                  interval: int = 0,
-                 destinations=None,
                  queue_size: int = 4
                  ):
         super().__init__(title, x_label, y_label, x_range, y_range, num_lines,
-                         blocksize, interval, destinations, queue_size)
+                         blocksize, interval, queue_size)
 
     def _on_frame_update(self):
         """
