@@ -40,6 +40,8 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         self.plot_graph.setLabel('left', y_label, color='white', size='20pt')
         self.plot_graph.setLabel('bottom', x_label, color='white', size='20pt')
         self.plot_graph.showGrid(x=True, y=True)
+        self.plot_graph.setMouseEnabled(y=False)
+        self.plot_graph.setMouseEnabled(x=False)
         self.x_range = x_range
         self.y_range = y_range
         # self.plot_graph.setXRange(x_range[0], x_range[1])
@@ -67,7 +69,7 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         :return: None
         """
         data = self.input_queue_get()[0]
-        self.line_data = (np.linspace(self.x_range[0], self.x_range[1], len(data)), data)
+        self.line_data = (np.arange(data.size), data)
         self.line.setData(*self.line_data)
 
 class SingleLinePlotterParametric(SingleLinePlotter):
@@ -133,6 +135,8 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         self.plot_graph.setLabel('left', y_label, color='white', size='20pt')
         self.plot_graph.setLabel('bottom', x_label, color='white', size='20pt')
         self.plot_graph.showGrid(x=True, y=True)
+        self.plot_graph.setMouseEnabled(y=False)
+        self.plot_graph.setMouseEnabled(x=False)
         self.x_range = x_range
         self.y_range = y_range
         self.plot_graph.setXRange(x_range[0], x_range[1])
@@ -163,11 +167,12 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         """
         data_set = self.input_queue_get()[0]
         for i, (data, line) in enumerate(zip(data_set.T, self.lines)):
-            self.line_data[0, :, i] = np.linspace(self.x_range[0], self.x_range[1], len(data))
+            self.line_data[0, :, i] = np.arange(data.size)
             self.line_data[1, :, i] = data.real
             line.setData(*self.line_data[:, :, i])
 
-class MultipleLinePlotterParametric(MultiLinePlotter):
+
+class MultiLinePlotterParametric(MultiLinePlotter):
     """
     A multiple line plotter when both X and Y data are both provided. Data in input queue must be a tuple (X, Y)
     """
