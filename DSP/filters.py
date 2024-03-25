@@ -11,8 +11,9 @@ class Filter(pipeline.Stage):
     def __init__(self,
                  b_coefficients,
                  a_coefficients,
-                 samplerate=44100,
-                 type='filtfilt',
+                 samplerate,
+                 num_channels,
+                 method='filtfilt',
                  remove_offset=True,
                  normalize=True,
                  queue_size=4,
@@ -22,8 +23,9 @@ class Filter(pipeline.Stage):
         :param b_coefficients: B coefficients of the digital filter
         :param a_coefficients: A coefficients of the digital filter
         :param samplerate: Samerate of the input data
-        :param type:
-            BA: A typical digital filter
+        :param num_channels: The number of channels in the signal matrix
+        :param method:
+            lfilter: A typical digital filter
             filtfilt: Applied a digital filter forwards, the backwards. Has no phase change but squares the response
                 of the digital filter.
         :param remove_offset: Removes the 0 Hz offset from the input data if true
@@ -35,9 +37,12 @@ class Filter(pipeline.Stage):
         self.b = b_coefficients
         self.a = a_coefficients
         self.samplerate = samplerate
-        self.type = type
+        self.num_channels = num_channels
+        self.method = method
         self.remove_offset = remove_offset
         self.normazlize = normalize
+        self.filter_order = max(self.b.size, self.a.size) - 1
+        self.initial_conditions = np.zeros((self.filter_order, self.num_channels))
 
     def run(self):
         """
@@ -46,17 +51,17 @@ class Filter(pipeline.Stage):
         """
         while True:
             data = self.input_queue_get()[0]
+
             if self.remove_offset:
                 data -= np.mean(data, axis=0, keepdims=True)
             if self.normazlize:
                 data /= np.max(np.abs(data), axis=0, keepdims=True)
-            if self.type == 'ba':
-                data = sig.lfilter(self.b, self.a, data, axis=0)
-            elif self.type == 'filtfilt':
+            if self.method == 'lfilter':
+                data, self.initial_conditions = sig.lfilter(self.b, self.a, data, axis=0, zi=self.initial_conditions)
+            elif self.method == 'filtfilt':
                 data = sig.filtfilt(self.b, self.a, data, axis=0)
             else:
                 raise NotImplementedError
-
             self.destination_queue_put(data)
 
     def plot_response(self):
@@ -84,42 +89,42 @@ class ButterFilter(Filter):
     """
     Implements a butterworth filter
     """
-    def __init__(self, N: int, cutoff: int, samplerate=44100, type='filtfilt', remove_offset=True,
+    def __init__(self, N: int, cutoff: int, samplerate, num_channels, method='filtfilt', remove_offset=True,
                  normalize=True, queue_size=4, destinations = None):
         """
         Initializes a butterworth filter
         :param N: Order of the filter
         :param cutoff: Cutoff frequency of the filter in Hz
         :param samplerate: See Filter
-        :param type: See Filter
+        :param method: See Filter
         :param remove_offset: See Filter
         :param normalize: See Filter
         :param queue_size: See Filter
         :param destinations: See Filter
         """
         b, a = sig.butter(N=N, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
-        super().__init__(b, a, samplerate, type, remove_offset, normalize, queue_size, destinations)
+        super().__init__(b, a, samplerate, num_channels, method, remove_offset, normalize, queue_size, destinations)
 
 
 class FIRWINFilter(Filter):
     """
     Implements a filter using an ideal FIR filter via the window method. Very sharp cutoff, ideal in digital systems
     """
-    def __init__(self, N: int, cutoff: int, samplerate=44100, type='filtfilt', remove_offset=True,
+    def __init__(self, N: int, cutoff: int, samplerate, num_channels, method='filtfilt', remove_offset=True,
                  normalize=True, queue_size=4, destinations=None):
         """
         Initializes a FIRWINFilter
         :param N: Length of the FIR filter
         :param cutoff: Cutoff frequency of the filter in Hz
         :param samplerate: See Filter
-        :param type: See Filter
+        :param method: See Filter
         :param remove_offset: See Filter
         :param normalize: See Filter
         :param queue_size: See Filter
         :param destinations: See Filter
         """
         b = sig.firwin(N, cutoff, fs=samplerate)
-        super().__init__(b, 1, samplerate, type, remove_offset, normalize, queue_size, destinations)
+        super().__init__(b, np.array(1), samplerate, num_channels, method, remove_offset, normalize, queue_size, destinations)
 
 
 class HanningWindow(pipeline.Stage):

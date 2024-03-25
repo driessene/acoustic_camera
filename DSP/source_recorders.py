@@ -22,9 +22,9 @@ class AudioRecorder(pipeline.Stage):
     """
     def __init__(self,
                  device_id: int,
-                 samplerate=44100,
-                 channels=8,
-                 blocksize=1024,
+                 samplerate,
+                 channels,
+                 blocksize,
                  channel_map=None,  # should be a numpy array if wanted
                  destinations=None):
         """

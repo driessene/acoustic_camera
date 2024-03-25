@@ -23,11 +23,11 @@ class AudioSimulator(pipeline.Stage):
     """
     def __init__(self,
                  sources: list[Source],
-                 spacing: float = 0.25,  # In meters. Causes spacing to scale with frequency like in real life
-                 snr: float = 50,
-                 samplerate: int = 44100,
-                 channels: int = 6,
-                 blocksize: int = 1024,
+                 spacing: float,  # In meters. Causes spacing to scale with frequency like in real life
+                 snr: float,
+                 samplerate: int,
+                 channels: int,
+                 blocksize: int,
                  speed_of_sound: float = 343.0,
                  sleep: bool = True,
                  destinations=None
