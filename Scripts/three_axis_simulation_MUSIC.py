@@ -1,4 +1,4 @@
-from DSP_CUDA import recorders, filters, direction_of_arrival, plotters
+from DSP import source_simulators, filters, direction_of_arrival, plotters
 from pyqtgraph.Qt import QtWidgets
 
 
@@ -6,63 +6,72 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 4410
+    blocksize = 10000
     spacing = 0.254
     snr = 20
     sleep = False
 
+    # Sources
+    sources_x = [
+        source_simulators.Source(600, 10),
+        source_simulators.Source(800, 20)
+    ]
+    sources_y = [
+        source_simulators.Source(600, 20),
+        source_simulators.Source(800, 40)
+    ]
+    sources_z = [
+        source_simulators.Source(600, 40),
+        source_simulators.Source(800, 60)
+    ]
+
     # Recorder to get data
-    recorder_x = recorders.AudioSimulator(
-        frequencies=(675, 650),
-        doas=(-40, -20),
+    recorder_x = source_simulators.AudioSimulator(
+        sources=sources_x,
         spacing=spacing,
         snr=snr,
         samplerate=samplerate,
-        channels=6,
-        blocksize=blocksize,
-        sleep=0
-    )
-    recorder_y = recorders.AudioSimulator(
-        frequencies=(675, 650),
-        doas=(0, 20),
-        spacing=spacing,
-        snr=snr,
-        samplerate=samplerate,
-        channels=6,
+        channels=8,
         blocksize=blocksize,
         sleep=sleep
     )
-    recorder_z = recorders.AudioSimulator(
-        frequencies=(675, 650),
-        doas=(40, 60),
+    recorder_y = source_simulators.AudioSimulator(
+        sources=sources_y,
         spacing=spacing,
         snr=snr,
         samplerate=samplerate,
-        channels=3,
+        channels=8,
+        blocksize=blocksize,
+        sleep=sleep
+    )
+    recorder_z = source_simulators.AudioSimulator(
+        sources=sources_z,
+        spacing=spacing,
+        snr=snr,
+        samplerate=samplerate,
+        channels=8,
         blocksize=blocksize,
         sleep=sleep
     )
 
     # FIR window filter to remove noise
-    fir_x = filters.FIRWINFilter(N=100, cutoff=1500, type='filtfilt')
-    fir_y = filters.FIRWINFilter(N=100, cutoff=1500, type='filtfilt')
-    fir_z = filters.FIRWINFilter(N=100, cutoff=1500, type='filtfilt')
-    fir_x.plot_response()
-    fir_x.plot_coefficients()
+    fir_x = filters.FIRWINFilter(N=100, cutoff=1500, samplerate=samplerate, num_channels=8, method='filtfilt')
+    fir_y = filters.FIRWINFilter(N=100, cutoff=1500, samplerate=samplerate, num_channels=8, method='filtfilt')
+    fir_z = filters.FIRWINFilter(N=100, cutoff=1500, samplerate=samplerate, num_channels=8, method='filtfilt')
 
     # MUSIC Algorithm
-    music_x = direction_of_arrival.MUSIC(spacing=0.5, num_mics=6, num_sources=2)
-    music_y = direction_of_arrival.MUSIC(spacing=0.5, num_mics=6, num_sources=2)
-    music_z = direction_of_arrival.MUSIC(spacing=0.5, num_mics=3, num_sources=2)
+    music_x = direction_of_arrival.MUSIC(spacing=0.5, num_channels=8, num_sources=2)
+    music_y = direction_of_arrival.MUSIC(spacing=0.5, num_channels=8, num_sources=2)
+    music_z = direction_of_arrival.MUSIC(spacing=0.5, num_channels=8, num_sources=2)
 
     # Application plotter
     app = QtWidgets.QApplication([])
     plotter = plotters.ThreeAxisApplication(
         blocksize=blocksize,
         num_music_angles=1000,
-        x_num_channels=6,
-        y_num_channels=6,
-        z_num_channels=3,
+        x_num_channels=8,
+        y_num_channels=8,
+        z_num_channels=8,
     )
 
     # Linking

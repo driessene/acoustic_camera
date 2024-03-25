@@ -9,7 +9,7 @@ def main():
     blocksize = 1000
 
     # Recorder to get data
-    recorder = recorders.AudioRecorder(
+    recorder = source_recorders.AudioRecorder(
         device_id=14,
         samplerate=samplerate,
         channels=8,
@@ -18,12 +18,12 @@ def main():
     )
 
     # FIR Filter
-    fir_filter = filters.FIRWINFilter(10, 2000, samplerate=samplerate)
+    fir_filter = filters.FIRWINFilter(10, 2000, samplerate=samplerate, num_channels=8)
 
     # Window
 
     # MUSIC Algorithm
-    music = direction_of_arrival.MUSIC(spacing=0.5, num_mics=6, num_sources=2)
+    music = direction_of_arrival.MUSIC(spacing=0.5, num_channels=6, num_sources=2)
 
     # Application plotter
     app = QtWidgets.QApplication([])

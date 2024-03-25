@@ -31,7 +31,8 @@ def main():
         N=501,
         cutoff=1500,
         samplerate=samplerate,
-        type='filtfilt',
+        method='filtfilt',
+        num_channels=channels
     )
     filt.plot_response()
 

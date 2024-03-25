@@ -1,4 +1,4 @@
-from DSP import source_simulators, filters, spectral, plotters
+from DSP import source_simulators, filters, direction_of_arrival, plotters
 from pyqtgraph.Qt import QtWidgets
 
 
@@ -35,30 +35,28 @@ def main():
         method='filtfilt',
     )
 
-    # Sprectal
-    spec = spectral.Periodogram(samplerate)
+    # MUSIC
+    music = direction_of_arrival.MUSIC(num_channels=channels, num_sources=2, spacing=0.5)
 
     # Plotter
     app = QtWidgets.QApplication([])
-    plot = plotters.MultiLinePlotterParametric(
+    plot = plotters.SingleLinePlotter(
         title='Spectral',
         x_label='Hz',
         y_label='Power',
         x_range=(0, 1000),
-        y_range=(0, 0.1),
-        num_lines=channels,
-        blocksize=samplerate//2+1
+        y_range=(0, 1)
     )
 
     # Linking
     recorder.link_to_destination(filt, 0)
-    filt.link_to_destination(spec, 0)
-    spec.link_to_destination(plot, 0)
+    filt.link_to_destination(music, 0)
+    music.link_to_destination(plot, 0)
 
     # Start processes
     recorder.start()
     filt.start()
-    spec.start()
+    music.start()
     plot.show()
     app.exec()
 
