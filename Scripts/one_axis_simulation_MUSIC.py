@@ -1,5 +1,7 @@
 from DSP import source_simulators, filters, direction_of_arrival, plotters
 from pyqtgraph.Qt import QtWidgets
+from Utilities.array import array_to_csv
+import numpy as np
 
 
 def main():
@@ -7,13 +9,13 @@ def main():
     # Variables
     samplerate = 44100
     blocksize = 44100
-    spacing = 0.254
+    spacing = 0.5
     snr = 50
     channels = 8
     sleep = False
 
     # Sources
-    sources = [source_simulators.Source(675, 10), source_simulators.Source(700, 30)]
+    sources = [source_simulators.Source(675, 10), source_simulators.Source(775, 30)]
 
     # Recorder to get data
     recorder = source_simulators.AudioSimulator(
@@ -31,20 +33,22 @@ def main():
         N=101,
         num_channels=channels,
         cutoff=1000,
-        samplerate=44100,
+        samplerate=samplerate,
         method='filtfilt',
     )
 
     # MUSIC
-    music = direction_of_arrival.MUSIC(num_channels=channels, num_sources=2, spacing=0.5)
+    music = direction_of_arrival.MUSIC(num_channels=channels, num_sources=4, spacing=spacing)
 
     # Plotter
     app = QtWidgets.QApplication([])
     plot = plotters.SingleLinePlotter(
-        title='Spectral',
-        x_label='Hz',
+        title='MUSIC',
+        x_label='Angle',
         y_label='Power',
-        x_range=(0, 1000),
+        blocksize=1000,
+        x_data=np.linspace(-90, 90, 1000),
+        x_range=(-90, 90),
         y_range=(0, 1)
     )
 

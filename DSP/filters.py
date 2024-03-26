@@ -90,7 +90,7 @@ class ButterFilter(Filter):
     Implements a butterworth filter
     """
     def __init__(self, N: int, cutoff: int, samplerate, num_channels, method='filtfilt', remove_offset=True,
-                 normalize=True, queue_size=4, destinations = None):
+                 normalize=True, queue_size=4, destinations=None):
         """
         Initializes a butterworth filter
         :param N: Order of the filter

@@ -15,6 +15,8 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
                  y_label: str,
                  x_range: tuple,
                  y_range: tuple,
+                 blocksize: int,
+                 x_data=None,
                  interval: int = 0,
                  queue_size: int = 4
                  ):
@@ -23,10 +25,11 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         :param title: The title of the plotter
         :param x_label: The x-label of the plotter
         :param y_label: The y-label for the plotter
-        :param x_range: The x-range of the plotter
-        :param y_range: The y-range for the plotter
-        :param interval: The time between frame updates in milliseconds
-        :param destinations: Optional. This plotter can act as a buffer and can forward plotted data to more stages
+        :param x_range: The x-range of the plotter (for visuals only)
+        :param y_range: The y-range for the plotter (for visuals only)
+        :param blocksize: The number of points per line on the plot
+        :param x_data: Optional. Provide X-axis data. If not given, assume to be 0 to blocksize
+        :param interval: The time between frame updates in milliseconds. Defaults to 0 such that the plot waits for data
         :param queue_size: Size of the input queue
         """
         QtWidgets.QMainWindow.__init__(self)
@@ -44,6 +47,13 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         self.plot_graph.setMouseEnabled(x=False)
         self.x_range = x_range
         self.y_range = y_range
+        self.blocksize = blocksize
+
+        if x_data is None:
+            self.x_data = np.arange(self.blocksize)
+        else:
+            self.x_data = x_data
+
         # self.plot_graph.setXRange(x_range[0], x_range[1])
         # self.plot_graph.setYRange(y_range[0], y_range[1])
 
@@ -69,7 +79,7 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         :return: None
         """
         data = self.input_queue_get()[0]
-        self.line_data = (np.arange(data.size), data)
+        self.line_data = (self.x_data, data)
         self.line.setData(*self.line_data)
 
 class SingleLinePlotterParametric(SingleLinePlotter):
@@ -82,10 +92,11 @@ class SingleLinePlotterParametric(SingleLinePlotter):
                  y_label: str,
                  x_range: tuple,
                  y_range: tuple,
+                 blocksize: int,
                  interval: int = 0,
                  queue_size: int = 4
                  ):
-        super().__init__(title, x_label, y_label, x_range, y_range, interval, queue_size)
+        super().__init__(title, x_label, y_label, x_range, y_range, blocksize, None, interval, queue_size)
 
     def _on_frame_update(self):
         """
@@ -108,6 +119,7 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
                  y_range: tuple,
                  num_lines: int,
                  blocksize: int,
+                 x_data=None,
                  interval: int = 0,
                  queue_size: int = 4
                  ):
@@ -119,9 +131,9 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         :param x_range: The x-range of the plot
         :param y_range: The y-range of the plot
         :param num_lines: The number of lines to plot
-        :param blocksize: The number of points per line
+        :param blocksize: The number of points per line on the plot
+        :param x_data: Optional. X-axis data. If not given, assume to be 0 to blocksize
         :param interval: The time between frame updates in milliseconds
-        :param destinations: Optional. This plotter can act as a buffer and can forward plotted data to more stages
         :param queue_size: Size of the input queue
         """
         QtWidgets.QMainWindow.__init__(self)
@@ -139,8 +151,14 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         self.plot_graph.setMouseEnabled(x=False)
         self.x_range = x_range
         self.y_range = y_range
+        self.blocksize = blocksize
         self.plot_graph.setXRange(x_range[0], x_range[1])
         self.plot_graph.setYRange(y_range[0], y_range[1])
+
+        if x_data is None:
+            self.x_data = np.arange(self.blocksize)
+        else:
+            self.x_data = x_data
 
         # Data
         self.line_data = np.zeros((2, blocksize, num_lines))
@@ -167,7 +185,7 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         """
         data_set = self.input_queue_get()[0]
         for i, (data, line) in enumerate(zip(data_set.T, self.lines)):
-            self.line_data[0, :, i] = np.arange(data.size)
+            self.line_data[0, :, i] = self.x_data
             self.line_data[1, :, i] = data.real
             line.setData(*self.line_data[:, :, i])
 
@@ -188,7 +206,7 @@ class MultiLinePlotterParametric(MultiLinePlotter):
                  queue_size: int = 4
                  ):
         super().__init__(title, x_label, y_label, x_range, y_range, num_lines,
-                         blocksize, interval, queue_size)
+                         blocksize, None, interval, queue_size)
 
     def _on_frame_update(self):
         """
@@ -202,9 +220,10 @@ class MultiLinePlotterParametric(MultiLinePlotter):
             self.line_data[1, :, i] = y
             line.setData(*self.line_data[:, :, i])
 
+
 class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
     """
-    A pre-made plotter to plot three axes of data in three different stages. Plots souce, after filtering, and doa of
+    A pre-made plotter to plot three axes of data in three different stages. Plots source, after filtering, and doa of
     three axes
     """
     def __init__(self,

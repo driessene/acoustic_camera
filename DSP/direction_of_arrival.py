@@ -48,6 +48,7 @@ class Beamform(pipeline.Stage):
             results = 10 * np.log10(np.var(r_weighted, axis=1))  # Power in signal, in dB
             results -= np.max(results)
 
+            # Push X and Y data
             self.destination_queue_put(results)
 
 
@@ -113,4 +114,5 @@ class MUSIC(pipeline.Stage):
             # Normalize and return results
             music_spectrum /= np.max(music_spectrum)
 
+            # Put X and Y data
             self.destination_queue_put(music_spectrum)

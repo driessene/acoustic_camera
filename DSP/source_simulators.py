@@ -7,6 +7,7 @@ class Source:
     """
     Mathematical representation of an audio source in a space
     """
+
     def __init__(self, frequency, theta):
         """
         Initializes a source
@@ -21,13 +22,14 @@ class AudioSimulator(pipeline.Stage):
     """
     Simulates audio recordings. Can be used in place of AudioRecorder for testing
     """
+
     def __init__(self,
                  sources: list[Source],
-                 spacing: float,  # In meters. Causes spacing to scale with frequency like in real life
-                 snr: float,
-                 samplerate: int,
-                 channels: int,
-                 blocksize: int,
+                 spacing: float = 0.25,  # In meters. Causes spacing to scale with frequency like in real life
+                 snr: float = 50,
+                 samplerate: int = 44100,
+                 channels: int = 6,
+                 blocksize: int = 1024,
                  speed_of_sound: float = 343.0,
                  sleep: bool = True,
                  destinations=None
@@ -75,19 +77,23 @@ class AudioSimulator(pipeline.Stage):
         # Time
         self.time_vector = np.arange(self.blocksize) / self.samplerate
 
-        # Signal
+        # Source
         frequencies = [source.frequency for source in self.sources]
         doas = [source.theta for source in self.sources]
 
+        # Generate Signals
         signals = [np.exp(2j * np.pi * freq * self.time_vector) for freq in frequencies]
-        array_factors = [np.exp(-2j * np.pi * (self.spacing / (self.speed_of_sound / freq)) * np.arange(self.channels)
-                                * np.sin(np.deg2rad(doa))) for (doa, freq) in zip(doas, frequencies)]
-        self.signal_matrix = np.sum(np.array([np.outer(sig, af) for sig, af in zip(signals, array_factors)]), axis=0)
-        self.signal_matrix /= np.max(np.abs(self.signal_matrix))
-        self.signal_matrix = self.signal_matrix.real
-        self.signal_power = np.mean(np.abs(self.signal_matrix) ** 2)
 
-        # Noise
+        # Generate steering vectors corresponding to signals
+        steering_vectors = [np.exp(-2j * np.pi * self.spacing * np.arange(self.channels)
+                                   * np.sin(np.deg2rad(doa))) for (doa, freq) in zip(doas, frequencies)]
+
+        # Calculate each channel using signals and steering vectors. Real values only such as in real-life
+        self.signal_matrix = np.sum(np.array([np.outer(sig, af) for sig, af in zip(signals, steering_vectors)]),
+                                    axis=0).real
+
+        # Powers
+        self.signal_power = np.mean(np.abs(self.signal_matrix) ** 2)
         self.noise_power = 10 ** ((10 * np.log10(self.signal_power) - self.snr) / 20)
 
     def run(self):
@@ -97,7 +103,7 @@ class AudioSimulator(pipeline.Stage):
         :return: None
         """
         while True:
-            # Generate noise
+            # Generate noise and normalize
             noise = np.random.normal(0, np.sqrt(self.noise_power), (self.blocksize, self.channels))
             signal = self.signal_matrix + noise
             signal /= np.max(np.abs(signal))
