@@ -2,10 +2,10 @@ import multiprocessing as mp
 
 
 class Stage:
-    def __init__(self, num_inputs=1, queue_size=4, destinations=None, has_process=True):
+    def __init__(self, num_ports=1, queue_size=4, destinations=None, has_process=True):
         """
         Initializes the process
-        :param num_inputs: Number of input queues
+        :param num_ports: Number of input queues
         :param queue_size: The size of an input queue
         :param destinations: Other object input queues to push results to
         """
@@ -14,7 +14,7 @@ class Stage:
         if destinations is None:
             destinations = []
         self.destinations = destinations
-        self.input_queue = [mp.Queue(queue_size) for _ in range(num_inputs)]
+        self.input_queue = [mp.Queue(queue_size) for _ in range(num_ports)]
 
         if has_process:
             self.process = mp.Process(target=self.run)
@@ -55,3 +55,20 @@ class Stage:
         """
         for destination in self.destinations:
             destination.put(data)
+
+
+class Bus(Stage):
+    """
+    Takes several inputs, warps data into a tuple, pushes to destinations
+    """
+    def __init__(self, num_ports, queue_size, destinations):
+        """
+        Initializes a bus
+        :param num_ports: Number of ports on the bus
+        :param queue_size: Size of the queues
+        :param destinations: Other object input queue to push to
+        """
+        super().__init__(num_ports, queue_size, destinations)
+
+    def run(self):
+        self.destination_queue_put(tuple(self.input_queue_get()))
