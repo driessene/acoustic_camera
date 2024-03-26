@@ -6,7 +6,7 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 44100
+    blocksize = 4096
     spacing = 0.254
     snr = 50
     channels = 8
@@ -47,7 +47,7 @@ def main():
         x_range=(0, 1000),
         y_range=(0, 0.1),
         num_lines=channels,
-        blocksize=samplerate//2+1
+        blocksize=blocksize//2+1
     )
 
     # Linking

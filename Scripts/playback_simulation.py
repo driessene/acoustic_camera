@@ -5,8 +5,8 @@ from pyqtgraph.Qt import QtWidgets
 def main():
 
     # Variables
-    samplerate = 96000
-    blocksize = samplerate//10
+    samplerate = 44100
+    blocksize = 4096
     spacing = 0.254
     snr = 50
     channels = 8

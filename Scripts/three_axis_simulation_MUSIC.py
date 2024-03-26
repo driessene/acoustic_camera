@@ -7,22 +7,22 @@ def main():
     # Variables
     samplerate = 44100
     blocksize = 10000
-    spacing = 0.254
+    spacing = 0.5
     snr = 20
     sleep = False
 
     # Sources
     sources_x = [
         source_simulators.Source(600, 10),
-        source_simulators.Source(800, 20)
+        source_simulators.Source(800, 50)
     ]
     sources_y = [
         source_simulators.Source(600, 20),
-        source_simulators.Source(800, 40)
+        source_simulators.Source(800, 60)
     ]
     sources_z = [
         source_simulators.Source(600, 40),
-        source_simulators.Source(800, 60)
+        source_simulators.Source(800, 80)
     ]
 
     # Recorder to get data
@@ -55,9 +55,9 @@ def main():
     )
 
     # FIR window filter to remove noise
-    fir_x = filters.FIRWINFilter(N=100, cutoff=1500, samplerate=samplerate, num_channels=8, method='filtfilt')
-    fir_y = filters.FIRWINFilter(N=100, cutoff=1500, samplerate=samplerate, num_channels=8, method='filtfilt')
-    fir_z = filters.FIRWINFilter(N=100, cutoff=1500, samplerate=samplerate, num_channels=8, method='filtfilt')
+    fir_x = filters.FIRWINFilter(N=100, cutoff=2000, samplerate=samplerate, num_channels=8, method='filtfilt')
+    fir_y = filters.FIRWINFilter(N=100, cutoff=2000, samplerate=samplerate, num_channels=8, method='filtfilt')
+    fir_z = filters.FIRWINFilter(N=100, cutoff=2000, samplerate=samplerate, num_channels=8, method='filtfilt')
 
     # MUSIC Algorithm
     music_x = direction_of_arrival.MUSIC(spacing=0.5, num_channels=8, num_sources=2)

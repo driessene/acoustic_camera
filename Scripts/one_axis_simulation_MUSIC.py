@@ -1,6 +1,5 @@
 from DSP import source_simulators, filters, direction_of_arrival, plotters
 from pyqtgraph.Qt import QtWidgets
-from Utilities.array import array_to_csv
 import numpy as np
 
 
