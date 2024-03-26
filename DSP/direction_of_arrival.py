@@ -77,7 +77,6 @@ class MUSIC(pipeline.Stage):
             -2j * np.pi * self.spacing * np.arange(self.num_channels)[:, np.newaxis] * np.sin(self.theta_scan))
         self.precompute()
 
-
     def precompute(self):
         """
         Pre-computation. Run every time a property changes
