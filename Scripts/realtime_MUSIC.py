@@ -1,4 +1,6 @@
-from DSP import source_recorders, filters, direction_of_arrival, plotters
+from DSP.Sinks import plotters
+from DSP.Processes import direction_of_arrival, filters
+from DSP.Sources import recorders
 from pyqtgraph.Qt import QtWidgets
 
 
@@ -9,7 +11,7 @@ def main():
     blocksize = 1000
 
     # Recorder to get data
-    recorder = source_recorders.AudioRecorder(
+    recorder = recorders.AudioRecorder(
         device_id=14,
         samplerate=samplerate,
         channels=8,

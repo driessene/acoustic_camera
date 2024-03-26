@@ -1,4 +1,6 @@
-from DSP import source_simulators, filters, spectral, plotters
+from DSP.Sinks import plotters
+from DSP.Processes import spectral, filters
+from DSP.Sources import simulators
 from pyqtgraph.Qt import QtWidgets
 
 
@@ -13,10 +15,10 @@ def main():
     sleep = False
 
     # Sources
-    sources = [source_simulators.Source(675, 10), source_simulators.Source(700, 30)]
+    sources = [simulators.Source(675, 10), simulators.Source(700, 30)]
 
     # Recorder to get data
-    recorder = source_simulators.AudioSimulator(
+    recorder = simulators.AudioSimulator(
         sources=sources,
         spacing=spacing,
         snr=snr,
