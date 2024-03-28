@@ -221,6 +221,83 @@ class MultiLinePlotterParametric(MultiLinePlotter):
             line.setData(*self.line_data[:, :, i])
 
 
+class FFTApplication(QtWidgets.QMainWindow, pipeline.Stage):
+    """
+    A pre-made plotter to plot amplitude and phase of a fft.
+    """
+    def __init__(self, samplerate, channels, interval=0, queue_size=4):
+        QtWidgets.QMainWindow.__init__(self)
+        pipeline.Stage.__init__(self, 1, queue_size, None, has_process=False)
+
+        # Properties
+        self.samplerate = samplerate
+        self.N = int(samplerate // 2)
+        self.channels = channels
+
+        # Window
+        self.setWindowTitle('FFT')
+        self.layout = QtWidgets.QGridLayout()
+        self.palette = QtGui.QPalette()
+        self.setAutoFillBackground(True)
+
+        # Plots
+        self.abs_plot_graph = pg.PlotWidget()
+        self.layout.addWidget(self.abs_plot_graph, 0, 0)
+        self.abs_plot_graph.setBackground('black')
+        self.abs_plot_graph.setTitle('Magnitude', color='white', size='18pt')
+        self.abs_plot_graph.setLabel('left', 'Magnitude', color='white', size='20pt')
+        self.abs_plot_graph.setLabel('bottom', 'Hz', color='white', size='20pt')
+        self.abs_plot_graph.showGrid(x=True, y=True)
+        self.abs_plot_graph.setXRange(0, self.samplerate / 2)
+        self.abs_plot_graph.setYRange(0, 10)
+
+        self.ang_plot_graph = pg.PlotWidget()
+        self.layout.addWidget(self.ang_plot_graph, 0, 1)
+        self.ang_plot_graph.setBackground('black')
+        self.ang_plot_graph.setTitle('Phase', color='white', size='18pt')
+        self.ang_plot_graph.setLabel('left', 'Phase', color='white', size='20pt')
+        self.ang_plot_graph.setLabel('bottom', 'Hz', color='white', size='20pt')
+        self.ang_plot_graph.showGrid(x=True, y=True)
+        self.ang_plot_graph.setXRange(0, self.samplerate / 2)
+        self.ang_plot_graph.setYRange(-np.pi, np.pi)
+
+        # Lines
+        colors = ('white', 'red', 'green', 'blue', 'darkRed', 'darkGreen', 'darkBlue', 'cyan', 'magenta', 'yellow',
+                  'grey', 'darkCyan', 'darkMagenta', 'darkYellow', 'darkGrey')
+
+        self.abs_lines_data = np.zeros((self.N, self.channels))
+        self.abs_lines = [self.abs_plot_graph.plot(
+            np.arange(self.N),
+            self.abs_lines_data[:, i],
+            name='Data',
+            pen=pg.mkPen(color=colors[i], width=2),
+        ) for i in range(channels)]
+
+        self.ang_lines_data = np.zeros((self.N, self.channels))
+        self.ang_lines = [self.ang_plot_graph.plot(
+            np.arange(self.N),
+            self.ang_lines_data[:, i],
+            name='Data',
+            pen=pg.mkPen(color=colors[i], width=2),
+        ) for i in range(channels)]
+
+        # Make a timer to update plot
+        self.interval = interval
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(self.interval)
+        self.timer.timeout.connect(self._on_frame_update)
+        self.timer.start()
+
+    def _on_frame_update(self):
+        self.abs_lines_data, self.ang_lines_data = self.input_queue_get()[0]    # (abs, ang)
+        for i, (abs_line, ang_line) in enumerate(zip(self.abs_lines, self.ang_lines)):
+            print(self.abs_lines_data[:, i].size)
+            print(self.abs_lines_data[:, i].ndim)
+            print(self.abs_lines_data[:, i])
+            abs_line.setData([np.arange(self.abs_lines_data[:, i].size), self.abs_lines_data[:, i]])
+            ang_line.setData([np.arange(self.ang_lines_data[:, i].size), self.ang_lines_data[:, i]])
+
+
 class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
     """
     A pre-made plotter to plot three axes of data in three different stages. Plots source, after filtering, and doa of

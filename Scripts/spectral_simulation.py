@@ -8,7 +8,7 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 4096
+    blocksize = 16384
     spacing = 0.254
     snr = 50
     channels = 8
@@ -38,29 +38,21 @@ def main():
     )
 
     # Sprectal
-    spec = spectral.Periodogram(samplerate)
+    fft = spectral.FFT()
 
     # Plotter
     app = QtWidgets.QApplication([])
-    plot = plotters.MultiLinePlotterParametric(
-        title='Spectral',
-        x_label='Hz',
-        y_label='Power',
-        x_range=(0, 1000),
-        y_range=(0, 0.1),
-        num_lines=channels,
-        blocksize=blocksize//2+1
-    )
+    plot = plotters.FFTApplication(samplerate, channels)
 
     # Linking
     recorder.link_to_destination(filt, 0)
-    filt.link_to_destination(spec, 0)
-    spec.link_to_destination(plot, 0)
+    filt.link_to_destination(fft, 0)
+    fft.link_to_destination(plot, 0)
 
     # Start processes
     recorder.start()
     filt.start()
-    spec.start()
+    fft.start()
     plot.show()
     app.exec()
 
