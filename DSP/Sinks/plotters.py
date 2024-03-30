@@ -2,6 +2,7 @@ import pyqtgraph as pg
 import matplotlib.cm as cm
 from Management import pipeline
 import numpy as np
+import scipy.fft as fft
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 
@@ -271,7 +272,7 @@ class FFTApplication(QtWidgets.QMainWindow, pipeline.Stage):
         self.ph_plot_graph.setLabel('left', 'Phase', color='white', size='20pt')
         self.ph_plot_graph.setLabel('bottom', 'Hz', color='white', size='20pt')
         self.ph_plot_graph.showGrid(x=True, y=True)
-        self.ph_plot_graph.setYRange(-np.pi, np.pi)
+        self.ph_plot_graph.setYRange(-180, 180)
         if freq_range is not None:
             self.ph_plot_graph.setXRange(*freq_range)
 
@@ -297,7 +298,13 @@ class FFTApplication(QtWidgets.QMainWindow, pipeline.Stage):
         self.timer.start()
 
     def _on_frame_update(self):
-        pwr_data, ph_data = self.input_queue_get()[0]    # (abs, ang)
+        # Get data, then get power and phase
+        data = self.input_queue_get()[0]
+        data = fft.fftshift(data)
+        pwr_data = np.abs(data) ** 2
+        ph_data = np.angle(data, deg=True)
+
+        # Update lines
         for i, (pwr_line, ph_line) in enumerate(zip(self.pwr_lines, self.ph_lines)):
             pwr_line.setData(self.x_data, pwr_data[:, i])
             ph_line.setData(self.x_data, ph_data[:, i])
