@@ -1,4 +1,4 @@
-from DSP.Sinks import plotters
+from DSP.Sinks import applications
 from DSP.Processes import spectral, filters
 from DSP.Sources import simulators
 from pyqtgraph.Qt import QtWidgets
@@ -42,7 +42,7 @@ def main():
 
     # Plotter
     app = QtWidgets.QApplication([])
-    plot = plotters.FFTApplication(samplerate, blocksize, channels, freq_range=(600, 800))
+    plot = applications.FFTApplication(samplerate, blocksize, channels, freq_range=(600, 800))
 
     # Linking
     recorder.link_to_destination(filt, 0)

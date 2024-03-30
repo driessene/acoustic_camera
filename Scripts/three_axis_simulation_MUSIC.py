@@ -1,4 +1,4 @@
-from DSP.Sinks import plotters
+from DSP.Sinks import applications
 from DSP.Processes import direction_of_arrival, filters
 from DSP.Sources import simulators
 from pyqtgraph.Qt import QtWidgets
@@ -68,7 +68,7 @@ def main():
 
     # Application plotter
     app = QtWidgets.QApplication([])
-    plotter = plotters.ThreeAxisApplication(
+    plotter = applications.ThreeAxisApplication(
         blocksize=blocksize,
         num_music_angles=1000,
         x_num_channels=8,
