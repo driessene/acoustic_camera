@@ -8,7 +8,7 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 16384
+    blocksize = 44100
     spacing = 0.254
     snr = 50
     channels = 8
@@ -33,7 +33,7 @@ def main():
         N=101,
         num_channels=channels,
         cutoff=1000,
-        samplerate=44100,
+        samplerate=samplerate,
         method='filtfilt',
     )
 
@@ -42,7 +42,7 @@ def main():
 
     # Plotter
     app = QtWidgets.QApplication([])
-    plot = plotters.FFTApplication(samplerate, channels)
+    plot = plotters.FFTApplication(samplerate, blocksize, channels, freq_range=(600, 800))
 
     # Linking
     recorder.link_to_destination(filt, 0)

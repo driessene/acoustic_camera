@@ -82,6 +82,7 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         self.line_data = (self.x_data, data)
         self.line.setData(*self.line_data)
 
+
 class SingleLinePlotterParametric(SingleLinePlotter):
     """
     A single line plotter when both X and Y data are both provided. Data in input queue must be a tuple (X, Y)
@@ -106,6 +107,7 @@ class SingleLinePlotterParametric(SingleLinePlotter):
         data = self.input_queue_get()[0]
         self.line_data = (data[0], data[1])
         self.line.setData(*self.line_data)
+
 
 class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
     """
@@ -225,14 +227,15 @@ class FFTApplication(QtWidgets.QMainWindow, pipeline.Stage):
     """
     A pre-made plotter to plot amplitude and phase of a fft.
     """
-    def __init__(self, samplerate, channels, interval=0, queue_size=4):
+    def __init__(self, samplerate, blocksize, channels, freq_range=None, max_pwr=10e7, interval=0, queue_size=4):
         QtWidgets.QMainWindow.__init__(self)
         pipeline.Stage.__init__(self, 1, queue_size, None, has_process=False)
 
         # Properties
         self.samplerate = samplerate
-        self.N = int(samplerate // 2)
+        self.blocksize = blocksize
         self.channels = channels
+        self.max_pwr = max_pwr
 
         # Window
         self.setWindowTitle('FFT')
@@ -240,43 +243,48 @@ class FFTApplication(QtWidgets.QMainWindow, pipeline.Stage):
         self.palette = QtGui.QPalette()
         self.setAutoFillBackground(True)
 
-        # Plots
-        self.abs_plot_graph = pg.PlotWidget()
-        self.layout.addWidget(self.abs_plot_graph, 0, 0)
-        self.abs_plot_graph.setBackground('black')
-        self.abs_plot_graph.setTitle('Magnitude', color='white', size='18pt')
-        self.abs_plot_graph.setLabel('left', 'Magnitude', color='white', size='20pt')
-        self.abs_plot_graph.setLabel('bottom', 'Hz', color='white', size='20pt')
-        self.abs_plot_graph.showGrid(x=True, y=True)
-        self.abs_plot_graph.setXRange(0, self.samplerate / 2)
-        self.abs_plot_graph.setYRange(0, 10)
+        # Widget
+        self.widget = QtWidgets.QWidget()
+        self.widget.setLayout(self.layout)
+        self.setCentralWidget(self.widget)
 
-        self.ang_plot_graph = pg.PlotWidget()
-        self.layout.addWidget(self.ang_plot_graph, 0, 1)
-        self.ang_plot_graph.setBackground('black')
-        self.ang_plot_graph.setTitle('Phase', color='white', size='18pt')
-        self.ang_plot_graph.setLabel('left', 'Phase', color='white', size='20pt')
-        self.ang_plot_graph.setLabel('bottom', 'Hz', color='white', size='20pt')
-        self.ang_plot_graph.showGrid(x=True, y=True)
-        self.ang_plot_graph.setXRange(0, self.samplerate / 2)
-        self.ang_plot_graph.setYRange(-np.pi, np.pi)
+        # X-data
+        self.delta_f = self.samplerate / self.blocksize
+        self.x_data = np.arange(-0.5 * self.delta_f * self.blocksize, 0.5 * self.delta_f * self.blocksize, self.delta_f)
+
+        # Plots
+        self.pwr_plot_graph = pg.PlotWidget()
+        self.layout.addWidget(self.pwr_plot_graph, 0, 0)
+        self.pwr_plot_graph.setBackground('black')
+        self.pwr_plot_graph.setTitle('Power', color='white', size='18pt')
+        self.pwr_plot_graph.setLabel('left', 'Power', color='white', size='20pt')
+        self.pwr_plot_graph.setLabel('bottom', 'Hz', color='white', size='20pt')
+        self.pwr_plot_graph.showGrid(x=True, y=True)
+        self.pwr_plot_graph.setYRange(0, self.max_pwr)
+        if freq_range is not None:
+            self.pwr_plot_graph.setXRange(*freq_range)
+
+        self.ph_plot_graph = pg.PlotWidget()
+        self.layout.addWidget(self.ph_plot_graph, 1, 0)
+        self.ph_plot_graph.setBackground('black')
+        self.ph_plot_graph.setTitle('Phase', color='white', size='18pt')
+        self.ph_plot_graph.setLabel('left', 'Phase', color='white', size='20pt')
+        self.ph_plot_graph.setLabel('bottom', 'Hz', color='white', size='20pt')
+        self.ph_plot_graph.showGrid(x=True, y=True)
+        self.ph_plot_graph.setYRange(-np.pi, np.pi)
+        if freq_range is not None:
+            self.ph_plot_graph.setXRange(*freq_range)
 
         # Lines
         colors = ('white', 'red', 'green', 'blue', 'darkRed', 'darkGreen', 'darkBlue', 'cyan', 'magenta', 'yellow',
                   'grey', 'darkCyan', 'darkMagenta', 'darkYellow', 'darkGrey')
 
-        self.abs_lines_data = np.zeros((self.N, self.channels))
-        self.abs_lines = [self.abs_plot_graph.plot(
-            np.arange(self.N),
-            self.abs_lines_data[:, i],
+        self.pwr_lines = [self.pwr_plot_graph.plot(
             name='Data',
             pen=pg.mkPen(color=colors[i], width=2),
         ) for i in range(channels)]
 
-        self.ang_lines_data = np.zeros((self.N, self.channels))
-        self.ang_lines = [self.ang_plot_graph.plot(
-            np.arange(self.N),
-            self.ang_lines_data[:, i],
+        self.ph_lines = [self.ph_plot_graph.plot(
             name='Data',
             pen=pg.mkPen(color=colors[i], width=2),
         ) for i in range(channels)]
@@ -289,13 +297,10 @@ class FFTApplication(QtWidgets.QMainWindow, pipeline.Stage):
         self.timer.start()
 
     def _on_frame_update(self):
-        self.abs_lines_data, self.ang_lines_data = self.input_queue_get()[0]    # (abs, ang)
-        for i, (abs_line, ang_line) in enumerate(zip(self.abs_lines, self.ang_lines)):
-            print(self.abs_lines_data[:, i].size)
-            print(self.abs_lines_data[:, i].ndim)
-            print(self.abs_lines_data[:, i])
-            abs_line.setData([np.arange(self.abs_lines_data[:, i].size), self.abs_lines_data[:, i]])
-            ang_line.setData([np.arange(self.ang_lines_data[:, i].size), self.ang_lines_data[:, i]])
+        pwr_data, ph_data = self.input_queue_get()[0]    # (abs, ang)
+        for i, (pwr_line, ph_line) in enumerate(zip(self.pwr_lines, self.ph_lines)):
+            pwr_line.setData(self.x_data, pwr_data[:, i])
+            ph_line.setData(self.x_data, ph_data[:, i])
 
 
 class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
@@ -519,7 +524,7 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
         Updates the window. Called every timer timeout
         :return: None
         """
-        data_set = self.input_queue_get()  # 9 cupy arrays
+        data_set = self.input_queue_get()  # 9 numpy arrays
 
         # Per plot in window...
         for i, (plot_data, plot, lines, x_data) in enumerate(zip(data_set, self.plots, self.lines, self.x_data)):
