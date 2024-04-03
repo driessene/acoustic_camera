@@ -82,7 +82,7 @@ A steering matrix is composed of several steering vectors at several different a
 # Management
 ## Pipeline
 ### Stages
-To achive real-time processing, pipelines can be created using **stages**. **Stages** have a list of **ports** (queues of data), a list of **destinations** (ports of another stage), and a **process**. Each stage is responsible for the following getting data from the ports, processing the data, and pushing the processed data to destinations. Destinations are ports of another stage.
+To achive real-time processing, pipelines can be created using **stages**. **Stages** have a list of **ports** (queues of data), a list of **destinations** (ports of another stage), and a **process**. Each stage is responsible for getting data from the ports, processing the data, and pushing the processed data to destinations. Destinations are ports of another stage.
 Stages also introduce multiprocessing. Each stage is ran by its own processes, letting the project leverage the whole CPU.
 #### Properties
 - num_ports: The number of ports. i.e., the number of sources of data the stage requires
