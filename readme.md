@@ -71,7 +71,8 @@ Background knowledge in order to understand the project
 [Array processing](https://en.wikipedia.org/wiki/Array_processing) is a wide area of research in the field of signal processing that extends from the simplest form of 1 dimensional line arrays to 2 and 3 dimensional array geometries. Array processing is the background for DoA estimation.
 #### Steering vector
 Steering vectors are vectors which describe how a signal changes as elements receive the signal at different times. This happens as the same signal is delayed at different elements at different positions. Steering matrixes require spacing (in units of wavelengths), and DoA.
-![Graphic of a steering matrix](https://www.researchgate.net/figure/Uniform-linear-antenna-array-with-spacing-and-resulting-steering-vector_fig13_316554159)
+
+![Graphic of a steering matrix](https://ars.els-cdn.com/content/image/3-s2.0-B978012398499900008X-f08-03-9780123984999.jpg)
 #### Steering matrix
 A steering matrix is composed of several steering vectors at several different angles. Each row on the matrix describes a different steering vector at a different angle. These matrixes are used in DoA estimation algorithms.
 
