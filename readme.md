@@ -22,7 +22,7 @@
         - [Functions](#functions-1)
     - [Simulators](#simulators)
       - [Source](#source)
-      - [Properties:](#properties-3)
+        - [Properties:](#properties-3)
       - [AudioSimulator - Stage](#audiosimulator---stage)
         - [Properties:](#properties-4)
         - [Functions:](#functions-2)
@@ -129,7 +129,7 @@ Simulators emulate ideal recorders.
 #### Source
 *WIP - custom geometries*
 Defines and audio source. Only holds frequency and theta (DOA) values. Needed for simulators to project onto a steering matrix.
-#### Properties:
+##### Properties:
 - frequency: The frequency in Hz of the source.
 - theta: The DOA of the source.
 #### AudioSimulator - Stage
