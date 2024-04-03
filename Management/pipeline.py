@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import numpy as np
 
 
 class Stage:
@@ -72,3 +73,20 @@ class Bus(Stage):
 
     def run(self):
         self.destination_queue_put(tuple(self.input_queue_get()))
+
+
+class Concatenator(Bus):
+    """
+    Takes several inputs, concatenates, pushes to destinations
+    """
+    def __init__(self, num_ports, queue_size=4, destinations=None):
+        """
+        Initializes a concatinator
+        :param num_ports: Number of ports on the bus
+        :param queue_size: Size of the queues
+        :param destinations: Other object input queue to push to
+        """
+        super().__init__(num_ports, queue_size, destinations)
+
+    def run(self):
+        self.destination_queue_put(np.concatenate(self.input_queue_get(), axis=1))
