@@ -1,4 +1,5 @@
 # Table of Contents
+- [Table of Contents](#table-of-contents)
 - [Indroduction](#indroduction)
   - [Background knowledge](#background-knowledge)
     - [Array processing](#array-processing)
@@ -15,44 +16,46 @@
 - [DSP](#dsp)
   - [Sources](#sources)
     - [Recorders](#recorders)
-      - [print\_audio\_devices](#print_audio_devices)
-      - [AudioRecorder](#audiorecorder)
-      - [Properties](#properties-2)
-      - [Functions](#functions-1)
+      - [print\_audio\_devices - Function](#print_audio_devices---function)
+      - [AudioRecorder - Stage](#audiorecorder---stage)
+        - [Properties](#properties-2)
+        - [Functions](#functions-1)
     - [Simulators](#simulators)
       - [Source](#source)
       - [Properties:](#properties-3)
-      - [AudioSimulator](#audiosimulator)
+      - [AudioSimulator - Stage](#audiosimulator---stage)
         - [Properties:](#properties-4)
         - [Functions:](#functions-2)
   - [Processes](#processes)
     - [Filters](#filters)
-      - [Filter](#filter)
+      - [Filter - Stage](#filter---stage)
         - [Properties](#properties-5)
         - [Functions](#functions-3)
-      - [ButterFilter](#butterfilter)
+      - [ButterFilter - Stage](#butterfilter---stage)
         - [Properties](#properties-6)
-      - [FIRWINFilter](#firwinfilter)
+      - [FIRWINFilter - Stage](#firwinfilter---stage)
         - [Properties](#properties-7)
-      - [HanningWindow](#hanningwindow)
+      - [HanningWindow - Stage](#hanningwindow---stage)
     - [Spectral](#spectral)
-      - [FFT](#fft)
+      - [FFT - Stage](#fft---stage)
     - [direction\_of\_arrival](#direction_of_arrival)
-      - [Beamformer](#beamformer)
+      - [Beamformer - Stage](#beamformer---stage)
         - [Properties](#properties-8)
         - [Functions](#functions-4)
-      - [MUSIC](#music)
+      - [MUSIC - Stage](#music---stage)
         - [Properties](#properties-9)
         - [Functions](#functions-5)
   - [Sinks](#sinks)
     - [Plotters](#plotters)
-      - [SingleLinePlotter](#singlelineplotter)
+      - [SingleLinePlotter - Stage](#singlelineplotter---stage)
         - [Properties](#properties-10)
-      - [MultiLinePlotter](#multilineplotter)
+      - [MultiLinePlotter - Stage](#multilineplotter---stage)
       - [Parametric Plots](#parametric-plots)
     - [Applications](#applications)
     - [Playback](#playback)
-      - [Properties](#properties-11)
+      - [AudioPlayback - Stage](#audioplayback---stage)
+        - [Properties](#properties-11)
+
 
 # Indroduction
 This project creates real-time pipelines to record, simulate, process, and plot signal data. The following are key features and highlights:
@@ -108,17 +111,17 @@ Hold sources, processes, and sinks for audio processing.
 Sources have no ports, only destinations. Examples include recorders and simulators.
 ### Recorders
 Recorders get data from real-life, such as microphones or audio mixers
-#### print_audio_devices
+#### print_audio_devices - Function
 This function prints all available audio devices to the terminal. Useful for finding the ID of the device you are looking to record data from
-#### AudioRecorder
+#### AudioRecorder - Stage
 Manages an audio device and pushes data to destinations.
-#### Properties
+##### Properties
 - device-id: The ID of the device to record from. Use print_audio_devices to find it.
 - samplerate: The sample rate of the device.
 - num_channels: The number of channels of the device.
 - blocksize: The number of samples per block of data.
 - channel_map: Pass a list to reorganize the channels. For example [2, 3, 1, 0] will swap the channels so that channel 2 is in index 0, 3 to 1, 1 to 2, and 0 to 3.
-#### Functions
+##### Functions
 - Start: Starts the recorder and begins pushing data.
 - Stop: Stops the recorder.
 ### Simulators
@@ -129,7 +132,7 @@ Defines and audio source. Only holds frequency and theta (DOA) values. Needed fo
 #### Properties:
 - frequency: The frequency in Hz of the source.
 - theta: The DOA of the source.
-#### AudioSimulator
+#### AudioSimulator - Stage
 *WIP - custom geometries*
 Simulates ideal audio matrixes. Only simulates a vector of microphones which are evenly spaced for now. Precomputes all signals. Each block of data is the same, but with different noise to simulate real life.
 ##### Properties:
@@ -148,7 +151,7 @@ Don't forget to start the simulator using start(). See stage for a reminder
 Processes have input ports and destinations. Processes manipulate data from sources or other processes. For example, filters, windows, and DoA estimation algorithms are processes.
 ### Filters
 Filters manipulate data, either by applying a filter or a window to a block of data
-#### Filter
+#### Filter - Stage
 A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). These filters can either be FIR or IIR filters
 ##### Properties
 - b_coefficients: b coefficients of the filter.
@@ -162,25 +165,25 @@ A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). Th
 - normalize: Set the maximum value of the signal to one if true.
 ##### Functions
 - plot_response: Plots the response of the filter. This is a blocking operation.
-#### ButterFilter
+#### ButterFilter - Stage
 A lowpass [butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter). A subclass of filter, inheriting all properties and functions
 ##### Properties
 - N: The order of the filter
 - cutoff: The cutoff frequency of the filter in Hz
-#### FIRWINFilter
+#### FIRWINFilter - Stage
 A lowpass [ideal filter](https://en.wikipedia.org/wiki/Sinc_filter) using the window method. This is mathematically better than ButterFilter and is recomended. Can have extremely sharp cutoffs. A subclass of filter, inheriting all properties and functions
 ##### Properties
 - N: The length of the filter
 - cutoff: The cutoff frequency of the filter in Hz
-#### HanningWindow
+#### HanningWindow - Stage
 Applies a [hanning window](https://en.wikipedia.org/wiki/Hann_function) to incoming data. No properties of functions, simply a **stage** that applies a hanning window.
 ### Spectral
 Applies spectral analysis on data.
-#### FFT
+#### FFT - Stage
 Applies FFT to data. Returns complex data to match [scipy](https://docs.scipy.org/doc/scipy/reference/generated/scipy.fft.fft.html#scipy.fft.fft). No properties or funrtions, just a **stage** that applies FFT to incoming data.
 ### direction_of_arrival
 Direction of arrival algorithms.
-#### Beamformer
+#### Beamformer - Stage
 A classic [beamforming](https://en.wikipedia.org/wiki/Beamforming) algorithm. Uses a steering matrix to guess which steering vector that was used to get incoming data.
 ##### Properties
 - num_channels: The number of elements of the incoming data
@@ -188,7 +191,7 @@ A classic [beamforming](https://en.wikipedia.org/wiki/Beamforming) algorithm. Us
 - test_angles: The number of possible angles to test for. Default is 1000
 ##### Functions
 - precompute: Run whenever a system property changes
-#### MUSIC
+#### MUSIC - Stage
 Applies the [MUltiple SIgnal Classification (MUSIC) algorithm](https://en.wikipedia.org/wiki/MUSIC_(algorithm)) to incoming data. Significantly more accurate than beamformer, but much more computational intensive. Can find multiple sources simultaneously.
 ##### Properties
 - num_channels: The number of elements of the incoming data
@@ -202,7 +205,7 @@ Sinks have no destinations. An example of a sink is a plot or audio playback.
 ### Plotters
 Plotters are simple GUIs that plot incoming data. Can only have one plot open at once and plotters can only have one port of data.
 Call 'app = QtWidgets.QApplication([])' before creating an object. Open the window by calling '.exec()' on the object.
-#### SingleLinePlotter
+#### SingleLinePlotter - Stage
 Plots a single line of data. Data is expected to be a vector.
 ##### Properties
 - title: The title of the plot.
@@ -212,15 +215,17 @@ Plots a single line of data. Data is expected to be a vector.
 - y_range: The y range of the plot.
 - blocksize: The blocksize of incoming data. SHould be equivalent to the other blocksizes in your program.
 - x_data: Provide if a custom x_data is needed. For example, np.arrange(-90, 90, 1000) for a DoE estimator
-#### MultiLinePlotter
+#### MultiLinePlotter - Stage
 Plots multiple lines of data. Same properties as SingleLinePlotter, but data is expected to be a matrix.
 #### Parametric Plots
 **SingleLinePlotterPrameteric** and **MultiPlotterParameteric** classes inherit **SingleLinePlotter** and **MultiLinePlotter** respectively. Expect two sets of data in one port as a tuple, such as (x, y). These classes have the same properties, but just expect different data.
 ### Applications
 Applications are more complicated than plotters. They are custom-built to custom scripts, such as a three-axis MUSIC analyzer. Put future applications here. All documentation is in the file.
 ### Playback
+Listen to your pipeline. Pass data back out of your speakers.
+#### AudioPlayback - Stage
 Play data back out to your speakers. Useful for hearing how filters effect data easily for demonstrative purposes. Expects a matrix to keep consistency from recorders and simulators
-#### Properties
+##### Properties
 - samplerate: The sample rate of the data
 - blocksize: The blocksize of the data
 - channel: The channel which to play
