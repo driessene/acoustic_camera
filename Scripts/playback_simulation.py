@@ -23,7 +23,7 @@ def main():
         spacing=spacing,
         snr=snr,
         samplerate=samplerate,
-        channels=channels,
+        num_channels=channels,
         blocksize=blocksize,
         sleep=sleep
     )

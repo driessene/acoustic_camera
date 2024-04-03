@@ -33,7 +33,7 @@ def main():
         spacing=spacing,
         snr=snr,
         samplerate=samplerate,
-        channels=8,
+        num_channels=8,
         blocksize=blocksize,
         sleep=sleep
     )
@@ -42,7 +42,7 @@ def main():
         spacing=spacing,
         snr=snr,
         samplerate=samplerate,
-        channels=8,
+        num_channels=8,
         blocksize=blocksize,
         sleep=sleep
     )
@@ -51,7 +51,7 @@ def main():
         spacing=spacing,
         snr=snr,
         samplerate=samplerate,
-        channels=8,
+        num_channels=8,
         blocksize=blocksize,
         sleep=sleep
     )

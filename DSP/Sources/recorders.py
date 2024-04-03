@@ -22,7 +22,7 @@ class AudioRecorder(pipeline.Stage):
     def __init__(self,
                  device_id: int,
                  samplerate,
-                 channels,
+                 num_channels,
                  blocksize,
                  channel_map=None,  # should be a numpy array if wanted
                  destinations=None):
@@ -30,7 +30,7 @@ class AudioRecorder(pipeline.Stage):
         Initialize the audio recorder
         :param device_id: The device ID. Can be found by calling print_audio_devices()
         :param samplerate: The samplerate of the recorder
-        :param channels: The number of channels of the recorde
+        :param num_channels: The number of channels of the recorde
         :param blocksize: The number of samples per block of audio
         :param channel_map: Reorganizes the recording matrix. For example [2, 3, 4] will put channels [2, 3, 4] into
             recording matrix in rows [0, 1, 2]
@@ -41,7 +41,7 @@ class AudioRecorder(pipeline.Stage):
         self.channel_map = channel_map
         self.device_id = device_id
         self.samplerate = samplerate
-        self.channels = channels
+        self.channels = num_channels
         self.blocksize = blocksize
         self.stream = None
 
@@ -59,7 +59,7 @@ class AudioRecorder(pipeline.Stage):
         data = np.array(indata)
         if self.channel_map is not None:
             data = data[:, self.channel_map]
-        self.destination_queue_put(data)
+        self.port_put(data)
 
     def start(self):
         """

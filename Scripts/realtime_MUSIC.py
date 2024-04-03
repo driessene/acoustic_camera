@@ -14,7 +14,7 @@ def main():
     recorder = recorders.AudioRecorder(
         device_id=14,
         samplerate=samplerate,
-        channels=8,
+        num_channels=8,
         blocksize=blocksize,
         channel_map=[2, 3, 4, 5, 6, 7]
     )

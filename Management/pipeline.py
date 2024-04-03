@@ -3,11 +3,11 @@ import numpy as np
 
 
 class Stage:
-    def __init__(self, num_ports=1, queue_size=4, destinations=None, has_process=True):
+    def __init__(self, num_ports=1, port_size=4, destinations=None, has_process=True):
         """
         Initializes the process
         :param num_ports: Number of input queues
-        :param queue_size: The size of an input queue
+        :param port_size: The size of an input queue
         :param destinations: Other object input queues to push results to
         """
         super().__init__()
@@ -15,15 +15,24 @@ class Stage:
         if destinations is None:
             destinations = []
         self.destinations = destinations
-        self.input_queue = [mp.Queue(queue_size) for _ in range(num_ports)]
+        self.input_queue = [mp.Queue(port_size) for _ in range(num_ports)]
 
         if has_process:
-            self.process = mp.Process(target=self.run)
+            self.process = mp.Process(target=self._process)
+
+    def _process(self):
+        """
+        Private, do not use. Encapsulates run in a while true loop. Intended to run forever, getting data, process,
+        and push
+        :return: None
+        """
+        while True:
+            self.run()
 
     def run(self):
         """
-        Function that the process will run. Must be implemented by a subclass
-        :return: None
+        To be implemented by a subclass. Ran in a loop forever. This is the script the subclass will run
+        :return:
         """
         raise NotImplementedError
 
@@ -41,14 +50,14 @@ class Stage:
         """
         self.destinations.append(next_stage.input_queue[port])
 
-    def input_queue_get(self):
+    def port_get(self):
         """
         Gets data from all input queues in a list
         :return: list
         """
         return [queue.get() for queue in self.input_queue]
 
-    def destination_queue_put(self, data):
+    def port_put(self, data):
         """
         Puts data to all destinations
         :param data: Data to put
@@ -62,31 +71,31 @@ class Bus(Stage):
     """
     Takes several inputs, warps data into a tuple, pushes to destinations
     """
-    def __init__(self, num_ports, queue_size, destinations):
+    def __init__(self, num_ports, port_size, destinations):
         """
         Initializes a bus
         :param num_ports: Number of ports on the bus
-        :param queue_size: Size of the queues
+        :param port_size: Size of the queues
         :param destinations: Other object input queue to push to
         """
-        super().__init__(num_ports, queue_size, destinations)
+        super().__init__(num_ports, port_size, destinations)
 
     def run(self):
-        self.destination_queue_put(tuple(self.input_queue_get()))
+        self.port_put(tuple(self.port_get()))
 
 
 class Concatenator(Bus):
     """
     Takes several inputs, concatenates, pushes to destinations
     """
-    def __init__(self, num_ports, queue_size=4, destinations=None):
+    def __init__(self, num_ports, port_size=4, destinations=None):
         """
         Initializes a concatinator
         :param num_ports: Number of ports on the bus
-        :param queue_size: Size of the queues
+        :param port_size: Size of the queues
         :param destinations: Other object input queue to push to
         """
-        super().__init__(num_ports, queue_size, destinations)
+        super().__init__(num_ports, port_size, destinations)
 
     def run(self):
-        self.destination_queue_put(np.concatenate(self.input_queue_get(), axis=1))
+        self.port_put(np.concatenate(self.port_get(), axis=1))

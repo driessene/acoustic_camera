@@ -10,9 +10,9 @@ class FFTApplication(QtWidgets.QMainWindow, pipeline.Stage):
     """
     A pre-made plotter to plot amplitude and phase of a fft.
     """
-    def __init__(self, samplerate, blocksize, channels, freq_range=None, max_pwr=10e7, interval=0, queue_size=4):
+    def __init__(self, samplerate, blocksize, channels, freq_range=None, max_pwr=10e7, interval=0, port_size=4):
         QtWidgets.QMainWindow.__init__(self)
-        pipeline.Stage.__init__(self, 1, queue_size, None, has_process=False)
+        pipeline.Stage.__init__(self, 1, port_size, None, has_process=False)
 
         # Properties
         self.samplerate = samplerate
@@ -81,7 +81,7 @@ class FFTApplication(QtWidgets.QMainWindow, pipeline.Stage):
 
     def _on_frame_update(self):
         # Get data, then get power and phase
-        data = self.input_queue_get()[0]
+        data = self.port_get()[0]
         data = fft.fftshift(data)
         pwr_data = np.abs(data) ** 2
         ph_data = np.angle(data, deg=True)
@@ -104,7 +104,7 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
                  y_num_channels: int,
                  z_num_channels: int,
                  interval=0,
-                 queue_size=4
+                 port_size=4
                  ):
         """
         Initializes the ploter
@@ -114,10 +114,10 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
         :param y_num_channels: The number of channels on the y-axis
         :param z_num_channels: The number of channels in the z-axis
         :param interval: The time between frame updates in milliseconds
-        :param queue_size: The size of the input queue. Note that there are nine input queues
+        :param port_size: The size of the input queue. Note that there are nine input queues
         """
         QtWidgets.QMainWindow.__init__(self)
-        pipeline.Stage.__init__(self, 9, queue_size, None, has_process=False)
+        pipeline.Stage.__init__(self, 9, port_size, None, has_process=False)
 
         # Mapping of input queues and plots. Queses are linked to the corresponding plot
 
@@ -313,7 +313,7 @@ class ThreeAxisApplication(QtWidgets.QMainWindow, pipeline.Stage):
         Updates the window. Called every timer timeout
         :return: None
         """
-        data_set = self.input_queue_get()  # 9 numpy arrays
+        data_set = self.port_get()  # 9 numpy arrays
 
         # Per plot in window...
         for i, (plot_data, plot, lines, x_data) in enumerate(zip(data_set, self.plots, self.lines, self.x_data)):

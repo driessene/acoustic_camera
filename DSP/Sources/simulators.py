@@ -28,7 +28,7 @@ class AudioSimulator(pipeline.Stage):
                  spacing: float = 0.25,  # In meters. Causes spacing to scale with frequency like in real life
                  snr: float = 50,
                  samplerate: int = 44100,
-                 channels: int = 6,
+                 num_channels: int = 6,
                  blocksize: int = 1024,
                  speed_of_sound: float = 343.0,
                  sleep: bool = True,
@@ -40,7 +40,7 @@ class AudioSimulator(pipeline.Stage):
         :param spacing: Spacing, in meters, of the microphone array
         :param snr: Signal to noise ratio of the simulation
         :param samplerate: The samplerate of the simulation
-        :param channels: The number of channles of the simulation
+        :param num_channels: The number of channles of the simulation
         :param blocksize: The number of samples per block
         :param speed_of_sound: The speed of sound of the environment
         :param sleep: If true, sleep between simulations.
@@ -52,7 +52,7 @@ class AudioSimulator(pipeline.Stage):
         self.spacing = spacing
         self.snr = snr
         self.samplerate = samplerate
-        self.channels = channels
+        self.channels = num_channels
         self.blocksize = blocksize
         self.speed_of_sound = speed_of_sound
         self.sleep = sleep
@@ -102,13 +102,12 @@ class AudioSimulator(pipeline.Stage):
         process.
         :return: None
         """
-        while True:
-            # Generate noise and normalize
-            noise = np.random.normal(0, np.sqrt(self.noise_power), (self.blocksize, self.channels))
-            signal = self.signal_matrix + noise
-            signal /= np.max(np.abs(signal))
+        # Generate noise and normalize
+        noise = np.random.normal(0, np.sqrt(self.noise_power), (self.blocksize, self.channels))
+        signal = self.signal_matrix + noise
+        signal /= np.max(np.abs(signal))
 
-            if self.sleep:
-                sleep(self.blocksize / self.samplerate)  # simulate delay for recording
+        if self.sleep:
+            sleep(self.blocksize / self.samplerate)  # simulate delay for recording
 
-            self.destination_queue_put(signal)
+        self.port_put(signal)

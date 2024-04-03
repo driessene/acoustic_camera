@@ -16,8 +16,6 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
                  y_range: tuple,
                  blocksize: int,
                  x_data=None,
-                 interval: int = 0,
-                 queue_size: int = 4
                  ):
         """
         Initializes a single line plotter
@@ -28,11 +26,9 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         :param y_range: The y-range for the plotter (for visuals only)
         :param blocksize: The number of points per line on the plot
         :param x_data: Optional. Provide X-axis data. If not given, assume to be 0 to blocksize
-        :param interval: The time between frame updates in milliseconds. Defaults to 0 such that the plot waits for data
-        :param queue_size: Size of the input queue
         """
         QtWidgets.QMainWindow.__init__(self)
-        pipeline.Stage.__init__(self, 1, queue_size, None, has_process=False)
+        pipeline.Stage.__init__(self, 1, port_size, None, has_process=False)
 
         # Styling
         self.plot_graph = pg.PlotWidget()
@@ -66,9 +62,8 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         )
 
         # Make a timer to update plot
-        self.interval = interval
         self.timer = QtCore.QTimer()
-        self.timer.setInterval(self.interval)
+        self.timer.setInterval(0)
         self.timer.timeout.connect(self._on_frame_update)
         self.timer.start()
 
@@ -77,7 +72,7 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         Called every frame update. Called by the timer
         :return: None
         """
-        data = self.input_queue_get()[0]
+        data = self.port_get()[0]
         self.line_data = (self.x_data, data)
         self.line.setData(*self.line_data)
 
@@ -93,17 +88,15 @@ class SingleLinePlotterParametric(SingleLinePlotter):
                  x_range: tuple,
                  y_range: tuple,
                  blocksize: int,
-                 interval: int = 0,
-                 queue_size: int = 4
                  ):
-        super().__init__(title, x_label, y_label, x_range, y_range, blocksize, None, interval, queue_size)
+        super().__init__(title, x_label, y_label, x_range, y_range, blocksize, None)
 
     def _on_frame_update(self):
         """
         Called every frame update. Called by the timer
         :return: None
         """
-        data = self.input_queue_get()[0]
+        data = self.port_get()[0]
         self.line_data = (data[0], data[1])
         self.line.setData(*self.line_data)
 
@@ -121,8 +114,6 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
                  num_lines: int,
                  blocksize: int,
                  x_data=None,
-                 interval: int = 0,
-                 queue_size: int = 4
                  ):
         """
         Initializes the plotter
@@ -134,11 +125,9 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         :param num_lines: The number of lines to plot
         :param blocksize: The number of points per line on the plot
         :param x_data: Optional. X-axis data. If not given, assume to be 0 to blocksize
-        :param interval: The time between frame updates in milliseconds
-        :param queue_size: Size of the input queue
         """
         QtWidgets.QMainWindow.__init__(self)
-        pipeline.Stage.__init__(self, 1, queue_size, None, has_process=False)
+        pipeline.Stage.__init__(self, 1, None, has_process=False)
 
         # Styling
         self.plot_graph = pg.PlotWidget()
@@ -173,9 +162,8 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         ) for i in range(num_lines)]
 
         # Make a timer to update plot
-        self.interval = interval
         self.timer = QtCore.QTimer()
-        self.timer.setInterval(self.interval)
+        self.timer.setInterval(0)
         self.timer.timeout.connect(self._on_frame_update)
         self.timer.start()
 
@@ -184,7 +172,7 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         Called every frame update. Called by the timer
         :return: None
         """
-        data_set = self.input_queue_get()[0]
+        data_set = self.port_get()[0]
         for i, (data, line) in enumerate(zip(data_set.T, self.lines)):
             self.line_data[0, :, i] = self.x_data
             self.line_data[1, :, i] = data.real
@@ -204,17 +192,17 @@ class MultiLinePlotterParametric(MultiLinePlotter):
                  num_lines: int,
                  blocksize: int,
                  interval: int = 0,
-                 queue_size: int = 4
+                 port_size: int = 4
                  ):
         super().__init__(title, x_label, y_label, x_range, y_range, num_lines,
-                         blocksize, None, interval, queue_size)
+                         blocksize, None, interval, port_size)
 
     def _on_frame_update(self):
         """
         Called every frame update. Called by the timer
         :return: None
         """
-        x_data, y_data = self.input_queue_get()[0]
+        x_data, y_data = self.port_get()[0]
         x_data, y_data = x_data.T.real, y_data.T.real
         for i, (x, y, line) in enumerate(zip(x_data, y_data, self.lines)):
             self.line_data[0, :, i] = x
