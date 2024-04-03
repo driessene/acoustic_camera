@@ -37,6 +37,7 @@ def main():
         method='lfilter',
     )
     filt.plot_response()
+    filt.plot_coefficients()
 
     # Plotter
     app = QtWidgets.QApplication([])

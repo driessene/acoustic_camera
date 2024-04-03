@@ -164,7 +164,8 @@ A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). Th
 - remove_offset: Sets the DC component of the data to zero if true.
 - normalize: Set the maximum value of the signal to one if true.
 ##### Functions
-- plot_response: Plots the response of the filter. This is a blocking operation.
+- plot_response: Plots the frequency response of the filter. This is a blocking operation.
+- plot_coefficients: Plots the coefficients of the filter. This is a blocking operation.
 #### ButterFilter - Stage
 A lowpass [butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter). A subclass of filter, inheriting all properties and functions
 ##### Properties

@@ -127,7 +127,7 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         :param x_data: Optional. X-axis data. If not given, assume to be 0 to blocksize
         """
         QtWidgets.QMainWindow.__init__(self)
-        pipeline.Stage.__init__(self, 1, None, has_process=False)
+        pipeline.Stage.__init__(self, 1, 4, has_process=False)
 
         # Styling
         self.plot_graph = pg.PlotWidget()

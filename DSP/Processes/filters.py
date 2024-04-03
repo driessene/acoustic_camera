@@ -83,6 +83,22 @@ class Filter(pipeline.Stage):
         ax2.axis('tight')
         plt.show()
 
+    def plot_coefficients(self):
+        """
+        Plots the a and b coefficients
+        :return: None
+        """
+        fig, ax1 = plt.subplots()
+        ax1.set_title('Digital filter coefficients')
+        ax1.plot(self.b, 'b')
+        ax1.set_ylabel('B Coefficient', color='b')
+        ax1.set_xlabel('N')
+        ax2 = ax1.twinx()
+        ax2.plot(self.b, 'g')
+        ax2.set_ylabel('A Coefficient', color='g')
+        ax2.grid()
+        ax2.axis('tight')
+        plt.show()
 
 class ButterFilter(Filter):
     """
