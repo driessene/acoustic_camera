@@ -16,6 +16,7 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
                  y_range: tuple,
                  blocksize: int,
                  x_data=None,
+                 port_size=4
                  ):
         """
         Initializes a single line plotter
@@ -53,10 +54,7 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         # self.plot_graph.setYRange(y_range[0], y_range[1])
 
         # Data
-        self.line_data = np.zeros((2, 2))
         self.line = self.plot_graph.plot(
-            self.line_data[0],
-            self.line_data[1],
             name='Data',
             pen=pg.mkPen(color='white', width=2)
         )
@@ -72,9 +70,7 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         Called every frame update. Called by the timer
         :return: None
         """
-        data = self.port_get()[0]
-        self.line_data = (self.x_data, data)
-        self.line.setData(*self.line_data)
+        self.line.setData(self.port_get()[0])
 
 
 class SingleLinePlotterParametric(SingleLinePlotter):
@@ -96,9 +92,7 @@ class SingleLinePlotterParametric(SingleLinePlotter):
         Called every frame update. Called by the timer
         :return: None
         """
-        data = self.port_get()[0]
-        self.line_data = (data[0], data[1])
-        self.line.setData(*self.line_data)
+        self.line.setData(*self.port_get()[0])
 
 
 class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
@@ -114,6 +108,7 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
                  num_lines: int,
                  blocksize: int,
                  x_data=None,
+                 port_size=4
                  ):
         """
         Initializes the plotter
@@ -127,7 +122,7 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         :param x_data: Optional. X-axis data. If not given, assume to be 0 to blocksize
         """
         QtWidgets.QMainWindow.__init__(self)
-        pipeline.Stage.__init__(self, 1, 4, has_process=False)
+        pipeline.Stage.__init__(self, 1, port_size, has_process=False)
 
         # Styling
         self.plot_graph = pg.PlotWidget()
@@ -151,12 +146,9 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
             self.x_data = x_data
 
         # Data
-        self.line_data = np.zeros((2, blocksize, num_lines))
         colors = ('white', 'red', 'green', 'blue', 'darkRed', 'darkGreen', 'darkBlue', 'cyan', 'magenta', 'yellow',
                   'grey', 'darkCyan', 'darkMagenta', 'darkYellow', 'darkGrey')
         self.lines = [self.plot_graph.plot(
-            self.line_data[0, :, i],
-            self.line_data[1, :, i],
             name='Data',
             pen=pg.mkPen(color=colors[i], width=2),
         ) for i in range(num_lines)]
@@ -173,10 +165,8 @@ class MultiLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         :return: None
         """
         data_set = self.port_get()[0]
-        for i, (data, line) in enumerate(zip(data_set.T, self.lines)):
-            self.line_data[0, :, i] = self.x_data
-            self.line_data[1, :, i] = data.real
-            line.setData(*self.line_data[:, :, i])
+        for data, line in zip(data_set.T, self.lines):
+            line.setData(*data)
 
 
 class MultiLinePlotterParametric(MultiLinePlotter):
@@ -191,11 +181,10 @@ class MultiLinePlotterParametric(MultiLinePlotter):
                  y_range: tuple,
                  num_lines: int,
                  blocksize: int,
-                 interval: int = 0,
                  port_size: int = 4
                  ):
         super().__init__(title, x_label, y_label, x_range, y_range, num_lines,
-                         blocksize, None, interval, port_size)
+                         blocksize, None, port_size)
 
     def _on_frame_update(self):
         """
@@ -204,7 +193,5 @@ class MultiLinePlotterParametric(MultiLinePlotter):
         """
         x_data, y_data = self.port_get()[0]
         x_data, y_data = x_data.T.real, y_data.T.real
-        for i, (x, y, line) in enumerate(zip(x_data, y_data, self.lines)):
-            self.line_data[0, :, i] = x
-            self.line_data[1, :, i] = y
-            line.setData(*self.line_data[:, :, i])
+        for x, y, line in zip(x_data, y_data, self.lines):
+            line.setData(x, y)
