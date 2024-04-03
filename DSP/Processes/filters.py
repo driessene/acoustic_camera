@@ -94,7 +94,7 @@ class Filter(pipeline.Stage):
         ax1.set_ylabel('B Coefficient', color='b')
         ax1.set_xlabel('N')
         ax2 = ax1.twinx()
-        ax2.plot(self.b, 'g')
+        ax2.plot(self.a, 'g')
         ax2.set_ylabel('A Coefficient', color='g')
         ax2.grid()
         ax2.axis('tight')
