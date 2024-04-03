@@ -180,7 +180,7 @@ Applies a [hanning window](https://en.wikipedia.org/wiki/Hann_function) to incom
 ### Spectral
 Applies spectral analysis on data.
 #### FFT - Stage
-Applies FFT to data. Returns complex data to match [scipy](https://docs.scipy.org/doc/scipy/reference/generated/scipy.fft.fft.html#scipy.fft.fft). No properties or funrtions, just a **stage** that applies FFT to incoming data.
+Applies FFT to data. Returns complex data to match [scipy](https://docs.scipy.org/doc/scipy/reference/generated/scipy.fft.fft.html#scipy.fft.fft). No properties or functions, just a **stage** that applies FFT to incoming data.
 ### direction_of_arrival
 Direction of arrival algorithms.
 #### Beamformer - Stage
