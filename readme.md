@@ -11,7 +11,7 @@
       - [Properties](#properties)
       - [Functions](#functions)
     - [Busses](#busses)
-      - [Properties:](#properties-1)
+      - [Properties](#properties-1)
     - [Concatinator](#concatinator)
 - [DSP](#dsp)
   - [Sources](#sources)
@@ -22,10 +22,10 @@
         - [Functions](#functions-1)
     - [Simulators](#simulators)
       - [Source](#source)
-        - [Properties:](#properties-3)
+        - [Properties](#properties-3)
       - [AudioSimulator - Stage](#audiosimulator---stage)
-        - [Properties:](#properties-4)
-        - [Functions:](#functions-2)
+        - [Properties](#properties-4)
+        - [Functions](#functions-2)
   - [Processes](#processes)
     - [Filters](#filters)
       - [Filter - Stage](#filter---stage)
@@ -99,7 +99,7 @@ Stages also introduce multiprocessing. Each stage is ran by its own processes, l
 To use a stage, one must create a subclass which inherits the stage class. The new subclass will create the correct amount of input ports , the length of the input ports (default is 4), and destinations.
 ### Busses
 Busses are a stage which take several import ports, merges them into a tuple, and pushes to destinations. Useful for passing several stages to a single stage. It is preferred to have stages with several input ports, but this is an alternative if needed.
-#### Properties:
+#### Properties
 - num_ports: The number of ports to merge.
 - port_size: The size of the ports.
 - destinations: The destinations of the bus.
@@ -129,13 +129,13 @@ Simulators emulate ideal recorders.
 #### Source
 *WIP - custom geometries*
 Defines and audio source. Only holds frequency and theta (DOA) values. Needed for simulators to project onto a steering matrix.
-##### Properties:
+##### Properties
 - frequency: The frequency in Hz of the source.
 - theta: The DOA of the source.
 #### AudioSimulator - Stage
 *WIP - custom geometries*
 Simulates ideal audio matrixes. Only simulates a vector of microphones which are evenly spaced for now. Precomputes all signals. Each block of data is the same, but with different noise to simulate real life.
-##### Properties:
+##### Properties
 - sources: A list of sources.
 - spacing: The spacing between elements in wavelengths.
 - snr: Signal-to-noise ratio of the simulator.
@@ -144,7 +144,7 @@ Simulates ideal audio matrixes. Only simulates a vector of microphones which are
 - blocksize: The number of samples per block of data.
 - speed_of_sound: The speed of sound in the environment.
 - sleep: If true, add a delay to simulate the delay it takes to get a block of audio in real life.
-##### Functions:
+##### Functions
 - update_precompute: Run whenever a system property changes to update the signal matrix
 Don't forget to start the simulator using start(). See stage for a reminder
 ## Processes
