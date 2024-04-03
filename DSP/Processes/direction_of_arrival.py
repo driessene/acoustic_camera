@@ -8,7 +8,6 @@ class Beamform(pipeline.Stage):
     """
     def __init__(self, num_channels, spacing, test_angles=1000, port_size=4, destinations=None):
         """
-        Initialise the beamformer
         :param num_channels: The number of microphones in the array
         :param spacing: The spacing between microphones in wavelengths
         :param test_angles: The number of angles to test for
@@ -27,7 +26,7 @@ class Beamform(pipeline.Stage):
 
     def precompute(self):
         """
-        Precomputation. Run every time a property changes
+        Computation. Run every time a property changes
         :return: None
         """
         self.theta_scan = np.linspace(-1 * np.pi, np.pi, self.test_angles)
@@ -57,7 +56,6 @@ class MUSIC(pipeline.Stage):
     """
     def __init__(self, num_channels, num_sources, spacing=0.5, test_angles=1000, port_size=4, destinations=None):
         """
-        Initializes the MUSIC
         :param num_channels: The number of microphones from the input data
         :param num_sources: The number of sources in the environment. Cannot be larger than num_channels - 1
         :param spacing: The spacing between microphones in wavelengths

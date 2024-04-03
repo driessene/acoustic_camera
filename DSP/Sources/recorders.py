@@ -27,7 +27,6 @@ class AudioRecorder(pipeline.Stage):
                  channel_map=None,  # should be a numpy array if wanted
                  destinations=None):
         """
-        Initialize the audio recorder
         :param device_id: The device ID. Can be found by calling print_audio_devices()
         :param samplerate: The samplerate of the recorder
         :param num_channels: The number of channels of the recorde

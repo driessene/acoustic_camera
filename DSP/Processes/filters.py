@@ -19,7 +19,6 @@ class Filter(pipeline.Stage):
                  port_size=4,
                  destinations=None):
         """
-        Initialized the filter
         :param b_coefficients: B coefficients of the digital filter
         :param a_coefficients: A coefficients of the digital filter
         :param samplerate: Samerate of the input data
@@ -85,7 +84,7 @@ class Filter(pipeline.Stage):
 
     def plot_coefficients(self):
         """
-        Plots the a and b coefficients
+        Plots the a and b coefficients. Blocking
         :return: None
         """
         fig, ax1 = plt.subplots()
@@ -107,15 +106,8 @@ class ButterFilter(Filter):
     def __init__(self, N: int, cutoff: int, samplerate, num_channels, method='filtfilt', remove_offset=True,
                  normalize=True, port_size=4, destinations=None):
         """
-        Initializes a butterworth filter
         :param N: Order of the filter
         :param cutoff: Cutoff frequency of the filter in Hz
-        :param samplerate: See Filter
-        :param method: See Filter
-        :param remove_offset: See Filter
-        :param normalize: See Filter
-        :param port_size: See Filter
-        :param destinations: See Filter
         """
         b, a = sig.butter(N=N, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
         super().__init__(b, a, samplerate, num_channels, method, remove_offset, normalize, port_size, destinations)
@@ -128,15 +120,8 @@ class FIRWINFilter(Filter):
     def __init__(self, N: int, cutoff: int, samplerate, num_channels, method='filtfilt', remove_offset=True,
                  normalize=True, port_size=4, destinations=None):
         """
-        Initializes a FIRWINFilter
         :param N: Length of the FIR filter
         :param cutoff: Cutoff frequency of the filter in Hz
-        :param samplerate: See Filter
-        :param method: See Filter
-        :param remove_offset: See Filter
-        :param normalize: See Filter
-        :param port_size: See Filter
-        :param destinations: See Filter
         """
         b = sig.firwin(N, cutoff, fs=samplerate)
         super().__init__(b, np.array(1), samplerate, num_channels, method, remove_offset, normalize, port_size, destinations)
@@ -147,18 +132,9 @@ class HanningWindow(pipeline.Stage):
     Applied a hanning window to input data
     """
     def __init__(self, port_size=4, destinations=None):
-        """
-        Initializes a HanningWindow
-        :param port_size: The size of the input queue
-        :param destinations: Where to push the filtered data. Object should inherit Stage
-        """
         super().__init__(1, port_size, destinations)
 
     def run(self):
-        """
-        Runs the window along input data. Ran by a process
-        :return: None
-        """
         data = self.port_get()[0]
         data *= np.hanning(len(data))[:, np.newaxis]
         self.port_put(data)

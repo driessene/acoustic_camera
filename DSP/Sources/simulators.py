@@ -22,7 +22,6 @@ class AudioSimulator(pipeline.Stage):
     """
     Simulates audio recordings. Can be used in place of AudioRecorder for testing
     """
-
     def __init__(self,
                  sources: list[Source],
                  spacing: float = 0.25,  # In meters. Causes spacing to scale with frequency like in real life
@@ -35,7 +34,6 @@ class AudioSimulator(pipeline.Stage):
                  destinations=None
                  ):
         """
-        Initializes the simulator
         :param sources: The sources to simulate
         :param spacing: Spacing, in meters, of the microphone array
         :param snr: Signal to noise ratio of the simulation
