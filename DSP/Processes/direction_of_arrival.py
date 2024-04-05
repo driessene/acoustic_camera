@@ -6,32 +6,14 @@ class Beamform(pipeline.Stage):
     """
     A classical beamformer
     """
-    def __init__(self, num_channels, spacing, test_angles=1000, port_size=4, destinations=None):
+    def __init__(self, steering_matrix, port_size=4, destinations=None):
         """
-        :param num_channels: The number of microphones in the array
-        :param spacing: The spacing between microphones in wavelengths
-        :param test_angles: The number of angles to test for
+        :param steering_matrix: ___
         :param port_size: The size of the input queue
         :param destinations: Where to push results. Object should inherit from Stage
         """
         super().__init__(1, port_size, destinations)
-        self.spacing = spacing
-        self.test_angles = test_angles
-        self.num_channels = num_channels
-
-        # Pre-compute
-        self.theta_scan = None
-        self.steering_matrix = None
-        self.precompute()
-
-    def precompute(self):
-        """
-        Computation. Run every time a property changes
-        :return: None
-        """
-        self.theta_scan = np.linspace(-1 * np.pi, np.pi, self.test_angles)
-        theta_grid, mic_grid = np.meshgrid(self.theta_scan, np.arange(self.num_channels))
-        self.steering_matrix = np.exp(-2j * np.pi * self.spacing * mic_grid * np.sin(theta_grid))
+        self.steering_matrix = steering_matrix
 
     def run(self):
         """
@@ -40,7 +22,7 @@ class Beamform(pipeline.Stage):
         """
         # Beamformer
         data = self.port_get()[0]
-        r_weighted = np.abs(self.steering_matrix.conj().T @ data.T) ** 2  # Beamforming output
+        r_weighted = np.abs(self.steering_matrix.matrix.conj().T @ data.T) ** 2  # Beamforming output
 
         # Normalize results
         results = 10 * np.log10(np.var(r_weighted, axis=1))  # Power in signal, in dB
@@ -54,36 +36,16 @@ class MUSIC(pipeline.Stage):
     """
     Implements the MUSIC (MUltiple SIgnal Classification) algorithm
     """
-    def __init__(self, num_channels, num_sources, spacing=0.5, test_angles=1000, port_size=4, destinations=None):
+    def __init__(self, steering_matrix, num_sources, port_size=4, destinations=None):
         """
-        :param num_channels: The number of microphones from the input data
-        :param num_sources: The number of sources in the environment. Cannot be larger than num_channels - 1
-        :param spacing: The spacing between microphones in wavelengths
-        :param test_angles: The number of angles to test for
+        :param steering_matrix: ___
+        :param num_sources: The number of signals in the environment
         :param port_size: The size of the input queue
         :param destinations: Where to push output data. Object should inherit Stage
         """
         super().__init__(1, port_size, destinations)
-        self.spacing = spacing
-        self.test_angles = test_angles
-        self.num_channels = num_channels
+        self.steering_matrix = steering_matrix
         self.num_sources = num_sources
-
-        # Pre-compute
-        self.theta_scan = np.linspace(-np.pi / 2, np.pi / 2, self.test_angles)
-        self.steering_matrix = np.exp(
-            -2j * np.pi * self.spacing * np.arange(self.num_channels)[:, np.newaxis] * np.sin(self.theta_scan))
-        self.precompute()
-
-    def precompute(self):
-        """
-        Pre-computation. Run every time a property changes
-        :return: None
-        """
-        # Steering matrix
-        self.theta_scan = np.linspace(-np.pi / 2, np.pi / 2, self.test_angles)
-        self.steering_matrix = np.exp(
-            -2j * np.pi * self.spacing * np.arange(self.num_channels)[:, np.newaxis] * np.sin(self.theta_scan))
 
     def run(self):
         """
@@ -105,7 +67,7 @@ class MUSIC(pipeline.Stage):
         noise_subspace = eigvecs_sorted[:, self.num_sources:]  # Select the smallest eigenvectors
 
         # Compute the spatial spectrum
-        music_spectrum = 1 / np.sum(np.abs(self.steering_matrix.conj().T @ noise_subspace) ** 2, axis=1)
+        music_spectrum = 1 / np.sum(np.abs(self.steering_matrix.matrix.conj().T @ noise_subspace) ** 2, axis=1)
 
         # Normalize and return results
         music_spectrum /= np.max(music_spectrum)

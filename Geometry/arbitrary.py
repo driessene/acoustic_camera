@@ -1,12 +1,13 @@
 import numpy as np
+from functools import cached_property
 
 
 class Element:
     """
-    Defines a point in space where an element lays. Given in cartiesian cordinates where the units are wavelengths
+    Defines a point in space where an element lays in distance from origin. Units are wavelengths
     """
 
-    def __init__(self, pos: tuple):
+    def __init__(self, pos: float):
         self.pos = pos
 
 
@@ -19,13 +20,12 @@ class SteeringVector:
         self.elements = elements
         self.spacing = spacing
 
-    @property
+    @cached_property
     def vector(self):
         """
         Calculates the steering vector based on element positions and spacing.
         """
-        positions = np.array([element.pos for element in self.elements])  # Convert tuple to NumPy array for calculation
-        return np.exp(-2j * np.pi * self.spacing * np.dot(positions, np.arange(len(self.elements))))
+        raise NotImplementedError
 
 
 class SteeringMatrix:
@@ -39,9 +39,3 @@ class SteeringMatrix:
         self.matrix = np.vstack([sv.vector for sv in self.steering_vectors])
 
 
-"""
-MUSIC
-        self.theta_scan = np.linspace(-np.pi / 2, np.pi / 2, self.test_angles)
-        self.steering_matrix = np.exp(
-            -2j * np.pi * self.spacing * np.arange(self.num_mics)[:, np.newaxis] * np.sin(self.theta_scan))
-"""

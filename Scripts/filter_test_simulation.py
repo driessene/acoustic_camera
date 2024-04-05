@@ -30,7 +30,7 @@ def main():
 
     # Filter
     filt = filters.FIRWINFilter(
-        N=501,
+        N=101,
         cutoff=1500,
         samplerate=samplerate,
         num_channels=channels,

@@ -1,6 +1,7 @@
 from DSP.Sinks import plotters
 from DSP.Processes import direction_of_arrival, filters
 from DSP.Sources import simulators
+from Geometry.uniform import OneDimensionalArray
 from pyqtgraph.Qt import QtWidgets
 import numpy as np
 
@@ -13,10 +14,11 @@ def main():
     spacing = 0.5
     snr = 50
     channels = 8
+    delta_theta = np.pi / 1000
     sleep = False
 
     # Sources
-    sources = [simulators.Source(675, 10), simulators.Source(775, 30)]
+    sources = [simulators.Source(675, 10), simulators.Source(775, 50)]
 
     # Recorder to get data
     recorder = simulators.AudioSimulator(
@@ -39,7 +41,8 @@ def main():
     )
 
     # MUSIC
-    music = direction_of_arrival.MUSIC(num_channels=channels, num_sources=4, spacing=spacing)
+    matrix = OneDimensionalArray(spacing, channels, delta_theta)
+    music = direction_of_arrival.MUSIC(matrix, num_sources=4)
 
     # Plotter
     app = QtWidgets.QApplication([])
@@ -48,7 +51,7 @@ def main():
         x_label='Angle',
         y_label='Power',
         blocksize=1000,
-        x_data=np.linspace(-90, 90, 1000),
+        x_data=np.linspace(-90, 90, int(np.pi / delta_theta + 0.5)),
         x_range=(-90, 90),
         y_range=(0, 1)
     )

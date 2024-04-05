@@ -70,7 +70,7 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         Called every frame update. Called by the timer
         :return: None
         """
-        self.line.setData(self.port_get()[0])
+        self.line.setData(self.x_data, self.port_get()[0])
 
 
 class SingleLinePlotterParametric(SingleLinePlotter):

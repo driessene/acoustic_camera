@@ -2,6 +2,7 @@ import numpy as np
 import scipy.signal as sig
 import matplotlib.pyplot as plt
 from Management import pipeline
+from functools import cached_property
 
 
 class Filter(pipeline.Stage):
@@ -40,8 +41,11 @@ class Filter(pipeline.Stage):
         self.method = method
         self.remove_offset = remove_offset
         self.normazlize = normalize
-        self.filter_order = max(self.b.size, self.a.size) - 1
         self.initial_conditions = np.zeros((self.filter_order, self.num_channels))
+
+    @cached_property
+    def filter_order(self):
+        return max(self.b.size, self.a.size) - 1
 
     def run(self):
         """

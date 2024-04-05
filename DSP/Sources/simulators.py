@@ -1,6 +1,7 @@
 from Management import pipeline
 import numpy as np
 from time import sleep
+from functools import cached_property
 
 
 class Source:
@@ -58,41 +59,34 @@ class AudioSimulator(pipeline.Stage):
         # Mock inherited properties
         self.virtual_channels = self.channels
 
-        # pre-compute
-        self.time_vector = None
-        self.signals = None
-        self.array_factor = None
-        self.signal_matrix = np.zeros((self.blocksize, self.channels), dtype=np.complex128)
-        self.signal_power = None
-        self.noise_power = None
-        self.update_precompute()
+    @cached_property
+    def time_vector(self):
+        return np.arange(self.blocksize) / self.samplerate
 
-    def update_precompute(self):
-        """
-        Updates properties that do not need to be updated every frame. Call whenever a property is changed
-        :return: None
-        """
-        # Time
-        self.time_vector = np.arange(self.blocksize) / self.samplerate
+    @cached_property
+    def signals(self):
+        frequencies = [source.frequency for source in self.sources]
+        return [np.exp(2j * np.pi * freq * self.time_vector) for freq in frequencies]
 
-        # Source
+    @cached_property
+    def steering_vectors(self):
         frequencies = [source.frequency for source in self.sources]
         doas = [source.theta for source in self.sources]
-
-        # Generate Signals
-        signals = [np.exp(2j * np.pi * freq * self.time_vector) for freq in frequencies]
-
-        # Generate steering vectors corresponding to signals
-        steering_vectors = [np.exp(-2j * np.pi * self.spacing * np.arange(self.channels)
+        return [np.exp(-2j * np.pi * self.spacing * np.arange(self.channels)
                                    * np.sin(np.deg2rad(doa))) for (doa, freq) in zip(doas, frequencies)]
 
-        # Calculate each channel using signals and steering vectors. Real values only such as in real-life
-        self.signal_matrix = np.sum(np.array([np.outer(sig, af) for sig, af in zip(signals, steering_vectors)]),
+    @cached_property
+    def signal_matrix(self):
+        return np.sum(np.array([np.outer(sig, af) for sig, af in zip(self.signals, self.steering_vectors)]),
                                     axis=0).real
 
-        # Powers
-        self.signal_power = np.mean(np.abs(self.signal_matrix) ** 2)
-        self.noise_power = 10 ** ((10 * np.log10(self.signal_power) - self.snr) / 20)
+    @cached_property
+    def signal_power(self):
+        return np.mean(np.abs(self.signal_matrix) ** 2)
+
+    @cached_property
+    def noise_power(self):
+        return 10 ** ((10 * np.log10(self.signal_power) - self.snr) / 20)
 
     def run(self):
         """
