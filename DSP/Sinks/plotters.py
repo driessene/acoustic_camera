@@ -34,7 +34,7 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         # Styling
         self.plot_graph = pg.PlotWidget()
         self.setCentralWidget(self.plot_graph)
-        self.plot_graph.setBackground('black')
+        self.plot_graph.setBackground('white')
         self.plot_graph.setTitle(title, color='white', size='18pt')
         self.plot_graph.setLabel('left', y_label, color='white', size='20pt')
         self.plot_graph.setLabel('bottom', x_label, color='white', size='20pt')
@@ -50,8 +50,8 @@ class SingleLinePlotter(QtWidgets.QMainWindow, pipeline.Stage):
         else:
             self.x_data = x_data
 
-        # self.plot_graph.setXRange(x_range[0], x_range[1])
-        # self.plot_graph.setYRange(y_range[0], y_range[1])
+        self.plot_graph.setXRange(x_range[0], x_range[1])
+        self.plot_graph.setYRange(y_range[0], y_range[1])
 
         # Data
         self.line = self.plot_graph.plot(

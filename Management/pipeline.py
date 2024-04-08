@@ -67,13 +67,29 @@ class Stage:
             destination.put(data)
 
 
+class ChannelPicker(Stage):
+    """
+    takes and input matrix, picks a channel, and pushes the channel
+    """
+    def __init__(self, channel, port_size=4, destinations=None):
+        """
+        :param channel: The channel to push
+        :param port_size: Size of the queues
+        :param destinations: Other object input queue to push to
+        """
+        super().__init__(1, port_size, destinations)
+        self.channel = channel
+
+    def run(self):
+        self.port_put(self.port_get()[0][:, self.channel])
+
+
 class Bus(Stage):
     """
     Takes several inputs, warps data into a tuple, pushes to destinations
     """
     def __init__(self, num_ports, port_size, destinations):
         """
-        Initializes a bus
         :param num_ports: Number of ports on the bus
         :param port_size: Size of the queues
         :param destinations: Other object input queue to push to

@@ -68,7 +68,7 @@ class SteeringVector:
             vector.append(
                 np.exp(1j * np.dot(
                         element.cartesian_position,
-                        (self.wavevector.cartesian_k / (2 * np.pi * self.wavevector.spherical_k[0]))
+                        self.wavevector.cartesian_k
                     )
                 )
             )

@@ -7,8 +7,12 @@ class FFT(pipeline.Stage):
     """
     Applies an FFT to data
     """
-    def __init__(self, port_size=4, destinations=None):
+    def __init__(self, abs=False, port_size=4, destinations=None):
+        self.abs = abs
         super().__init__(1, port_size, destinations)
 
     def run(self):
-        self.port_put(fft.fft(self.port_get()[0], axis=0))
+        f = fft.fft(self.port_get()[0], axis=0)
+        if self.abs:
+            f = np.abs(f)
+        self.port_put(f)
