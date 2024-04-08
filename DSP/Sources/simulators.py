@@ -1,22 +1,8 @@
 from Management import pipeline
+from Geometry.arbitrary import Element, SteeringVector, WaveVector
 import numpy as np
 from time import sleep
 from functools import cached_property
-
-
-class Source:
-    """
-    Mathematical representation of an audio source in a space
-    """
-
-    def __init__(self, frequency, theta):
-        """
-        Initializes a source
-        :param frequency: The frequency in Hz of the audio source
-        :param theta: The direction of arrival of the source to a source recorder
-        """
-        self.frequency = frequency
-        self.theta = theta
 
 
 class AudioSimulator(pipeline.Stage):
@@ -24,8 +10,8 @@ class AudioSimulator(pipeline.Stage):
     Simulates audio recordings. Can be used in place of AudioRecorder for testing
     """
     def __init__(self,
-                 sources: list[Source],
-                 spacing: float = 0.25,  # In meters. Causes spacing to scale with frequency like in real life
+                 wave_vectors: list,
+                 elements: list,
                  snr: float = 50,
                  samplerate: int = 44100,
                  num_channels: int = 6,
@@ -35,8 +21,8 @@ class AudioSimulator(pipeline.Stage):
                  destinations=None
                  ):
         """
-        :param sources: The sources to simulate
-        :param spacing: Spacing, in meters, of the microphone array
+        :param wave_vectors: The wave vectors to simulate
+        :param elements: The elements to simulate
         :param snr: Signal to noise ratio of the simulation
         :param samplerate: The samplerate of the simulation
         :param num_channels: The number of channles of the simulation
@@ -47,8 +33,8 @@ class AudioSimulator(pipeline.Stage):
         :param destinations: Where to push simulation data. Object should inherit from Stage
         """
         super().__init__(0, 0, destinations)
-        self.sources = sources
-        self.spacing = spacing
+        self.wave_vectors = wave_vectors
+        self.elements = elements
         self.snr = snr
         self.samplerate = samplerate
         self.channels = num_channels
@@ -65,19 +51,16 @@ class AudioSimulator(pipeline.Stage):
 
     @cached_property
     def signals(self):
-        frequencies = [source.frequency for source in self.sources]
+        frequencies = [wave_vector.frequency for wave_vector in self.wave_vectors]
         return [np.exp(2j * np.pi * freq * self.time_vector) for freq in frequencies]
 
     @cached_property
     def steering_vectors(self):
-        frequencies = [source.frequency for source in self.sources]
-        doas = [source.theta for source in self.sources]
-        return [np.exp(-2j * np.pi * self.spacing * np.arange(self.channels)
-                                   * np.sin(np.deg2rad(doa))) for (doa, freq) in zip(doas, frequencies)]
+        return [SteeringVector(self.elements, wave_vector) for wave_vector in self.wave_vectors]
 
     @cached_property
     def signal_matrix(self):
-        return np.sum(np.array([np.outer(sig, af) for sig, af in zip(self.signals, self.steering_vectors)]),
+        return np.sum(np.array([np.outer(sig, steering.vector) for sig, steering in zip(self.signals, self.steering_vectors)]),
                                     axis=0).real
 
     @cached_property

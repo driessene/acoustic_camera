@@ -1,6 +1,7 @@
 from DSP.Sinks import plotters
 from DSP.Processes import direction_of_arrival, filters
 from DSP.Sources import simulators
+from Geometry.arbitrary import SteeringMatrix, Element, WaveVector
 from Geometry.uniform import OneDimensionalArray
 from pyqtgraph.Qt import QtWidgets
 import numpy as np
@@ -11,22 +12,35 @@ def main():
     # Variables
     samplerate = 44100
     blocksize = 44100
-    spacing = 0.5
+    wave_number = 3.94  # 10 inches
+    speed_of_sound = 343
     snr = 50
-    channels = 8
     delta_theta = np.pi / 1000
     sleep = False
 
     # Sources
-    sources = [simulators.Source(675, 10), simulators.Source(775, 50)]
+    elements = [
+        Element([0, 0, 0]),
+        Element([0.5, 0, 0]),
+        Element([1, 0, 0]),
+        Element([1.5, 0, 0]),
+        Element([2, 0, 0]),
+        Element([2.5, 0, 0]),
+        Element([3, 0, 0]),
+        Element([3.5, 0, 0])
+    ]
+    wave_vectors = [
+        WaveVector([wave_number, 0, 0.175], speed_of_sound),   # 10 deg
+        WaveVector([wave_number, 0, 0.873], speed_of_sound)    # 50 deg
+    ]
 
     # Recorder to get data
     recorder = simulators.AudioSimulator(
-        sources=sources,
-        spacing=spacing,
+        elements=elements,
+        wave_vectors=wave_vectors,
         snr=snr,
         samplerate=samplerate,
-        num_channels=channels,
+        num_channels=len(elements),
         blocksize=blocksize,
         sleep=sleep
     )
@@ -34,14 +48,20 @@ def main():
     # Filter
     filt = filters.FIRWINFilter(
         N=101,
-        num_channels=channels,
+        num_channels=len(elements),
         cutoff=1000,
         samplerate=samplerate,
         method='filtfilt',
     )
 
     # MUSIC
-    matrix = OneDimensionalArray(spacing, channels, delta_theta)
+    matrix = SteeringMatrix(
+        elements=elements,
+        azimuths=np.array([0]),
+        inclinations=np.arange(-np.pi/2, np.pi/2, delta_theta),
+        wave_speed=speed_of_sound,
+        wavenumber=wave_vectors
+    )
     music = direction_of_arrival.MUSIC(matrix, num_sources=4)
 
     # Plotter

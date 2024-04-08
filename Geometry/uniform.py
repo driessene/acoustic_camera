@@ -15,3 +15,6 @@ class OneDimensionalArray:
     @cached_property
     def matrix(self):
         return np.exp(-2j * np.pi * self.spacing * np.arange(self.num_channels)[:, np.newaxis] * np.sin(self.theta_scan))
+        #      | Euler's formula |
+        #                           |                            Radius                       |
+        #                                                                                        |       angle         |

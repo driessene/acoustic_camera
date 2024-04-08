@@ -55,7 +55,6 @@ class MUSIC(pipeline.Stage):
         # Calculate the covariance matrix
         data = self.port_get()[0]
         Rx = np.cov(data.T)
-
         # Decompose into eigenvalues and vectors
         eigvals, eigvecs = np.linalg.eigh(Rx)
 
@@ -68,7 +67,6 @@ class MUSIC(pipeline.Stage):
 
         # Compute the spatial spectrum
         music_spectrum = 1 / np.sum(np.abs(self.steering_matrix.matrix.conj().T @ noise_subspace) ** 2, axis=1)
-
         # Normalize and return results
         music_spectrum /= np.max(music_spectrum)
 
