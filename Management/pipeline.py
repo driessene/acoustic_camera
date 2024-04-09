@@ -19,6 +19,8 @@ class Stage:
 
         if has_process:
             self.process = mp.Process(target=self._process)
+        else:
+            self.process = None
 
     def _process(self):
         """

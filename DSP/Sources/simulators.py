@@ -14,7 +14,6 @@ class AudioSimulator(pipeline.Stage):
                  elements: list,
                  snr: float = 50,
                  samplerate: int = 44100,
-                 num_channels: int = 6,
                  blocksize: int = 1024,
                  speed_of_sound: float = 343.0,
                  sleep: bool = True,
@@ -25,7 +24,6 @@ class AudioSimulator(pipeline.Stage):
         :param elements: The elements to simulate
         :param snr: Signal to noise ratio of the simulation
         :param samplerate: The samplerate of the simulation
-        :param num_channels: The number of channles of the simulation
         :param blocksize: The number of samples per block
         :param speed_of_sound: The speed of sound of the environment
         :param sleep: If true, sleep between simulations.
@@ -37,12 +35,12 @@ class AudioSimulator(pipeline.Stage):
         self.elements = elements
         self.snr = snr
         self.samplerate = samplerate
-        self.channels = num_channels
         self.blocksize = blocksize
         self.speed_of_sound = speed_of_sound
         self.sleep = sleep
 
         # Mock inherited properties
+        self.channels = len(self.elements)
         self.virtual_channels = self.channels
 
     @cached_property
@@ -50,7 +48,7 @@ class AudioSimulator(pipeline.Stage):
         return np.arange(self.blocksize) / self.samplerate
 
     @cached_property
-    def signals(self):
+    def waveforms(self):
         frequencies = [wave_vector.frequency for wave_vector in self.wave_vectors]
         return [np.exp(2j * np.pi * freq * self.time_vector) for freq in frequencies]
 
@@ -60,8 +58,8 @@ class AudioSimulator(pipeline.Stage):
 
     @cached_property
     def signal_matrix(self):
-        return np.sum(np.array([np.outer(sig, steering.vector) for sig, steering in zip(self.signals, self.steering_vectors)]),
-                                    axis=0).real
+        return np.sum(np.array([np.outer(sig, steering.vector) for sig, steering in zip(self.waveforms, self.steering_vectors)]),
+                      axis=0).real
 
     @cached_property
     def signal_power(self):

@@ -1,5 +1,6 @@
 import numpy as np
 from functools import cached_property
+from itertools import product
 
 
 def spherical_to_cartesian(radius, azimuth, inclination):
@@ -14,16 +15,12 @@ class Element:
     """
     Defines a point in space where an element lays in distance from origin. Units are meters.
     """
-    def __init__(self, spherical_position):
+    def __init__(self, cartesian_position):
         """
-        :param spherical_position: Array of which (radius, azimuth, elevation)
+        :param cartesian_position: Array of which (radius, azimuth, elevation)
         """
-        # (radius, azimuth, elevation)
-        self.spherical_position = spherical_position
-
-    @cached_property
-    def cartesian_position(self):
-        return spherical_to_cartesian(*self.spherical_position)
+        # (x, y, z)
+        self.cartesian_position = cartesian_position
 
 
 class WaveVector:
@@ -63,16 +60,9 @@ class SteeringVector:
 
     @cached_property
     def vector(self):
-        vector = []
-        for element in self.elements:
-            vector.append(
-                np.exp(1j * np.dot(
-                        element.cartesian_position,
-                        self.wavevector.cartesian_k
-                    )
-                )
-            )
-        return np.array(vector)
+        return np.array(
+            [np.exp(1j * np.dot(element.cartesian_position, self.wavevector.cartesian_k))
+             for element in self.elements])
 
 
 class SteeringMatrix:
@@ -95,10 +85,6 @@ class SteeringMatrix:
 
     @cached_property
     def matrix(self):
-        vectors = []
-        for inclination in self.inclinations:
-            for azimuth in self.azimuths:
-                wave_vector = WaveVector((self.wavenumber, azimuth, inclination), self.wave_speed)
-                vectors.append(SteeringVector(self.elements, wave_vector).vector)
-
-        return np.vstack(vectors).T
+        return np.vstack(
+            [SteeringVector(self.elements, WaveVector((self.wavenumber, azimuth, inclination), self.wave_speed)).vector
+             for (inclination, azimuth) in product(self.inclinations, self.azimuths)]).T
