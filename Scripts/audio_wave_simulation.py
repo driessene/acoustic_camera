@@ -16,11 +16,12 @@ def main():
     speed_of_sound = 343
 
     # Sources
-    elements = [Element([i, j, 1]) for (i, j) in product(np.arange(0, 2, 0.25), np.arange(0, 2, 0.25))]
+    spacing = np.arange(0, 4, 0.5)
+    elements = [Element([i, j, 0]) for (i, j) in product(spacing, spacing)]
 
     wave_vectors = [
-        WaveVector([wave_number * 1.0, np.deg2rad(10), np.deg2rad(10)], speed_of_sound),
-        WaveVector([wave_number * 1.1, np.deg2rad(50), np.deg2rad(50)], speed_of_sound)
+        WaveVector([wave_number * 1.0, 1.0 * np.pi / 4, 1.0 * np.pi / 4], speed_of_sound),
+        WaveVector([wave_number * 1.1, 1.1 * np.pi / 4, 1.3 * np.pi / 4], speed_of_sound)
     ]
 
     # Recorder to get data
@@ -37,7 +38,7 @@ def main():
     filt = filters.FIRWINFilter(
         N=101,
         num_channels=len(elements),
-        cutoff=1000,
+        cutoff=1500,
         samplerate=samplerate,
         method='filtfilt',
     )
@@ -49,7 +50,7 @@ def main():
         y_label="Amplitude",
         num_lines=len(elements),
         num_points=blocksize,
-        x_extent=[0, 100],
+        x_extent=[100, 500],
         y_extent=[-1, 1],
         interval=blocksize/samplerate
     )

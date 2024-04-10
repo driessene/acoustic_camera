@@ -12,15 +12,16 @@ def main():
     # Variables
     samplerate = 44100
     blocksize = 1024
-    wave_number = 1.46
+    wave_number = 2
     speed_of_sound = 343
 
     # Sources
-    elements = [Element([i, j, 1]) for (i, j) in product(np.arange(0, 2, 0.25), np.arange(0, 2, 0.25))]
+    spacing = np.arange(0, 4, 0.5)
+    elements = [Element([i, j, k]) for (i, j, k) in product(spacing, spacing, spacing)]
 
     wave_vectors = [
-        WaveVector([wave_number * 1.0, np.deg2rad(10), np.deg2rad(10)], speed_of_sound),
-        WaveVector([wave_number * 1.1, np.deg2rad(50), np.deg2rad(50)], speed_of_sound)
+        WaveVector([wave_number * 1.0, 1.0 * np.pi / 4, 1.0 * np.pi / 4], speed_of_sound),
+        WaveVector([wave_number * 1.1, 1.1 * np.pi / 4, 1.3 * np.pi / 4], speed_of_sound)
     ]
 
     # Recorder to get data
@@ -43,8 +44,8 @@ def main():
     )
 
     # MUSIC
-    azimuth_angles = np.linspace(0, 2 * np.pi, 500)
-    inclination_angles = np.linspace(-0.5 * np.pi, 0.5 * np.pi, 500)
+    azimuth_angles = np.linspace(0, 2 * np.pi, 100)
+    inclination_angles = np.linspace(0, np.pi, 100)
     matrix = SteeringMatrix(
         elements=elements,
         azimuths=azimuth_angles,
@@ -54,15 +55,15 @@ def main():
     )
     music = direction_of_arrival.MUSIC(
         steering_matrix=matrix,
-        num_sources=4
+        num_sources=len(wave_vectors) * 2
     )
     # Plot
     plot = plotters.ThreeDimPlotter(
         title='MUSIC',
         x_label="inclination",
         y_label="azimuth",
-        x_data=np.rad2deg(inclination_angles),
-        y_data=np.rad2deg(azimuth_angles),
+        x_data=inclination_angles,
+        y_data=azimuth_angles,
         interval=blocksize/samplerate
     )
     # Linking

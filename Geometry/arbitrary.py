@@ -98,5 +98,5 @@ class SteeringMatrix:
     @cached_property
     def matrix(self):
         return np.vstack(
-            [SteeringVector(self.elements, WaveVector((self.wavenumber, azimuth, inclination), self.wave_speed)).vector
+            [SteeringVector(self.elements, WaveVector((self.wavenumber, inclination, azimuth), self.wave_speed)).vector
              for (inclination, azimuth) in product(self.inclinations, self.azimuths)]).T

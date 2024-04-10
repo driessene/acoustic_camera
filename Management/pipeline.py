@@ -79,7 +79,7 @@ class ChannelPicker(Stage):
         :param port_size: Size of the queues
         :param destinations: Other object input queue to push to
         """
-        super().__init__(1, port_size, destinations)
+        super().__init__(1, port_size, destinations, True)
         self.channel = channel
 
     def run(self):
@@ -102,7 +102,7 @@ class Bus(Stage):
         self.port_put(tuple(self.port_get()))
 
 
-class Concatenator(Bus):
+class Concatenator(Stage):
     """
     Takes several inputs, concatenates, pushes to destinations
     """
