@@ -261,6 +261,6 @@ class ThreeDimPlotter(QMainWindow, pipeline.Stage):
         :return: None
         """
         data = self.port_get()[0]
-        data = np.reshape(data, (self.x_data.size, self.y_data.size))
-        self.mesh.setData(self.xx_data, self.yy_data, data)
-
+        data = np.reshape(data, self.xx_data.shape)
+        print(data.shape)
+        self.mesh.setData(data)
