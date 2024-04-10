@@ -1,6 +1,12 @@
+from .. import config
+
+if config.USE_CUPY:
+    import cupy as np
+else:
+    import numpy as np
+
 from Management import pipeline
 from Geometry.arbitrary import Element, SteeringVector, WaveVector
-import numpy as np
 from time import sleep
 from functools import cached_property
 

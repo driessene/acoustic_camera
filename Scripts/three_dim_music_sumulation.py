@@ -1,4 +1,4 @@
-from DSP.Sinks import plotters_matplotlib, plotters_ptqtgraph
+from DSP.Sinks import plotters, plotters_ptqtgraph
 from DSP.Processes import filters, direction_of_arrival
 from DSP.Sources import simulators
 from Geometry.arbitrary import Element, WaveVector, SteeringMatrix

@@ -1,4 +1,4 @@
-from DSP.Sinks import plotters_matplotlib
+from DSP.Sinks import plotters
 from DSP.Processes import spectral, filters
 from DSP.Sources import simulators
 from Management.pipeline import ChannelPicker

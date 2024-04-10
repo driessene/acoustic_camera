@@ -1,5 +1,11 @@
+from .. import config
+
+if config.USE_CUPY:
+    import cupy as np
+else:
+    import numpy as np
+
 import sounddevice as sd
-import numpy as np
 from Management import pipeline
 
 

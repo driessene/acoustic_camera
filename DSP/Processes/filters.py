@@ -1,5 +1,12 @@
-import numpy as np
-import scipy.signal as sig
+from .. import config
+
+if config.USE_CUPY:
+    import cupy as np
+    import cupy.scipy.signal as sig
+else:
+    import numpy as np
+    import scipy.signal as sig
+
 import matplotlib.pyplot as plt
 from Management import pipeline
 from functools import cached_property

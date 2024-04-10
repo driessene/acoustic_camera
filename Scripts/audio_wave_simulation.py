@@ -1,4 +1,4 @@
-from DSP.Sinks import plotters_matplotlib
+from DSP.Sinks import plotters
 from DSP.Processes import filters
 from DSP.Sources import simulators
 from Geometry.arbitrary import Element, WaveVector

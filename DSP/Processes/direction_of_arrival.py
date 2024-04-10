@@ -1,4 +1,9 @@
-import numpy as np
+from .. import config
+
+if config.USE_CUPY:
+    import cupy as np
+else:
+    import numpy as np
 from Management import pipeline
 
 

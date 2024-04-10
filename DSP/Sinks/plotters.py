@@ -1,7 +1,9 @@
+from .. import config
+
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from Management.pipeline import Stage
-import numpy as np
 
 
 class LinePlotter(Stage):
@@ -64,7 +66,12 @@ class LinePlotter(Stage):
 
     def _on_frame_update(self, frame):
         data = self.port_get()[0]
-        # If a signal matrix:
+
+        # Unpack if cupy
+        if config.USE_CUPY:
+            data = data.get()
+
+        # If a signal matrix, transpose
         if data.ndim > 1:
             data = data.T
 
@@ -115,5 +122,10 @@ class ThreeDimPlotter(Stage):
 
     def _on_frame_update(self, frame):
         data = self.port_get()[0]
+
+        # Unpack if cupy
+        if config.USE_CUPY:
+            data = data.get()
+
         self.plot.set_array(data)
         return self.plot,

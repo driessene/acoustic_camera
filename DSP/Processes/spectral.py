@@ -1,4 +1,10 @@
-import numpy as np
+from .. import config
+
+if config.USE_CUPY:
+    import cupy as np
+else:
+    import numpy as npp
+
 from Management import pipeline
 import scipy.fft as fft
 
