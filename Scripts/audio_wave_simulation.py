@@ -43,7 +43,7 @@ def main():
     )
 
     # Plot
-    plot = plotters_matplotlib.LinePlotter(
+    plot = plotters.LinePlotter(
         title='Audio Waves',
         x_label="N",
         y_label="Amplitude",

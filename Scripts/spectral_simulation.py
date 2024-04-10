@@ -61,7 +61,7 @@ def main():
     # Plotter
     delta_f = blocksize / samplerate
 
-    plot = plotters_matplotlib.LinePlotter(
+    plot = plotters.LinePlotter(
         title='FFT',
         x_label='Hz',
         y_label='Power',

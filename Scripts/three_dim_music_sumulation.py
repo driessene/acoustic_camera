@@ -1,4 +1,4 @@
-from DSP.Sinks import plotters, plotters_ptqtgraph
+from DSP.Sinks import plotters
 from DSP.Processes import filters, direction_of_arrival
 from DSP.Sources import simulators
 from Geometry.arbitrary import Element, WaveVector, SteeringMatrix
@@ -57,7 +57,7 @@ def main():
         num_sources=4
     )
     # Plot
-    plot = plotters_matplotlib.ThreeDimPlotter(
+    plot = plotters.ThreeDimPlotter(
         title='MUSIC',
         x_label="inclination",
         y_label="azimuth",
