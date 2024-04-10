@@ -4,6 +4,8 @@ from PyQt5.QtCore import Qt, QTimer
 from Management import pipeline
 import numpy as np
 
+from time import perf_counter
+
 
 class SingleLinePlotter(QMainWindow, pipeline.Stage):
     """
@@ -262,5 +264,4 @@ class ThreeDimPlotter(QMainWindow, pipeline.Stage):
         """
         data = self.port_get()[0]
         data = np.reshape(data, self.xx_data.shape)
-        print(data.shape)
         self.mesh.setData(data)

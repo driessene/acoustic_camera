@@ -1,9 +1,9 @@
-from DSP.Sinks import plotters_ptqtgraph
+from DSP.Sinks import plotters_matplotlib
 from DSP.Processes import spectral, filters
 from DSP.Sources import simulators
 from Management.pipeline import ChannelPicker
 from Geometry.arbitrary import Element, WaveVector
-from pyqtgraph.Qt import QtWidgets
+from matplotlib.pyplot import show
 import numpy as np
 
 
@@ -41,7 +41,6 @@ def main():
         wave_vectors=wave_vectors,
         snr=snr,
         samplerate=samplerate,
-        num_channels=channels,
         blocksize=blocksize,
         sleep=sleep
     )
@@ -62,15 +61,15 @@ def main():
     # Plotter
     delta_f = blocksize / samplerate
 
-    app = QtWidgets.QApplication([])
-    plot = plotters.SingleLinePlotter(
+    plot = plotters_matplotlib.LinePlotter(
         title='FFT',
-        x_label='K',
+        x_label='Hz',
         y_label='Power',
-        blocksize=blocksize,
+        num_lines=1,
+        num_points=blocksize,
         x_data=np.arange(0, blocksize, delta_f),
-        x_range=(0, 1000),
-        y_range=(0, 1000)
+        y_extent=[0, 100],
+        interval=blocksize / samplerate
     )
 
     # Linking
@@ -84,8 +83,8 @@ def main():
     filt.start()
     fft_channel.start()
     fft.start()
-    plot.show()
-    app.exec()
+    plot.start()
+    show()
 
 
 if __name__ == '__main__':

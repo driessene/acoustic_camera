@@ -1,7 +1,7 @@
-from DSP.Sinks import plotters_matplotlib, plotters_ptqtgraph
-from DSP.Processes import filters, direction_of_arrival
+from DSP.Sinks import plotters_matplotlib
+from DSP.Processes import filters
 from DSP.Sources import simulators
-from Geometry.arbitrary import Element, WaveVector, SteeringMatrix
+from Geometry.arbitrary import Element, WaveVector
 from matplotlib.pyplot import show
 import numpy as np
 from itertools import product
@@ -42,38 +42,24 @@ def main():
         method='filtfilt',
     )
 
-    # MUSIC
-    azimuth_angles = np.linspace(0, 2 * np.pi, 500)
-    inclination_angles = np.linspace(-0.5 * np.pi, 0.5 * np.pi, 500)
-    matrix = SteeringMatrix(
-        elements=elements,
-        azimuths=azimuth_angles,
-        inclinations=inclination_angles,
-        wavenumber=wave_number,
-        wave_speed=speed_of_sound
-    )
-    music = direction_of_arrival.MUSIC(
-        steering_matrix=matrix,
-        num_sources=4
-    )
     # Plot
-    plot = plotters_matplotlib.ThreeDimPlotter(
-        title='MUSIC',
-        x_label="inclination",
-        y_label="azimuth",
-        x_data=np.rad2deg(inclination_angles),
-        y_data=np.rad2deg(azimuth_angles),
+    plot = plotters_matplotlib.LinePlotter(
+        title='Audio Waves',
+        x_label="N",
+        y_label="Amplitude",
+        num_lines=len(elements),
+        num_points=blocksize,
+        x_extent=[0, 100],
+        y_extent=[-1, 1],
         interval=blocksize/samplerate
     )
     # Linking
     recorder.link_to_destination(filt, 0)
-    filt.link_to_destination(music, 0)
-    music.link_to_destination(plot, 0)
+    filt.link_to_destination(plot, 0)
 
     # Start processes
     recorder.start()
     filt.start()
-    music.start()
     plot.start()
     show()
 
