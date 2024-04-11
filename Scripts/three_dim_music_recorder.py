@@ -65,21 +65,21 @@ def main():
         elements=elements,
         azimuths=azimuth_angles,
         inclinations=inclination_angles,
-        wavenumber=1.46,
-        wave_speed=343
+        wavenumber=1.48,
+        wave_speed=343,
     )
     music = direction_of_arrival.MUSIC(
         steering_matrix=matrix,
-        num_sources=4
+        num_sources=2
     )
 
     # Plot
     plot = plotters.ThreeDimPlotter(
         title='MUSIC',
-        x_label="inclination",
-        y_label="azimuth",
-        x_data=inclination_angles,
-        y_data=azimuth_angles,
+        x_label="azimuth",
+        y_label="inclination",
+        x_data=azimuth_angles,
+        y_data=inclination_angles,
         interval=blocksize/samplerate
     )
 

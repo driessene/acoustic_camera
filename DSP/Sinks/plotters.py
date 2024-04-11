@@ -80,6 +80,11 @@ class LinePlotter(Stage):
 
 
 class ThreeDimPlotter(Stage):
+    """
+    Plots a 2d matrix flat on a surface. Data is expected to be 1D, which is from a 2D matrix, but flattened. Use
+    np.ravel() if needed to flatten a matrix. For example, a MUSIC output can have 2 axes (inclination, azimuth), but is
+    still represented by a 1D vector.
+    """
     def __init__(self,
                  title: str,
                  x_label: str,

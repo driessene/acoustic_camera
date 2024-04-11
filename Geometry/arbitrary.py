@@ -28,7 +28,6 @@ class Element:
         """
         :param cartesian_position: Array of which (x, y, z)
         """
-        # (x, y, z)
         self.cartesian_position = cartesian_position
 
     @cached_property
@@ -81,7 +80,12 @@ class SteeringMatrix:
     """
     Defines a steering matrix based on the position of elements and thetas for which to test
     """
-    def __init__(self, elements: list, inclinations, azimuths, wavenumber, wave_speed):
+    def __init__(self,
+                 elements: list[Element],
+                 inclinations: np.array,
+                 azimuths: np.array,
+                 wavenumber: float,
+                 wave_speed: float):
         """
         :param elements: The elements to include in the vectors
         :param inclinations: The elevations to include in the vectors
