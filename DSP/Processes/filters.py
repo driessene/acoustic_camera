@@ -70,7 +70,7 @@ class Filter(pipeline.Stage):
         elif self.method == 'filtfilt':
             data = sig.filtfilt(self.b, self.a, data, axis=0)
         else:
-            raise NotImplementedError
+            raise NotImplementedError('Type must be either lfilter or filtfilt')
         self.port_put(data)
 
     def plot_response(self):
