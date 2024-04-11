@@ -42,6 +42,11 @@ class Stage:
         if self.process:
             self.process.start()
 
+    def stop(self):
+        if self.process:
+            self.process.terminate()
+            self.process.join()
+
     def link_to_destination(self, next_stage, port):
         """
         Adds a destination to push data too. This is easier to read in scripting rather than providing all destinations
