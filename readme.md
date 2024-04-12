@@ -60,6 +60,10 @@ Concatinators concatenate several signal matrixes. For example, if there are sev
 # DSP
 Hold sources, processes, and sinks for audio processing.
 
+## config.py
+Hold configuration data.
+- USE_CUPY - bool: If true, use cupy instead of numpy and scipy. Recommended to be true if the computer has a cuda GPU with cuda compiler installed. Follow the setup [here](https://docs.cupy.dev/en/stable/install.html)
+
 ## Sources
 Sources have no ports, only destinations. Examples include recorders and simulators.
 
