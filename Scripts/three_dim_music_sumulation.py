@@ -1,10 +1,8 @@
 from DSP.Sinks import plotters
 from DSP.Processes import filters, direction_of_arrival
 from DSP.Sources import simulators
-from Geometry.arbitrary import Element, WaveVector, SteeringMatrix, spherical_to_cartesian
-from matplotlib.pyplot import show
+from Geometry.geometry import Element, WaveVector, SteeringMatrix, spherical_to_cartesian
 import numpy as np
-from itertools import product
 
 
 def main():
@@ -71,7 +69,6 @@ def main():
         azimuths=azimuth_angles,
         inclinations=inclination_angles,
         wavenumber=wave_number,
-        wave_speed=speed_of_sound
     )
     music = direction_of_arrival.MUSIC(
         steering_matrix=matrix,
@@ -98,7 +95,7 @@ def main():
     filt.start()
     music.start()
     plot.start()
-    show()
+    plot.show()
 
 
 if __name__ == '__main__':

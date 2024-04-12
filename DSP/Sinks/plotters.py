@@ -78,6 +78,10 @@ class LinePlotter(Stage):
         for (y, plot) in zip(data, self.plots):
             plot.set_ydata(y)
 
+    @staticmethod
+    def show():
+        plt.show()
+
 
 class ThreeDimPlotter(Stage):
     """
@@ -134,3 +138,7 @@ class ThreeDimPlotter(Stage):
 
         self.plot.set_array(data)
         return self.plot,
+
+    @staticmethod
+    def show():
+        plt.show()

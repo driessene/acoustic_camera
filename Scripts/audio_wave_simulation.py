@@ -1,7 +1,7 @@
 from DSP.Sinks import plotters
 from DSP.Processes import filters
 from DSP.Sources import simulators
-from Geometry.arbitrary import Element, WaveVector
+from Geometry.geometry import Element, WaveVector
 from matplotlib.pyplot import show
 import numpy as np
 from itertools import product

@@ -1,7 +1,7 @@
 from DSP.Sinks import plotters
 from DSP.Processes import filters, direction_of_arrival
 from DSP.Sources import recorders
-from Geometry.arbitrary import Element, SteeringMatrix
+from Geometry.geometry import Element, SteeringMatrix
 from Management.pipeline import Concatenator
 from matplotlib.pyplot import show
 import numpy as np

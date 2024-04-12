@@ -2,7 +2,7 @@ from DSP.Sinks import plotters
 from DSP.Processes import spectral, filters
 from DSP.Sources import simulators
 from Management.pipeline import ChannelPicker
-from Geometry.arbitrary import Element, WaveVector
+from Geometry.geometry import Element, WaveVector
 from matplotlib.pyplot import show
 import numpy as np
 

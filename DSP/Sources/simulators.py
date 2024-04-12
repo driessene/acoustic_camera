@@ -6,7 +6,7 @@ else:
     import numpy as np
 
 from Management import pipeline
-from Geometry.arbitrary import Element, SteeringVector, WaveVector
+from Geometry.geometry import Element, SteeringVector, WaveVector
 from time import sleep
 from functools import cached_property
 
@@ -31,7 +31,6 @@ class AudioSimulator(pipeline.Stage):
         :param snr: Signal to noise ratio of the simulation
         :param samplerate: The samplerate of the simulation
         :param blocksize: The number of samples per block
-        :param speed_of_sound: The speed of sound of the environment
         :param sleep: If true, sleep between simulations.
             This represents the acutal time it takes to get data for a recorder
         :param destinations: Where to push simulation data. Object should inherit from Stage
@@ -42,7 +41,6 @@ class AudioSimulator(pipeline.Stage):
         self.snr = snr
         self.samplerate = samplerate
         self.blocksize = blocksize
-        self.speed_of_sound = speed_of_sound
         self.sleep = sleep
 
         # Mock inherited properties
