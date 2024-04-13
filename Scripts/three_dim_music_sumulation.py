@@ -10,7 +10,7 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 10000
+    blocksize = 44100
     wave_number = 2
     speed_of_sound = 343
 
@@ -75,6 +75,7 @@ def main():
         azimuths=azimuth_angles,
         inclinations=inclination_angles,
         wavenumber=wave_number,
+        wave_speed=speed_of_sound
     )
     music = direction_of_arrival.MUSIC(
         steering_matrix=matrix,

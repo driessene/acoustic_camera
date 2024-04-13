@@ -87,4 +87,4 @@ class AudioSimulator(pipeline.Stage):
         if self.sleep:
             sleep(self.blocksize / self.samplerate)  # simulate delay for recording
 
-        self.port_put(signal)
+        self.port_put(pipeline.Message(signal))

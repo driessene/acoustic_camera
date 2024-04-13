@@ -64,7 +64,7 @@ class AudioRecorder(pipeline.Stage):
         data = np.array(indata)
         if self.channel_map is not None:
             data = data[:, self.channel_map]
-        self.port_put(data)
+        self.port_put(pipeline.Message(data))
 
     def start(self):
         """

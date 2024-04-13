@@ -29,8 +29,8 @@ class LinePlotter(Stage):
         :param y_label: The y label of the plot
         :param num_points: The number of data points per line
         :param num_lines: The number of lines to plot
-        :param interval: The time delay in seconds beteween each frame update
-        :param legend: If ture, show a lagend for each line
+        :param interval: The time delay in seconds between each frame update
+        :param legend: If ture, show a legend for each line
         :param x_data: If provided, set the x component for each line to this
         :param x_extent: If provided, set the visual range of the plot on the x-axis to this
         :param y_extent: If provided, set the visual range of the plot on the y-axis to this
@@ -114,7 +114,7 @@ class ThreeDimPlotter(Stage):
         """
         super().__init__(1, port_size, None, False)
 
-        self.xx, self.yy = np.meshgrid(x_data, y_data)
+        self.xx, self.yy = np.meshgrid(y_data, x_data)
         self.interval = interval
 
         self.fig, self.ax = plt.subplots()
@@ -137,7 +137,9 @@ class ThreeDimPlotter(Stage):
         self.anim = FuncAnimation(self.fig, self._on_frame_update, interval=self.interval)
 
     def _on_frame_update(self, frame):
-        data = self.port_get()[0]
+        data = self.port_get()[0].payload
+        data = np.reshape(data, self.xx.shape).ravel()
+
 
         # Unpack if cupy
         if config.USE_CUPY:

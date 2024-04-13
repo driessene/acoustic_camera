@@ -33,7 +33,7 @@ class AudioPlayback(pipeline.Stage):
         if status:
             print(status)
 
-        outdata[:, 0] = self.port_get()[0][:, self.channel]
+        outdata[:, 0] = self.port_get()[0].payload[:, self.channel]
 
     def start(self):
         """

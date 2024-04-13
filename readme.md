@@ -27,7 +27,7 @@ A steering matrix is composed of several steering vectors at several different a
 
 ## Pipeline
 
-### Stages
+### Stage
 To achive real-time processing, pipelines can be created using **stages**. **Stages** have a list of **ports** (queues of data), a list of **destinations** (ports of another stage), and a **process**. Each stage is responsible for getting data from the ports, processing the data, and pushing the processed data to destinations. Destinations are ports of another stage.
 Stages also introduce multiprocessing. Each stage is ran by its own processes, letting the project leverage the whole CPU.
 To use a stage, one must create a subclass which inherits the stage class. The new subclass will create the correct amount of input ports , the length of the input ports (default is 4), and destinations.
@@ -38,13 +38,23 @@ To use a stage, one must create a subclass which inherits the stage class. The n
 - destinations - multiprocessing.queue: Default to none. A list of ports from another stage. Recall that ports are multiprocessing queues of a stage.
 - has_process - bool: Default is true. Set to false if the stage does not require a process. For example, when using matplotlib for plotting, matplotlib runs its own thread to update plots, thus a process is not needed.
 
-#### methods
+#### Methods
 - run(self): To be implemented by a subclass. Runs forever in a while true loop. This is the code that the subclass customizes to it own purpose.
-- start(self): Starts the stage. Run whenever you are ready to begin the process
+- start(self): Starts the stage. Run whenever you are ready to begin the process.
 - stop(self): Stops the stage.
 - link_to_destination(self): Adds a new destination to the stage. This is easier to read than providing all destinations at once when creating the object.
 - port_get(self): Gets data from all ports. Always use this than accessing individual queues/ports. If a single port is used, add [0] to the end of the call to get the data. This is a blocking operation.
-- port_put(self, data): Puts data to all destination ports.
+- port_put(self, data - Message): Puts data to all destination ports. Data must be a Message.
+
+### Message
+Messages are used to exchange data between stages. They have a main payload of data. Kwargs can be passed for other data such as timestaps and metadata.
+
+#### Properties
+- payload - any: The payload of the message. The main data to pass.
+- kwargs: Metadata.
+
+#### Methods
+None.
 
 ### Busses
 Busses are a stage which take several import ports, merges them into a tuple, and pushes to destinations. Useful for passing several stages to a single stage. It is preferred to have stages with several input ports, but this is an alternative if needed.
@@ -55,7 +65,7 @@ Busses are a stage which take several import ports, merges them into a tuple, an
 - destinations - multiprocessing.queue: The destinations of the bus.
 
 ### Concatinator
-Concatinators concatenate several signal matrixes. For example, if there are several recorders to be merged into one recorder, a concatinatinator will concatenate the signal matrixes together. Same properties and methods as bus.
+Concatinators concatenate several signal matrices. For example, if there are several recorders to be merged into one recorder, a concatinatinator will concatenate the signal matrixes together. Same properties and methods as bus.
 
 # DSP
 Hold sources, processes, and sinks for audio processing.
@@ -137,7 +147,7 @@ A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). Th
 - plot_coefficients(self): Plots the coefficients of the filter. This is a blocking operation.
 - 
 #### ButterFilter - Stage
-A lowpass [butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter). A subclass of filter, inheriting all properties and functions
+A lowpass [butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter). A subclass of filter, inheriting all properties and methods
 
 ##### Properties
 - N - int: The order of the filter
@@ -147,7 +157,7 @@ A lowpass [butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter)
 Same as Filter.
 
 #### FIRWINFilter - Stage
-A lowpass [ideal filter](https://en.wikipedia.org/wiki/Sinc_filter) using the window method. This is mathematically better than ButterFilter and is recomended. Can have extremely sharp cutoffs. A subclass of filter, inheriting all properties and functions
+A lowpass [ideal filter](https://en.wikipedia.org/wiki/Sinc_filter) using the window method. This is mathematically better than ButterFilter and is recomended. Can have extremely sharp cutoffs. A subclass of filter, inheriting all properties and methods
 
 ##### Properties
 - N - int: The length of the filter
@@ -241,6 +251,14 @@ Holds elements, wave vectors, steering vectors, and steering matrixes. Use to ca
 
 ## geometry
 Main file
+
+### cartesian_to_spherical
+Converts cartesian coordinates to spherical coordinates.
+Usage: (radius, inclination, azimuth) = cartesian_to_spherical(x, y, z)
+
+### spherical_to_cartesian
+Converts spherical coordinates to cartesian coordinates.
+Usage: (x, y, z) = cartesian_to_spherical(radius, inclination, azimuth)
 
 ### Element
 Holds positional information about an element (a microphone or antena)

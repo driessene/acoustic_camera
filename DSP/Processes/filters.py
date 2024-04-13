@@ -59,7 +59,7 @@ class Filter(pipeline.Stage):
         Runs the filter along input data. Ran by a process
         :return: None
         """
-        data = self.port_get()[0]
+        data = self.port_get()[0].payload
 
         if self.remove_offset:
             data -= np.mean(data, axis=0, keepdims=True)
@@ -71,7 +71,7 @@ class Filter(pipeline.Stage):
             data = sig.filtfilt(self.b, self.a, data, axis=0)
         else:
             raise NotImplementedError('Type must be either lfilter or filtfilt')
-        self.port_put(data)
+        self.port_put(pipeline.Message(data))
 
     def plot_response(self):
         """
@@ -148,4 +148,4 @@ class HanningWindow(pipeline.Stage):
     def run(self):
         data = self.port_get()[0]
         data *= np.hanning(len(data))[:, np.newaxis]
-        self.port_put(data)
+        self.port_put(pipeline.Message(data))
