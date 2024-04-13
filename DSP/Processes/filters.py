@@ -1,8 +1,8 @@
-from .. import config
+import config
 
 if config.USE_CUPY:
     import cupy as np
-    import cupy.scipy.signal as sig
+    import cupyx.scipy.signal as sig
 else:
     import numpy as np
     import scipy.signal as sig
