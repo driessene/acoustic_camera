@@ -7,6 +7,7 @@ else:
 
 import sounddevice as sd
 from Management import pipeline
+import time
 
 
 def print_audio_devices():
@@ -64,7 +65,8 @@ class AudioRecorder(pipeline.Stage):
         data = np.array(indata)
         if self.channel_map is not None:
             data = data[:, self.channel_map]
-        self.port_put(pipeline.Message(data))
+        self.port_put(pipeline.Message(data, timestame=time.time()))
+        # Put time stamp to compare time delays if several recorders are being used
 
     def start(self):
         """

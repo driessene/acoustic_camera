@@ -36,7 +36,7 @@ class Beamformer(pipeline.Stage):
         beamformed_data /= np.max(beamformed_data)
 
         # Put data
-        self.port_put(beamformed_data)
+        self.port_put(pipeline.Message(beamformed_data))
 
 
 class MUSIC(pipeline.Stage):
@@ -78,7 +78,7 @@ class MUSIC(pipeline.Stage):
         music_spectrum /= np.max(music_spectrum)
 
         # Put data
-        self.port_put(music_spectrum)
+        self.port_put(pipeline.Message(music_spectrum))
 
 
 # WIP
