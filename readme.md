@@ -223,7 +223,7 @@ Plots one line or several lines on a grid. If input data is a vector, plot one l
 - show: Show the plot. This is a blocking methods. Call it at the end of your script.
 
 #### ThreeDimPlotter - Stage
-Plots a matrix on a heatmap. Same properties and methods as LinePlotter
+Plots a matrix on a heatmap. Same properties and methods as LinePlotter with the addition of z_extent. z_extent - tuple sets the maximum and minimum values for the color map.
 
 ### Playback
 Listen to your pipeline. Pass data back out of your speakers.
