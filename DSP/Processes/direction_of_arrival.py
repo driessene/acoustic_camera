@@ -7,15 +7,16 @@ else:
 from Management import pipeline
 
 
-class Beamform(pipeline.Stage):
+class Beamformer(pipeline.Stage):
     """
-    A classical beamformer
+    Implements a basic beamformer
     """
+
     def __init__(self, steering_matrix, port_size=4, destinations=None):
         """
-        :param steering_matrix: ___
+        :param steering_matrix: The steering matrix for the beamformer
         :param port_size: The size of the input queue
-        :param destinations: Where to push results. Object should inherit from Stage
+        :param destinations: Where to push output data. Object should inherit Stage
         """
         super().__init__(1, port_size, destinations)
         self.steering_matrix = steering_matrix
@@ -25,16 +26,17 @@ class Beamform(pipeline.Stage):
         Runs the beamformer on input data. Ran by a process
         :return: None
         """
-        # Beamformer
+        # Get input data
         data = self.port_get()[0]
-        r_weighted = np.abs(self.steering_matrix.matrix.conj().T @ data.T) ** 2  # Beamforming output
 
-        # Normalize results
-        results = 10 * np.log10(np.var(r_weighted, axis=1))  # Power in signal, in dB
-        results -= np.max(results)
+        # Apply beamforming
+        beamformed_data = self.steering_matrix.matrix.T.conj() @ data.T
 
-        # Push X and Y data
-        self.port_put(results)
+        # Normalize and return results
+        beamformed_data /= np.max(beamformed_data)
+
+        # Put data
+        self.port_put(beamformed_data)
 
 
 class MUSIC(pipeline.Stage):
@@ -77,3 +79,49 @@ class MUSIC(pipeline.Stage):
 
         # Put data
         self.port_put(music_spectrum)
+
+
+# WIP
+class SAMV(pipeline.Stage):
+    """
+    Implements the SAMV (Spatially Adaptive Multivariate) algorithm
+    """
+    def __init__(self, steering_matrix, num_sources, port_size=4, destinations=None):
+        """
+        :param steering_matrix: The steering matrix for the array
+        :param num_sources: The number of sources in the environment
+        :param port_size: The size of the input queue
+        :param destinations: Where to push output data. Object should inherit Stage
+        """
+        super().__init__(1, port_size, destinations)
+        self.steering_matrix = steering_matrix
+        self.num_sources = num_sources
+
+    def run(self):
+        """
+        Runs SAMV on input data. Ran by a process
+        :return: None
+        """
+        # Calculate the covariance matrix
+        data = self.port_get()[0]
+        Rx = np.cov(data.T)
+
+        # Decompose into eigenvalues and vectors
+        eigvals, eigvecs = np.linalg.eigh(Rx)
+
+        # Sort eigenvalues and corresponding eigenvectors
+        sorted_indices = np.argsort(eigvals)[::-1]
+        eigvecs_sorted = eigvecs[:, sorted_indices]
+
+        # Calculate the spatial spectrum
+        samv_spectrum = np.zeros(self.steering_matrix.matrix.shape[1])
+        for i in range(self.steering_matrix.matrix.shape[1]):
+            W = self.steering_matrix.matrix[:, :i+1]
+            M = np.dot(W, W.conj().T)
+            samv_spectrum[i] = np.trace(np.dot(M, Rx))
+
+        # Normalize and return results
+        samv_spectrum /= np.max(samv_spectrum)
+
+        # Put data
+        self.port_put(samv_spectrum)
