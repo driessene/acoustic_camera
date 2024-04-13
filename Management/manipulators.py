@@ -1,5 +1,12 @@
+import config
+
+if config.USE_CUPY:
+    import cupy as np
+else:
+    import numpy as np
+
 import pipeline
-from numpy import concatenate
+
 
 class ChannelPicker(pipeline.Stage):
     """
@@ -49,4 +56,4 @@ class Concatenator(pipeline.Stage):
 
     def run(self):
         # Get message, get payloads, concatenate, put into message, put to port
-        self.port_put(pipeline.Message(concatenate([data.payload for data in self.port_get()], axis=1)))
+        self.port_put(pipeline.Message(np.concatenate([data.payload for data in self.port_get()], axis=1)))

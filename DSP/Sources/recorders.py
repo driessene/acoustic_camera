@@ -1,4 +1,4 @@
-from .. import config
+import config
 
 if config.USE_CUPY:
     import cupy as np
@@ -7,7 +7,6 @@ else:
 
 import sounddevice as sd
 from Management import pipeline
-import time
 
 
 def print_audio_devices():

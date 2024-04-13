@@ -1,4 +1,4 @@
-from .. import config
+import config
 
 if config.USE_CUPY:
     import cupy as np
