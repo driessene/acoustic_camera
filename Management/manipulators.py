@@ -1,7 +1,7 @@
-from pipeline import Stage
+import pipeline
 from numpy import concatenate
 
-class ChannelPicker(Stage):
+class ChannelPicker(pipeline.Stage):
     """
     takes and input matrix, picks a channel, and pushes the channel
     """
@@ -15,12 +15,12 @@ class ChannelPicker(Stage):
         self.channel = channel
 
     def run(self):
-        self.port_put(self.port_get()[0][:, self.channel])
+        self.port_put(pipeline.Message(self.port_get()[0].payload[:, self.channel]))
 
 
-class Bus(Stage):
+class Bus(pipeline.Stage):
     """
-    Takes several inputs, warps data into a tuple, pushes to destinations
+    Takes several messages, warps data into a tuple, pushes to destinations
     """
     def __init__(self, num_ports, port_size, destinations):
         """
@@ -31,10 +31,10 @@ class Bus(Stage):
         super().__init__(num_ports, port_size, destinations)
 
     def run(self):
-        self.port_put(tuple(self.port_get()))
+        self.port_put(pipeline.Message(tuple(self.port_get())))
 
 
-class Concatenator(Stage):
+class Concatenator(pipeline.Stage):
     """
     Takes several inputs, concatenates, pushes to destinations
     """
@@ -48,4 +48,5 @@ class Concatenator(Stage):
         super().__init__(num_ports, port_size, destinations)
 
     def run(self):
-        self.port_put(concatenate(self.port_get(), axis=1))
+        # Get message, get payloads, concatenate, put into message, put to port
+        self.port_put(pipeline.Message(concatenate([data.payload for data in self.port_get()], axis=1)))
