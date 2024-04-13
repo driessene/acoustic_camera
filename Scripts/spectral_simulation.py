@@ -49,7 +49,7 @@ def main():
     filt = filters.FIRWINFilter(
         N=101,
         num_channels=channels,
-        cutoff=20000,
+        cutoff=2000,
         samplerate=samplerate,
         method='filtfilt',
     )
@@ -63,11 +63,10 @@ def main():
 
     plot = plotters.LinePlotter(
         title='FFT',
-        x_label='Hz',
-        y_label='Power',
+        x_label='K',
+        y_label='Abs Value',
         num_lines=1,
         num_points=blocksize,
-        x_data=np.arange(0, blocksize, delta_f),
         y_extent=[0, 100],
         interval=blocksize / samplerate
     )

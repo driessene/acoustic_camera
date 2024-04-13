@@ -76,10 +76,10 @@ def main():
     # Plot
     plot = plotters.ThreeDimPlotter(
         title='MUSIC',
-        x_label="azimuth",
-        y_label="inclination",
-        x_data=azimuth_angles,
-        y_data=inclination_angles,
+        x_label="inclination",
+        y_label="azimuth",
+        x_data=inclination_angles,
+        y_data=azimuth_angles,
         interval=blocksize/samplerate
     )
 
