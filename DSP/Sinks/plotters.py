@@ -96,8 +96,9 @@ class ThreeDimPlotter(Stage):
                  x_data: np.array,
                  y_data: np.array,
                  interval: float,
-                 x_extent: float = None,
-                 y_extent: float = None,
+                 x_extent: tuple = None,
+                 y_extent: tuple = None,
+                 z_extent: tuple = None,
                  port_size=4):
         """
         :param title: The title of the plot
@@ -108,6 +109,7 @@ class ThreeDimPlotter(Stage):
         :param interval: The time delay in seconds between each frame update
         :param x_extent: If provided, set the visual range of the plot on the x-axis to this
         :param y_extent: If provided, set the visual range of the plot on the y-axis to this
+        :param z_extent: If provided, set the visual range of the plot on the z-axis to this
         :param port_size: The size of the input port
         """
         super().__init__(1, port_size, None, False)
@@ -125,7 +127,12 @@ class ThreeDimPlotter(Stage):
         if y_extent is not None:
             self.ax.set_ylim(y_extent)
 
-        self.plot = self.ax.pcolormesh(self.xx, self.yy, np.random.rand(*self.xx.shape))
+        self.z_extent = z_extent
+        if self.z_extent is None:
+            self.z_extent = (0, 1)
+
+        self.plot = self.ax.pcolormesh(self.xx, self.yy, np.zeros_like(self.xx),
+                                       vmin=self.z_extent[0], vmax=self.z_extent[1])
 
         self.anim = FuncAnimation(self.fig, self._on_frame_update, interval=self.interval)
 
