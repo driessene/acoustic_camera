@@ -1,6 +1,6 @@
-from .. import config
+from .. import __use_cupy__
 
-if config.USE_CUPY:
+if __use_cupy__:
     import cupy as np
 else:
     import numpy as np
