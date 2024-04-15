@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 from functools import cached_property
 
 
+# logging
+logger = logging.getLogger(__name__)
+
 class Filter(Stage):
     """
     Filters 2D data using FIR or IIR digital filters. Applied filters along the 0 axis.
@@ -50,7 +53,12 @@ class Filter(Stage):
         Runs the filter along input data. Ran by a process
         :return: None
         """
-        data = self.port_get()[0].payload
+        data = self.port_get()[1].payload
+
+        # Data checking
+        if data.shape[1] != self.num_channels:
+            logger.critical(f'num of channels of data ({data.shape[0]}) does not match expected num of channels of'
+                             f' {self.num_channels}')
 
         if self.remove_offset:
             data -= np.mean(data, axis=0, keepdims=True)

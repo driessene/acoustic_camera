@@ -2,6 +2,8 @@ from .__config__ import *
 import sounddevice as sd
 from Management import pipeline
 
+# logging
+logger = logging.getLogger(__name__)
 
 class AudioPlayback(Stage):
     """
@@ -34,7 +36,12 @@ class AudioPlayback(Stage):
         if status:
             print(status)
 
-        outdata[:, 0] = self.port_get()[0].payload[:, self.channel]
+        data = self.port_get()[0].payload[:, self.channel]
+
+        if data.size != self.blocksize:
+            logger.warning(f'Data blocksize of {data.size} does not math expected size of {self.blocksize}')
+
+        outdata[:, 0] = data
 
     def start(self):
         """

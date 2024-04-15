@@ -1,1 +1,1 @@
-__use_cupy__ = True
+__use_cupy__ = False

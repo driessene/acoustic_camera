@@ -3,6 +3,8 @@ from .__config__ import __use_cupy__
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
+# logging
+logger = logging.getLogger(__name__)
 
 class LinePlotter(Stage):
     """
@@ -35,6 +37,11 @@ class LinePlotter(Stage):
         :param port_size: The size of the input port
         """
         super().__init__(1, port_size, None, False)
+
+        # Properties
+        self.num_points = num_points
+        self.num_lines = num_lines
+
         # Setup ax and fig
         self.fig, self.ax = plt.subplots()
         self.ax.set_title(title)
@@ -65,6 +72,11 @@ class LinePlotter(Stage):
     def _on_frame_update(self, frame):
         data = self.port_get()[0].payload
 
+        # Data checking
+        if data.shape != (self.num_points, self.num_points):
+            logger.warning(f'Data shape of {data.shape} does not match expected shape of '
+                           f'{(self.num_points, self.num_lines)}')
+
         # Unpack if cupy
         if __use_cupy__:
             data = data.get()
@@ -73,6 +85,7 @@ class LinePlotter(Stage):
         if data.ndim > 1:
             data = data.T
 
+        # Plot
         for (y, plot) in zip(data, self.plots):
             plot.set_ydata(y)
 
@@ -141,6 +154,11 @@ class ThreeDimPlotter(Stage):
         if __use_cupy__:
             data = data.get()
 
+        # Data checking
+        if data.shape != self.xx.shape:
+            logger.warning(f'Data shape of {data.shape} does not match expected shape of {self.xx.shape}')
+
+        # Plot
         self.plot.set_array(data)
         return self.plot,
 
