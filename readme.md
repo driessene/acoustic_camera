@@ -209,6 +209,10 @@ Play data back out to your speakers. Useful for hearing how filters effect data 
 # Geometry
 Holds elements, wave vectors, steering vectors, and steering matrixes. Use to calculate steering vectors for simulators and steering matrixes for DoA algorithms. All classes here are dataclass. They have no methods, only hold and calculate data
 
+## __config__.py
+Hold configuration data and dependencies.
+- __use_cupy__ - bool: If true, use cupy instead of numpy and scipy. Recommended to be true if the computer has a cuda GPU with cuda compiler installed. Follow the setup [here](https://docs.cupy.dev/en/stable/install.html)
+
 ## Element
 Holds positional information about an element (a microphone or antena)
 
