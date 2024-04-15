@@ -1,4 +1,4 @@
-__use_cupy__ = False
+from __config__ import  __use_cupy__
 
 if __use_cupy__:
     import cupy as np

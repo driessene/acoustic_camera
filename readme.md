@@ -23,6 +23,10 @@ Steering vectors are vectors which describe how a signal changes as elements rec
 #### Steering matrix
 A steering matrix is composed of several steering vectors at several different angles. Each row on the matrix describes a different steering vector at a different angle. These matrixes are used in DoA estimation algorithms.
 
+# __config__.py
+Hold configuration data and dependencies.
+- __use_cupy__ - bool: If true, use cupy instead of numpy and scipy. Recommended to be true if the computer has a cuda GPU with cuda compiler installed. Follow the setup [here](https://docs.cupy.dev/en/stable/install.html)
+
 # Management
 
 ## Pipeline
@@ -59,11 +63,6 @@ Concatinators concatenate several signal matrixes. For example, if there are sev
 
 # DSP
 Hold sources, processes, and sinks for audio processing.
-
-## __config__.py
-Hold configuration data and dependencies.
-- __use_cupy__ - bool: If true, use cupy instead of numpy and scipy. Recommended to be true if the computer has a cuda GPU with cuda compiler installed. Follow the setup [here](https://docs.cupy.dev/en/stable/install.html)
-
 
 ## print_audio_devices - Function
 This function prints all available audio devices to the terminal. Useful for finding the ID of the device you are looking to record data from
@@ -208,10 +207,6 @@ Play data back out to your speakers. Useful for hearing how filters effect data 
 
 # Geometry
 Holds elements, wave vectors, steering vectors, and steering matrixes. Use to calculate steering vectors for simulators and steering matrixes for DoA algorithms. All classes here are dataclass. They have no methods, only hold and calculate data
-
-## __config__.py
-Hold configuration data and dependencies.
-- __use_cupy__ - bool: If true, use cupy instead of numpy and scipy. Recommended to be true if the computer has a cuda GPU with cuda compiler installed. Follow the setup [here](https://docs.cupy.dev/en/stable/install.html)
 
 ## Element
 Holds positional information about an element (a microphone or antena)

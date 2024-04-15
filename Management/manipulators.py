@@ -1,14 +1,8 @@
-import config
-
-if config.USE_CUPY:
-    import cupy as np
-else:
-    import numpy as np
-
-import pipeline
+from .__config__ import *
+from .pipeline import Stage, Message
 
 
-class ChannelPicker(pipeline.Stage):
+class ChannelPicker(Stage):
     """
     takes and input matrix, picks a channel, and pushes the channel
     """
@@ -22,10 +16,10 @@ class ChannelPicker(pipeline.Stage):
         self.channel = channel
 
     def run(self):
-        self.port_put(pipeline.Message(self.port_get()[0].payload[:, self.channel]))
+        self.port_put(Message(self.port_get()[0].payload[:, self.channel]))
 
 
-class Bus(pipeline.Stage):
+class Bus(Stage):
     """
     Takes several messages, warps data into a tuple, pushes to destinations
     """
@@ -38,10 +32,10 @@ class Bus(pipeline.Stage):
         super().__init__(num_ports, port_size, destinations)
 
     def run(self):
-        self.port_put(pipeline.Message(tuple(self.port_get())))
+        self.port_put(Message(tuple(self.port_get())))
 
 
-class Concatenator(pipeline.Stage):
+class Concatenator(Stage):
     """
     Takes several inputs, concatenates, pushes to destinations
     """
@@ -56,4 +50,4 @@ class Concatenator(pipeline.Stage):
 
     def run(self):
         # Get message, get payloads, concatenate, put into message, put to port
-        self.port_put(pipeline.Message(np.concatenate([data.payload for data in self.port_get()], axis=1)))
+        self.port_put(Message(np.concatenate([data.payload for data in self.port_get()], axis=1)))
