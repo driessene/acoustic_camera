@@ -21,7 +21,7 @@ class Beamformer(Stage):
         :return: None
         """
         # Get input data
-        data = self.port_get()[0]
+        data = self.port_get()[0].payload
 
         # Apply beamforming
         beamformed_data = self.steering_matrix.matrix.T.conj() @ data.T
@@ -30,7 +30,7 @@ class Beamformer(Stage):
         beamformed_data /= np.max(beamformed_data)
 
         # Put data
-        self.port_put(beamformed_data)
+        self.port_put(pipeline.Message(beamformed_data))
 
 
 class MUSIC(Stage):
@@ -54,7 +54,7 @@ class MUSIC(Stage):
         :return: None
         """
         # Calculate the covariance matrix
-        data = self.port_get()[0]
+        data = self.port_get()[0].payload
         Rx = np.cov(data.T)
         # Decompose into eigenvalues and vectors
         eigvals, eigvecs = np.linalg.eigh(Rx)
@@ -72,7 +72,7 @@ class MUSIC(Stage):
         music_spectrum /= np.max(music_spectrum)
 
         # Put data
-        self.port_put(music_spectrum)
+        self.port_put(pipeline.Message(music_spectrum))
 
 
 # WIP
@@ -118,4 +118,4 @@ class SAMV(Stage):
         samv_spectrum /= np.max(samv_spectrum)
 
         # Put data
-        self.port_put(samv_spectrum)
+        self.port_put(pipeline.Message(samv_spectrum))

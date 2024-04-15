@@ -1,4 +1,10 @@
-import numpy as np
+import config
+
+if config.USE_CUPY:
+    import cupy as np
+else:
+    import numpy as np
+
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import product
@@ -26,7 +32,7 @@ class Element:
     """
     Defines a point in space where an element lays in distance from origin. Units are in wavelengths.
     """
-    cartesian_position: tuple   # (x, y, z) position
+    cartesian_position: np.array   # (x, y, z) position
 
     @cached_property
     def spherical_position(self):
@@ -38,7 +44,7 @@ class WaveVector:
     """
     Defines a wave vector.
     """
-    spherical_k: tuple  # (wavenumber, inclination, azimuth)
+    spherical_k: np.array  # (wavenumber, inclination, azimuth)
     wave_speed: float   # speed in m/s of the wave in the environment
 
     @cached_property
