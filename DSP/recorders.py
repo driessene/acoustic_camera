@@ -1,5 +1,12 @@
+import logging
+
 from .__config__ import *
 import sounddevice as sd
+from datetime import datetime
+
+
+# Logging
+logger = logging.getLogger(__name__)
 
 
 def print_audio_devices():
@@ -39,7 +46,7 @@ class AudioRecorder(Stage):
         self.channel_map = channel_map
         self.device_id = device_id
         self.samplerate = samplerate
-        self.channels = num_channels
+        self.num_channels = num_channels
         self.blocksize = blocksize
         self.stream = None
 
@@ -57,7 +64,7 @@ class AudioRecorder(Stage):
         data = np.array(indata)
         if self.channel_map is not None:
             data = data[:, self.channel_map]
-        self.port_put(Message(data))
+        self.port_put(Message(data, timestamp=datetime.now()))
 
     def start(self):
         """
@@ -66,12 +73,15 @@ class AudioRecorder(Stage):
         """
         self.stream = sd.InputStream(
             device=self.device_id,
-            channels=self.channels,
+            channels=self.num_channels,
             samplerate=self.samplerate,
             blocksize=self.blocksize,
             callback=self._audio_callback
         )
         self.stream.start()
+
+        logger.info(f'Stream started on {self.device_id} with {self.num_channels} at {self.samplerate} Hz.'
+                    f'Blocksize is {self.blocksize}')
 
     def stop(self):
         """
@@ -81,3 +91,5 @@ class AudioRecorder(Stage):
         if self.stream:
             self.stream.stop()
             self.stream.close()
+
+        logger.info(f'Stream {self.device_id} stopped')
