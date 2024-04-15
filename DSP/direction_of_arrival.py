@@ -1,13 +1,7 @@
-from .. import __use_cupy__
-
-if __use_cupy__:
-    import cupy as np
-else:
-    import numpy as np
-from Management import pipeline
+from .__config__ import *
 
 
-class Beamformer(pipeline.Stage):
+class Beamformer(Stage):
     """
     Implements a basic beamformer
     """
@@ -39,7 +33,7 @@ class Beamformer(pipeline.Stage):
         self.port_put(beamformed_data)
 
 
-class MUSIC(pipeline.Stage):
+class MUSIC(Stage):
     """
     Implements the MUSIC (MUltiple SIgnal Classification) algorithm
     """
@@ -82,7 +76,7 @@ class MUSIC(pipeline.Stage):
 
 
 # WIP
-class SAMV(pipeline.Stage):
+class SAMV(Stage):
     """
     Implements the SAMV (Spatially Adaptive Multivariate) algorithm
     """

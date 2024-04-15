@@ -1,18 +1,9 @@
-from .. import __use_cupy__
-
-if __use_cupy__:
-    import cupy as np
-    import cupy.scipy.signal as sig
-else:
-    import numpy as np
-    import scipy.signal as sig
-
+from .__config__ import *
 import matplotlib.pyplot as plt
-from Management import pipeline
 from functools import cached_property
 
 
-class Filter(pipeline.Stage):
+class Filter(Stage):
     """
     Filters 2D data using FIR or IIR digital filters. Applied filters along the 0 axis.
     """
@@ -66,9 +57,9 @@ class Filter(pipeline.Stage):
         if self.normazlize:
             data /= np.max(np.abs(data), axis=0, keepdims=True)
         if self.method == 'lfilter':
-            data, self.initial_conditions = sig.lfilter(self.b, self.a, data, axis=0, zi=self.initial_conditions)
+            data, self.initial_conditions = sci.signal.lfilter(self.b, self.a, data, axis=0, zi=self.initial_conditions)
         elif self.method == 'filtfilt':
-            data = sig.filtfilt(self.b, self.a, data, axis=0)
+            data = sci.signal.filtfilt(self.b, self.a, data, axis=0)
         else:
             raise NotImplementedError('Type must be either lfilter or filtfilt')
         self.port_put(data)
@@ -78,7 +69,7 @@ class Filter(pipeline.Stage):
         Plots the response of the filter using matplotlib. Blocking
         :return: None
         """
-        w, h = sig.freqz(self.b, self.a)
+        w, h = sci.signal.freqz(self.b, self.a)
         freq_hz = w * self.samplerate / (2 * np.pi)  # Convert frequency axis to Hz
         fig, ax1 = plt.subplots()
         ax1.set_title('Digital filter frequency response')
@@ -120,7 +111,7 @@ class ButterFilter(Filter):
         :param N: Order of the filter
         :param cutoff: Cutoff frequency of the filter in Hz
         """
-        b, a = sig.butter(N=N, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
+        b, a = sci.signal.butter(N=N, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
         super().__init__(b, a, samplerate, num_channels, method, remove_offset, normalize, port_size, destinations)
 
 
@@ -134,11 +125,11 @@ class FIRWINFilter(Filter):
         :param N: Length of the FIR filter
         :param cutoff: Cutoff frequency of the filter in Hz
         """
-        b = sig.firwin(N, cutoff, fs=samplerate)
+        b = sci.signal.firwin(N, cutoff, fs=samplerate)
         super().__init__(b, np.array(1), samplerate, num_channels, method, remove_offset, normalize, port_size, destinations)
 
 
-class HanningWindow(pipeline.Stage):
+class HanningWindow(Stage):
     """
     Applied a hanning window to input data
     """

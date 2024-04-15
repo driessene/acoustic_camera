@@ -1,7 +1,5 @@
-from DSP.Sinks import plotters
-from DSP.Processes import filters
-from DSP.Sources import simulators
-from Geometry.geometry import Element, WaveVector
+import DSP
+import Geometry
 from matplotlib.pyplot import show
 import numpy as np
 from itertools import product
@@ -17,15 +15,15 @@ def main():
 
     # Sources
     spacing = np.arange(0, 4, 0.5)
-    elements = [Element([i, j, 0]) for (i, j) in product(spacing, spacing)]
+    elements = [Geometry.Element([i, j, 0]) for (i, j) in product(spacing, spacing)]
 
     wave_vectors = [
-        WaveVector([wave_number * 1.0, 1.0 * np.pi / 4, 1.0 * np.pi / 4], speed_of_sound),
-        WaveVector([wave_number * 1.1, 1.1 * np.pi / 4, 1.3 * np.pi / 4], speed_of_sound)
+        Geometry.WaveVector([wave_number * 1.0, 1.0 * np.pi / 4, 1.0 * np.pi / 4], speed_of_sound),
+        Geometry.WaveVector([wave_number * 1.1, 1.1 * np.pi / 4, 1.3 * np.pi / 4], speed_of_sound)
     ]
 
     # Recorder to get data
-    recorder = simulators.AudioSimulator(
+    recorder = DSP.AudioSimulator(
         elements=elements,
         wave_vectors=wave_vectors,
         snr=50,
@@ -35,7 +33,7 @@ def main():
     )
 
     # Filter
-    filt = filters.FIRWINFilter(
+    filt = DSP.filters.FIRWINFilter(
         N=101,
         num_channels=len(elements),
         cutoff=1500,
@@ -44,7 +42,7 @@ def main():
     )
 
     # Plot
-    plot = plotters.LinePlotter(
+    plot = DSP.plotters.LinePlotter(
         title='Audio Waves',
         x_label="N",
         y_label="Amplitude",

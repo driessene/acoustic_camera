@@ -1,7 +1,7 @@
-import numpy as np
+from .__config__ import *
+from .__config__ import __use_cupy__
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from Management.pipeline import Stage
 
 
 class LinePlotter(Stage):
@@ -66,7 +66,7 @@ class LinePlotter(Stage):
         data = self.port_get()[0]
 
         # Unpack if cupy
-        if config.USE_CUPY:
+        if __use_cupy__:
             data = data.get()
 
         # If a signal matrix, transpose

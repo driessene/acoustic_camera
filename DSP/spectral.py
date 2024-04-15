@@ -1,15 +1,8 @@
-from .. import __use_cupy__
-
-if __use_cupy__:
-    import cupy as np
-else:
-    import numpy as np
-
-from Management import pipeline
+from .__config__ import *
 import scipy.fft as fft
 
 
-class FFT(pipeline.Stage):
+class FFT(Stage):
     """
     Applies an FFT to data
     """

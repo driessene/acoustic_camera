@@ -1,8 +1,9 @@
+from .__config__ import *
 import sounddevice as sd
 from Management import pipeline
 
 
-class AudioPlayback(pipeline.Stage):
+class AudioPlayback(Stage):
     """
     Plays audio from a numpy array. Expects a matrix of multiple channels like the rest of this project.
     """

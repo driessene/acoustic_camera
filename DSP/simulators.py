@@ -1,17 +1,10 @@
-from .. import __use_cupy__
-
-if __use_cupy__:
-    import cupy as np
-else:
-    import numpy as np
-
-from Management import pipeline
+from .__config__ import *
 from Geometry.geometry import SteeringVector
 from time import sleep
 from functools import cached_property
 
 
-class AudioSimulator(pipeline.Stage):
+class AudioSimulator(Stage):
     """
     Simulates audio recordings. Can be used in place of AudioRecorder for testing
     """

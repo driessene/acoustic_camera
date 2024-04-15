@@ -1,12 +1,5 @@
-from .. import __use_cupy__
-
-if __use_cupy__:
-    import cupy as np
-else:
-    import numpy as np
-
+from .__config__ import *
 import sounddevice as sd
-from Management import pipeline
 
 
 def print_audio_devices():
@@ -21,7 +14,7 @@ def print_audio_devices():
             print(f"Device {i}: {device['name']}, Channels: {device['max_input_channels']}")
 
 
-class AudioRecorder(pipeline.Stage):
+class AudioRecorder(Stage):
     """
     Records audio from a real-world recorder via sounddevice
     """

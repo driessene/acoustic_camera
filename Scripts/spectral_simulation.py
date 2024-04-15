@@ -1,8 +1,6 @@
-from DSP.Sinks import plotters
-from DSP.Processes import spectral, filters
-from DSP.Sources import simulators
-from Management.pipeline import ChannelPicker
-from Geometry.geometry import Element, WaveVector
+import DSP
+import Geometry
+import Management
 from matplotlib.pyplot import show
 import numpy as np
 
@@ -20,23 +18,23 @@ def main():
 
     # Sources
     elements = [
-        Element([0.00, 0, 0]),
-        Element([0.25, 0, 0]),
-        Element([0.50, 0, 0]),
-        Element([0.75, 0, 0]),
-        Element([1.00, 0, 0]),
-        Element([1.25, 0, 0]),
-        Element([1.50, 0, 0]),
-        Element([1.75, 0, 0])
+        Geometry.Element([0.00, 0, 0]),
+        Geometry.Element([0.25, 0, 0]),
+        Geometry.Element([0.50, 0, 0]),
+        Geometry.Element([0.75, 0, 0]),
+        Geometry.Element([1.00, 0, 0]),
+        Geometry.Element([1.25, 0, 0]),
+        Geometry.Element([1.50, 0, 0]),
+        Geometry.Element([1.75, 0, 0])
     ]
 
     wave_vectors = [
-        WaveVector([wave_number * 1.0, 0, np.deg2rad(10)], speed_of_sound),
-        WaveVector([wave_number * 1.2, 0, np.deg2rad(50)], speed_of_sound)
+        Geometry.WaveVector([wave_number * 1.0, 0, np.deg2rad(10)], speed_of_sound),
+        Geometry.WaveVector([wave_number * 1.2, 0, np.deg2rad(50)], speed_of_sound)
     ]
 
     # Recorder to get data
-    recorder = simulators.AudioSimulator(
+    recorder = DSP.AudioSimulator(
         elements=elements,
         wave_vectors=wave_vectors,
         snr=snr,
@@ -46,7 +44,7 @@ def main():
     )
 
     # Filter
-    filt = filters.FIRWINFilter(
+    filt = DSP.FIRWINFilter(
         N=101,
         num_channels=channels,
         cutoff=2000,
@@ -55,13 +53,13 @@ def main():
     )
 
     # FFT
-    fft_channel = ChannelPicker(0)
-    fft = spectral.FFT(abs=True)
+    fft_channel = Management.ChannelPicker(0)
+    fft = DSP.FFT(abs=True)
 
     # Plotter
     delta_f = blocksize / samplerate
 
-    plot = plotters.LinePlotter(
+    plot = DSP.LinePlotter(
         title='FFT',
         x_label='K',
         y_label='Abs Value',

@@ -1,7 +1,5 @@
-from DSP.Sinks import plotters
-from DSP.Processes import filters, direction_of_arrival
-from DSP.Sources import simulators
-from Geometry.geometry import Element, WaveVector, SteeringMatrix, spherical_to_cartesian
+import DSP
+import Geometry
 import numpy as np
 from itertools import product
 
@@ -16,32 +14,34 @@ def main():
 
     # ELEMENTS
     # sphere
-    elements = [Element(spherical_to_cartesian(1, theta, phi)) for (theta, phi) in product(np.linspace(0, np.pi, 5), np.linspace(0, 2 * np.pi, 10))]
+    elements = [Geometry.Element(Geometry.spherical_to_cartesian(1, theta, phi)) for (theta, phi)
+                in product(np.linspace(0, np.pi, 5), np.linspace(0, 2 * np.pi, 10))]
 
     # Box
-    # elements = [Element([x, y, z]) for (x, y, z) in product(np.arange(0, 4, 0.5), np.arange(0, 4, 0.5), np.arange(0, 4, 0.5))]
+    # elements = [Geometry.Element([x, y, z]) for (x, y, z) in
+    #             product(np.arange(0, 4, 0.5), np.arange(0, 4, 0.5), np.arange(0, 4, 0.5))]
 
     # +
-    #elements = [Element([-1.25, 0, 0]),
-    #            Element([-0.75, 0, 0]),
-    #            Element([-0.25, 0, 0]),
-    #            Element([0.25, 0, 0]),
-    #            Element([0.75, 0, 0]),
-    #            Element([1.25, 0, 0]),
-    #            Element([0, -1.25, 0]),
-    #            Element([0, -0.75, 0]),
-    #            Element([0, -0.25, 0]),
-    #            Element([0, 0.25, 0]),
-    #            Element([0, 0.75, 0]),
-    #            Element([0, 1.25, 0]),
-    #            Element([0, 0, 0.25]),
-    #            Element([0, 0, 0.75]),
-    #            Element([0, 0, 1.25])]
-#
+    # elements = [Geometry.Element([-1.25, 0, 0]),
+    #             Geometry.Element([-0.75, 0, 0]),
+    #             Geometry.Element([-0.25, 0, 0]),
+    #             Geometry.Element([0.25, 0, 0]),
+    #             Geometry.Element([0.75, 0, 0]),
+    #             Geometry.Element([1.25, 0, 0]),
+    #             Geometry.Element([0, -1.25, 0]),
+    #             Geometry.Element([0, -0.75, 0]),
+    #             Geometry.Element([0, -0.25, 0]),
+    #             Geometry.Element([0, 0.25, 0]),
+    #             Geometry.Element([0, 0.75, 0]),
+    #             Geometry.Element([0, 1.25, 0]),
+    #             Geometry.Element([0, 0, 0.25]),
+    #             Geometry.Element([0, 0, 0.75]),
+    #             Geometry.Element([0, 0, 1.25])]
+
     wave_vectors = [
-        WaveVector([wave_number * 1.00, np.pi / 2.5, np.pi / 2.5], speed_of_sound),
-        WaveVector([wave_number * 1.02, np.pi / 3.5, np.pi / 3.5], speed_of_sound),
-        WaveVector([wave_number * 1.04, np.pi / 4.5, np.pi / 4.5], speed_of_sound)
+        Geometry.WaveVector([wave_number * 1.00, np.pi / 2.5, np.pi / 2.5], speed_of_sound),
+        Geometry.WaveVector([wave_number * 1.02, np.pi / 3.5, np.pi / 3.5], speed_of_sound),
+        Geometry.WaveVector([wave_number * 1.04, np.pi / 4.5, np.pi / 4.5], speed_of_sound)
     ]
 
     # Print frequencies for debugging
@@ -49,7 +49,7 @@ def main():
         print(vect.frequency)
 
     # Recorder to get data
-    recorder = simulators.AudioSimulator(
+    recorder = DSP.AudioSimulator(
         elements=elements,
         wave_vectors=wave_vectors,
         snr=50,
@@ -59,7 +59,7 @@ def main():
     )
 
     # Filter
-    filt = filters.FIRWINFilter(
+    filt = DSP.FIRWINFilter(
         N=101,
         num_channels=len(elements),
         cutoff=2000,
@@ -70,19 +70,19 @@ def main():
     # MUSIC
     azimuth_angles = np.linspace(0, 2 * np.pi, 500)
     inclination_angles = np.linspace(0, np.pi, 500)
-    matrix = SteeringMatrix(
+    matrix = Geometry.SteeringMatrix(
         elements=elements,
         azimuths=azimuth_angles,
         inclinations=inclination_angles,
         wavenumber=wave_number,
     )
-    music = direction_of_arrival.MUSIC(
+    music = DSP.MUSIC(
         steering_matrix=matrix,
         num_sources=6
     )
 
     # Plot
-    plot = plotters.ThreeDimPlotter(
+    plot = DSP.ThreeDimPlotter(
         title='MUSIC',
         x_label="inclination",
         y_label="azimuth",

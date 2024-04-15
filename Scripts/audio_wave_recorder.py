@@ -1,10 +1,7 @@
-from DSP.Sinks import plotters
-from DSP.Processes import filters, direction_of_arrival
-from DSP.Sources import recorders
-from Geometry.geometry import Element, SteeringMatrix
-from Management.pipeline import Concatenator
+import DSP
+import Geometry
+import Management
 from matplotlib.pyplot import show
-import numpy as np
 
 
 def main():
@@ -14,29 +11,29 @@ def main():
     blocksize = 8192
 
     # Sources
-    elements = [Element([-1.25, 0, 0]),
-                Element([-0.75, 0, 0]),
-                Element([-0.25, 0, 0]),
-                Element([0.25, 0, 0]),
-                Element([0.75, 0, 0]),
-                Element([1.25, 0, 0]),
-                Element([0, -1.25, 0]),
-                Element([0, -0.75, 0]),
-                Element([0, -0.25, 0]),
-                Element([0, 0.25, 0]),
-                Element([0, 0.75, 0]),
-                Element([0, 1.25, 0])]
+    elements = [Geometry.Element([-1.25, 0, 0]),
+                Geometry.Element([-0.75, 0, 0]),
+                Geometry.Element([-0.25, 0, 0]),
+                Geometry.Element([0.25, 0, 0]),
+                Geometry.Element([0.75, 0, 0]),
+                Geometry.Element([1.25, 0, 0]),
+                Geometry.Element([0, -1.25, 0]),
+                Geometry.Element([0, -0.75, 0]),
+                Geometry.Element([0, -0.25, 0]),
+                Geometry.Element([0, 0.25, 0]),
+                Geometry.Element([0, 0.75, 0]),
+                Geometry.Element([0, 1.25, 0])]
 
     # Recorder to get data
-    recorders.print_audio_devices()
-    recorder_x = recorders.AudioRecorder(
+    DSP.print_audio_devices()
+    recorder_x = DSP.AudioRecorder(
         device_id=24,
         samplerate=44100,
         num_channels=8,
         blocksize=blocksize,
         channel_map=[2, 3, 4, 5, 6, 7],
     )
-    recorder_y = recorders.AudioRecorder(
+    recorder_y = DSP.AudioRecorder(
         device_id=23,
         samplerate=44100,
         num_channels=8,
@@ -45,12 +42,12 @@ def main():
     )
 
     # Combine recorders
-    concat = Concatenator(
+    concat = Management.Concatenator(
         num_ports=2,
     )
 
     # Filter
-    filt = filters.FIRWINFilter(
+    filt = DSP.FIRWINFilter(
         N=101,
         num_channels=len(elements),
         cutoff=1000,
@@ -59,7 +56,7 @@ def main():
     )
 
     # Plot
-    plot = plotters.LinePlotter(
+    plot = DSP.LinePlotter(
         title='MUSIC',
         x_label="inclination",
         y_label="azimuth",
