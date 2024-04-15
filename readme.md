@@ -27,7 +27,7 @@ A steering matrix is composed of several steering vectors at several different a
 
 ## Pipeline
 
-### Stages
+### Stage
 To achive real-time processing, pipelines can be created using **stages**. **Stages** have a list of **ports** (queues of data), a list of **destinations** (ports of another stage), and a **process**. Each stage is responsible for getting data from the ports, processing the data, and pushing the processed data to destinations. Destinations are ports of another stage.
 Stages also introduce multiprocessing. Each stage is ran by its own processes, letting the project leverage the whole CPU.
 To use a stage, one must create a subclass which inherits the stage class. The new subclass will create the correct amount of input ports , the length of the input ports (default is 4), and destinations.
@@ -46,7 +46,7 @@ To use a stage, one must create a subclass which inherits the stage class. The n
 - port_get(self): Gets data from all ports. Always use this than accessing individual queues/ports. If a single port is used, add [0] to the end of the call to get the data. This is a blocking operation.
 - port_put(self, data): Puts data to all destination ports.
 
-### Busses
+### Bus
 Busses are a stage which take several import ports, merges them into a tuple, and pushes to destinations. Useful for passing several stages to a single stage. It is preferred to have stages with several input ports, but this is an alternative if needed.
 
 #### Properties
@@ -60,40 +60,32 @@ Concatinators concatenate several signal matrixes. For example, if there are sev
 # DSP
 Hold sources, processes, and sinks for audio processing.
 
-## config.py
-Hold configuration data.
-- USE_CUPY - bool: If true, use cupy instead of numpy and scipy. Recommended to be true if the computer has a cuda GPU with cuda compiler installed. Follow the setup [here](https://docs.cupy.dev/en/stable/install.html)
+## __config__.py
+Hold configuration data and dependencies.
+- __use_cupy__ - bool: If true, use cupy instead of numpy and scipy. Recommended to be true if the computer has a cuda GPU with cuda compiler installed. Follow the setup [here](https://docs.cupy.dev/en/stable/install.html)
 
-## Sources
-Sources have no ports, only destinations. Examples include recorders and simulators.
 
-### Recorders
-Recorders get data from real-life, such as microphones or audio mixers
-
-#### print_audio_devices - Function
+## print_audio_devices - Function
 This function prints all available audio devices to the terminal. Useful for finding the ID of the device you are looking to record data from
 
-#### AudioRecorder - Stage
+## AudioRecorder - Stage
 Manages an audio device and pushes data to destinations.
 
-##### Properties
+### Properties
 - device-id - int: The ID of the device to record from. Use print_audio_devices to find it.
 - samplerate - int: The sample rate of the device.
 - num_channels: - int The number of channels of the device. Must match the channels listed from print_audio_devices()
 - blocksize - int: The number of samples per block of data.
 - channel_map - list: Pass a list to reorganize the channels. For example [2, 3, 1, 0] will swap the channels so that channel 2 is in index 0, 3 to 1, 1 to 2, and 0 to 3.
 
-##### Methods
+### Methods
 - Start(self): Starts the recorder and begins pushing data.
 - Stop(self): Stops the recorder.
 
-### Simulators
-Simulators emulate ideal recorders.
-
-#### AudioSimulator - Stage
+## AudioSimulator - Stage
 Simulates ideal audio matrixes. Only simulates a vector of microphones which are evenly spaced for now. Precomputes all signals. Each block of data is the same, but with different noise to simulate real life.
 
-##### Properties
+### Properties
 - wave_vectors - List[Geometry.geometry.WaveVector] - The list of wavevectors to simulate projected onto elements.
 - elements - List[Geometry.geometry.Element]: The list of elements that wavevectors is projected onto.
 - snr - float: Signal-to-noise ratio of the simulator.
@@ -101,27 +93,20 @@ Simulates ideal audio matrixes. Only simulates a vector of microphones which are
 - num_channels - int: The number of elements on the element vector. i.e., the number of audio channels.
 - blocksize - int: The number of samples per block of data.
 - sleep: If true, add a delay to simulate the delay it takes to get a block of audio in real life.
-###### Calculated properties
-- time_vector - np.array: The points in time that samples are generated at
-- waveforms - np.array: The sound waves generated from the provided wavevectors
+
+### Calculated properties
+- time_vector - np.array: The points in time that samples are generated at.
+- waveforms - np.array: The sound waves generated from the provided wavevectors.
 - steering_vectors - np.array: A list of steering vectors. Index matches index of elements.
 - signal_matrix - np.array: The simulation result for each element. Result of the optimal simulation
-- signal_power - float: The power of the signal matrix
-- noise_power - float: The power of the simulated noise
+- signal_power - float: The power of the signal matrix.
+- noise_power - float: The power of the simulated noise.
 
-##### Methods
-- Same as Stage
 
-## Processes
-Processes have input ports and destinations. Processes manipulate data from sources or other processes. For example, filters, windows, and DoA estimation algorithms are processes.
-
-### Filters
-Filters manipulate data, either by applying a filter or a window to a block of data
-
-#### Filter - Stage
+## Filter - Stage
 A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). These filters can either be FIR or IIR filters
 
-##### Properties
+### Properties
 - b_coefficients - np.array: b coefficients of the filter.
 - a_coefficients - np.array: a coefficients of the filter.
 - samplerate - int: The sample rate of the incoming data
@@ -132,83 +117,71 @@ A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). Th
 - remove_offset - bool: Sets the DC component of the data to zero if true.
 - normalize - bool: Set the maximum value of the signal to one if true.
 
-##### Methods
+### Methods
 - plot_response(self): Plots the response of the filter. This is a blocking operation.
 - plot_coefficients(self): Plots the coefficients of the filter. This is a blocking operation.
 - 
-#### ButterFilter - Stage
+## ButterFilter - Stage
 A lowpass [butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter). A subclass of filter, inheriting all properties and functions
 
-##### Properties
-- N - int: The order of the filter
-- cutoff - float: The cutoff frequency of the filter in Hz
+### Properties
+- N - int: The order of the filter.
+- cutoff - float: The cutoff frequency of the filter in Hz.
 
-##### Methods
+### Methods
 Same as Filter.
 
-#### FIRWINFilter - Stage
-A lowpass [ideal filter](https://en.wikipedia.org/wiki/Sinc_filter) using the window method. This is mathematically better than ButterFilter and is recomended. Can have extremely sharp cutoffs. A subclass of filter, inheriting all properties and functions
+## FIRWINFilter - Stage
+A lowpass [ideal filter](https://en.wikipedia.org/wiki/Sinc_filter) using the window method. This is mathematically better than ButterFilter and is recomended. Can have extremely sharp cutoffs. A subclass of filter, inheriting all properties and methods.
 
-##### Properties
+### Properties
 - N - int: The length of the filter
 - cutoff - float: The cutoff frequency of the filter in Hz
 
-##### Methods
+### Methods
 Same as Filter.
 
-#### HanningWindow - Stage
+## HanningWindow - Stage
 Applies a [hanning window](https://en.wikipedia.org/wiki/Hann_function) to incoming data. Simply a **stage** that applies a hanning window.
 
-##### Properties
+### Properties
 None
 
-##### Methods
+### Methods
 Same as Stage
 
-### Spectral
-Applies spectral analysis on data.
-
-#### FFT - Stage
+## FFT - Stage
 Applies FFT to data. Returns complex data to match [scipy](https://docs.scipy.org/doc/scipy/reference/generated/scipy.fft.fft.html#scipy.fft.fft). Just a **stage** that applies FFT to incoming data.
 
-##### Properties
+### Properties
 None
 
-##### Methods
+### Methods
 Same as Stage
 
-### direction_of_arrival
-Direction of arrival algorithms.
-
-#### Beamformer - Stage
+## Beamformer - Stage
 A classic [beamforming](https://en.wikipedia.org/wiki/Beamforming) algorithm. Uses a steering matrix to guess which steering vector that was used to get incoming data.
 
-##### Properties
+### Properties
 - steering_matrix - Geometry.geometry.SteeringMatrix: The steering matrix for which to solve
 
-##### Methods
+### Methods
 Same as Stage
 
-#### MUSIC - Stage
+## MUSIC - Stage
 Applies the [MUltiple SIgnal Classification (MUSIC) algorithm](https://en.wikipedia.org/wiki/MUSIC_(algorithm)) to incoming data. Significantly more accurate than beamformer, but much more computational intensive. Can find multiple sources simultaneously.
 
-##### Properties
+### Properties
 - steering_matrix - Geometry.geometry.SteeringMatrix: The steering matrix for which to solve
 - num_sources - int: The number of sources in the environment
 
-##### Methods
+### Methods
 Same as Stage
 
-## Sinks
-Sinks have no destinations. An example of a sink is a plot or audio playback.
-
-### Plotters
-Plotters are simple GUIs from matplotlib that show data generated by this program.
-
-#### LinePlotter - Stage
+## LinePlotter - Stage
 Plots one line or several lines on a grid. If input data is a vector, plot one line. If a matrix, plot one line per list on axis=0.
 
-##### Properties
+### Properties
 - title - str: The title of the plot.
 - x_label - str: The X label of the plot.
 - y_label - str: The Y label of the plot.
@@ -219,19 +192,16 @@ Plots one line or several lines on a grid. If input data is a vector, plot one l
 - x_extent - tuple: If provided, show this range on the x-axis by cropping
 - y_extent - tuple: If provided, show this range on the y-axis by cropping
 
-##### Methods
+### Methods
 - show: Show the plot. This is a blocking methods. Call it at the end of your script.
 
-#### ThreeDimPlotter - Stage
+## ThreeDimPlotter - Stage
 Plots a matrix on a heatmap. Same properties and methods as LinePlotter with the addition of z_extent. z_extent - tuple sets the maximum and minimum values for the color map.
 
-### Playback
-Listen to your pipeline. Pass data back out of your speakers.
-
-#### AudioPlayback - Stage
+## AudioPlayback - Stage
 Play data back out to your speakers. Useful for hearing how filters effect data easily for demonstrative purposes. Expects a matrix to keep consistency from recorders and simulators
 
-##### Properties
+### Properties
 - samplerate - int: The sample rate of the data
 - blocksize - int: The blocksize of the data
 - channel - int: The channel which to play
@@ -239,153 +209,156 @@ Play data back out to your speakers. Useful for hearing how filters effect data 
 # Geometry
 Holds elements, wave vectors, steering vectors, and steering matrixes. Use to calculate steering vectors for simulators and steering matrixes for DoA algorithms. All classes here are dataclass. They have no methods, only hold and calculate data
 
-## geometry
-Main file
-
-### Element
+## Element
 Holds positional information about an element (a microphone or antena)
 
-#### Properties
+### Properties
 - cartesian_position - tuple: A tuple holding (x, y, z) position
 
-##### Calculated properties
+#### Calculated properties
 - spherical_position - tuple: A tuple holding (r, inclination, azimuth) position
 
-### WaveVector
+## WaveVector
 Holds wave vector information (wavenumber, inclination, azimuth) and (kx, ky, kz)
 
-#### Properties
+### Properties
 - spherical_k - tuple: A tuple holding (wavenumber, inclination, azimuth)
 
-##### Calculated properties
+#### Calculated properties
 - cartesian_k - tuple: A tuple holding (kx, ky, kz)
 
-### SteeringVector
+## SteeringVector
 Representes a steering vector when given elements and a wave vector
 
-#### Properties
+### Properties
 - elements - List[Element]: A list of elements to project a wavevector onto
 - wavevector - WaveVector: A wave vector to project onto elements
 
-##### Calculated properties
+#### Calculated properties
 - vector - np.array: The resulting steering vector
 
-### SteeringMatrix
+## SteeringMatrix
 Hold every possible steering vector when given elements, wavenumber, and all angles to include
 
-#### Properties
+### Properties
 - elements - List[Element]: A list of elements to project a wavevector onto
 - wavenumber - float: The wave number of the incoming signal
 - inclinations - np.array: An array of all possible inclinations to include in the matrix
 - azimuths - np.array: An array of all possible azimuths to include in the matrix
 
-##### Calculated properties
+### Calculated properties
 - matrix - np.array: The resulting steering matrix
 
 # Example
 
 ```python
-from DSP.Sinks import plotters
-from DSP.Processes import filters, direction_of_arrival
-from DSP.Sources import simulators
-from Geometry.geometry import Element, WaveVector, SteeringMatrix, spherical_to_cartesian
+import DSP
+import Geometry
 import numpy as np
+from itertools import product
 
 
 def main():
-  # Variables
-  samplerate = 44100
-  blocksize = 1024
-  wave_number = 1.5
-  speed_of_sound = 343
 
-  # ELEMENTS
-  # sphere
-  # elements = [Element(spherical_to_cartesian(1, theta, phi)) for (theta, phi) in product(np.linspace(0, np.pi, 5), np.linspace(0, 2 * np.pi, 10))]
+    # Variables
+    samplerate = 44100
+    blocksize = 10000
+    wave_number = 2
+    speed_of_sound = 343
 
-  # Box
-  # elements = [Element([x, y, z]) for (x, y, z) in product(np.arange(0, 4, 0.5), np.arange(0, 4, 0.5), np.arange(0, 4, 0.5))]
+    # ELEMENTS
+    # sphere
+    elements = [Geometry.Element(Geometry.spherical_to_cartesian(1, theta, phi)) for (theta, phi)
+                in product(np.linspace(0, np.pi, 5), np.linspace(0, 2 * np.pi, 10))]
 
-  # +
-  elements = [Element([-1.25, 0, 0]),
-              Element([-0.75, 0, 0]),
-              Element([-0.25, 0, 0]),
-              Element([0.25, 0, 0]),
-              Element([0.75, 0, 0]),
-              Element([1.25, 0, 0]),
-              Element([0, -1.25, 0]),
-              Element([0, -0.75, 0]),
-              Element([0, -0.25, 0]),
-              Element([0, 0.25, 0]),
-              Element([0, 0.75, 0]),
-              Element([0, 1.25, 0]),
-              Element([0, 0, 0.25]),
-              Element([0, 0, 0.75]),
-              Element([0, 0, 1.25])]
+    # Box
+    # elements = [Geometry.Element([x, y, z]) for (x, y, z) in
+    #             product(np.arange(0, 4, 0.5), np.arange(0, 4, 0.5), np.arange(0, 4, 0.5))]
 
-  wave_vectors = [
-    WaveVector([wave_number * 1, np.pi / 3.5, np.pi / 2.5], speed_of_sound),
-    WaveVector([wave_number * 1.05, np.pi / 2.5, np.pi / 3.5], speed_of_sound)
-  ]
+    # +
+    # elements = [Geometry.Element([-1.25, 0, 0]),
+    #             Geometry.Element([-0.75, 0, 0]),
+    #             Geometry.Element([-0.25, 0, 0]),
+    #             Geometry.Element([0.25, 0, 0]),
+    #             Geometry.Element([0.75, 0, 0]),
+    #             Geometry.Element([1.25, 0, 0]),
+    #             Geometry.Element([0, -1.25, 0]),
+    #             Geometry.Element([0, -0.75, 0]),
+    #             Geometry.Element([0, -0.25, 0]),
+    #             Geometry.Element([0, 0.25, 0]),
+    #             Geometry.Element([0, 0.75, 0]),
+    #             Geometry.Element([0, 1.25, 0]),
+    #             Geometry.Element([0, 0, 0.25]),
+    #             Geometry.Element([0, 0, 0.75]),
+    #             Geometry.Element([0, 0, 1.25])]
 
-  # Recorder to get data
-  recorder = simulators.AudioSimulator(
-    elements=elements,
-    wave_vectors=wave_vectors,
-    snr=50,
-    samplerate=samplerate,
-    blocksize=blocksize,
-    sleep=True
-  )
+    wave_vectors = [
+        Geometry.WaveVector([wave_number * 1.00, np.pi / 2.5, np.pi / 2.5], speed_of_sound),
+        Geometry.WaveVector([wave_number * 1.02, np.pi / 3.5, np.pi / 3.5], speed_of_sound),
+        Geometry.WaveVector([wave_number * 1.04, np.pi / 4.5, np.pi / 4.5], speed_of_sound)
+    ]
 
-  # Filter
-  filt = filters.FIRWINFilter(
-    N=101,
-    num_channels=len(elements),
-    cutoff=2000,
-    samplerate=samplerate,
-    method='filtfilt',
-  )
+    # Print frequencies for debugging
+    for vect in wave_vectors:
+        print(vect.frequency)
 
-  # MUSIC
-  azimuth_angles = np.linspace(0, 2 * np.pi, 500)
-  inclination_angles = np.linspace(0, np.pi, 500)
-  matrix = SteeringMatrix(
-    elements=elements,
-    azimuths=azimuth_angles,
-    inclinations=inclination_angles,
-    wavenumber=wave_number,
-    wave_speed=speed_of_sound
-  )
-  music = direction_of_arrival.MUSIC(
-    steering_matrix=matrix,
-    num_sources=len(wave_vectors) * 4
-  )
+    # Recorder to get data
+    recorder = DSP.AudioSimulator(
+        elements=elements,
+        wave_vectors=wave_vectors,
+        snr=50,
+        samplerate=samplerate,
+        blocksize=blocksize,
+        sleep=True
+    )
 
-  # Plot
-  plot = plotters.ThreeDimPlotter(
-    title='MUSIC',
-    x_label="azimuth",
-    y_label="inclination",
-    x_data=azimuth_angles,
-    y_data=inclination_angles,
-    interval=blocksize / samplerate
-  )
+    # Filter
+    filt = DSP.FIRWINFilter(
+        N=101,
+        num_channels=len(elements),
+        cutoff=2000,
+        samplerate=samplerate,
+        method='filtfilt',
+    )
 
-  # Linking
-  recorder.link_to_destination(filt, 0)
-  filt.link_to_destination(music, 0)
-  music.link_to_destination(plot, 0)
+    # MUSIC
+    azimuth_angles = np.linspace(0, 2 * np.pi, 500)
+    inclination_angles = np.linspace(0, np.pi, 500)
+    matrix = Geometry.SteeringMatrix(
+        elements=elements,
+        azimuths=azimuth_angles,
+        inclinations=inclination_angles,
+        wavenumber=wave_number,
+    )
+    music = DSP.MUSIC(
+        steering_matrix=matrix,
+        num_sources=6
+    )
 
-  # Start processes
-  recorder.start()
-  filt.start()
-  music.start()
-  plot.start()
-  plot.show()
+    # Plot
+    plot = DSP.ThreeDimPlotter(
+        title='MUSIC',
+        x_label="inclination",
+        y_label="azimuth",
+        x_data=inclination_angles,
+        y_data=azimuth_angles,
+        interval=blocksize/samplerate,
+        z_extent=(0, 0.5)
+    )
+
+    # Linking
+    recorder.link_to_destination(filt, 0)
+    filt.link_to_destination(music, 0)
+    music.link_to_destination(plot, 0)
+
+    # Start processes
+    recorder.start()
+    filt.start()
+    music.start()
+    plot.start()
+    plot.show()
 
 
 if __name__ == '__main__':
-  main()
-
+    main()
 ```
