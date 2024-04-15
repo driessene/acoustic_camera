@@ -24,7 +24,7 @@ Steering vectors are vectors which describe how a signal changes as elements rec
 A steering matrix is composed of several steering vectors at several different angles. Each row on the matrix describes a different steering vector at a different angle. These matrixes are used in DoA estimation algorithms.
 
 # __config__.py
-Hold configuration data and dependencies.
+Hold configuration data for the project.
 - __use_cupy__ - bool: If true, use cupy instead of numpy and scipy. Recommended to be true if the computer has a cuda GPU with cuda compiler installed. Follow the setup [here](https://docs.cupy.dev/en/stable/install.html)
 
 # Management
