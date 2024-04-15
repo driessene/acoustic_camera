@@ -1,9 +1,4 @@
-import config
-
-if config.USE_CUPY:
-    import cupy as np
-else:
-    import numpy as np
+from .__config__ import *
 
 from dataclasses import dataclass
 from functools import cached_property

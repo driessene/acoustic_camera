@@ -72,7 +72,7 @@ class MUSIC(Stage):
         music_spectrum /= np.max(music_spectrum)
 
         # Put data
-        self.port_put(pipeline.Message(music_spectrum))
+        self.port_put(Message(music_spectrum))
 
 
 # WIP
@@ -97,7 +97,7 @@ class SAMV(Stage):
         :return: None
         """
         # Calculate the covariance matrix
-        data = self.port_get()[0]
+        data = self.port_get()[0].payload()
         Rx = np.cov(data.T)
 
         # Decompose into eigenvalues and vectors
@@ -118,4 +118,4 @@ class SAMV(Stage):
         samv_spectrum /= np.max(samv_spectrum)
 
         # Put data
-        self.port_put(pipeline.Message(samv_spectrum))
+        self.port_put(Message(samv_spectrum))

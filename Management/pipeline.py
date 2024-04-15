@@ -83,3 +83,17 @@ class Stage:
         """
         for destination in self.destinations:
             destination.put(data)
+
+
+class Message:
+    """
+    Use messages to pass data between stages. Allows for metadata
+    """
+    def __init__(self, payload, **kwargs):
+        """
+        :param payload: Payload to send to destination. Main set of data
+        :param kwargs: Metadata. For example, a timestamp
+        """
+        self.payload = payload
+        for key, value in kwargs.items():
+            setattr(self, key, value)

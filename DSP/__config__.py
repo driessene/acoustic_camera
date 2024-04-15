@@ -7,4 +7,4 @@ else:
     import numpy as np
     import scipy as sci
 
-from Management import Stage
+from Management import *

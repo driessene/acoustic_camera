@@ -63,7 +63,7 @@ class LinePlotter(Stage):
         self.anim = FuncAnimation(self.fig, self._on_frame_update, interval=interval)
 
     def _on_frame_update(self, frame):
-        data = self.port_get()[0]
+        data = self.port_get()[0].payload
 
         # Unpack if cupy
         if __use_cupy__:
@@ -135,10 +135,10 @@ class ThreeDimPlotter(Stage):
         self.anim = FuncAnimation(self.fig, self._on_frame_update, interval=self.interval)
 
     def _on_frame_update(self, frame):
-        data = self.port_get()[0]
+        data = self.port_get()[0].payload
 
         # Unpack if cupy
-        if config.USE_CUPY:
+        if __use_cupy__:
             data = data.get()
 
         self.plot.set_array(data)
