@@ -73,7 +73,7 @@ class LinePlotter(Stage):
         data = self.port_get()[0].payload
 
         # Data checking
-        if data.shape != (self.num_points, self.num_points):
+        if data.shape != (self.num_points, self.num_lines):
             logger.warning(f'Data shape of {data.shape} does not match expected shape of '
                            f'{(self.num_points, self.num_lines)}')
 
@@ -155,7 +155,7 @@ class ThreeDimPlotter(Stage):
             data = data.get()
 
         # Data checking
-        if data.shape != self.xx.shape:
+        if data.size != self.xx.size:
             logger.warning(f'Data shape of {data.shape} does not match expected shape of {self.xx.shape}')
 
         # Plot

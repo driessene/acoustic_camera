@@ -53,7 +53,7 @@ class Filter(Stage):
         Runs the filter along input data. Ran by a process
         :return: None
         """
-        data = self.port_get()[1].payload
+        data = self.port_get()[0].payload
 
         # Data checking
         if data.shape[1] != self.num_channels:
