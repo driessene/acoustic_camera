@@ -14,7 +14,7 @@ This project creates real-time pipelines to record, simulate, process, and plot 
 Background knowledge in order to understand the project
 
 ### Array processing
-[Array processing](https://en.wikipedia.org/wiki/Array_processing) is a wide area of research in the field of signal processing that extends from the simplest form of 1 dimensional line arrays to 2 and 3 dimensional array geometries. Array processing is the background for DoA estimation.
+[Array processing](https://en.wikipedia.org/wiki/Array_processing) is a wide area of research in the field of signal processing that extends from the simplest form of 1 dimensional line arrays to 2 and 3 dimensional array geometries. Array processing is the backbone for DoA estimation.
 
 #### Steering vector
 Steering vectors are vectors which describe how a signal changes as elements receive the signal at different times. This happens as the same signal is delayed at different elements at different positions. Steering matrixes the position of each element, and the original wavevector(s) of the source(s).
@@ -22,10 +22,6 @@ Steering vectors are vectors which describe how a signal changes as elements rec
 ![Graphic of a steering matrix](https://ars.els-cdn.com/content/image/3-s2.0-B978012398499900008X-f08-03-9780123984999.jpg)
 #### Steering matrix
 A steering matrix is composed of several steering vectors at several different angles. Each row on the matrix describes a different steering vector at a different angle. These matrixes are used in DoA estimation algorithms.
-
-# __config__.py
-Hold configuration data for the project.
-- __use_cupy__ - bool: If true, use cupy instead of numpy and scipy. Recommended to be true if the computer has a cuda GPU with cuda compiler installed. Follow the setup [here](https://docs.cupy.dev/en/stable/install.html)
 
 # Management
 
@@ -119,7 +115,7 @@ A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). Th
 ### Methods
 - plot_response(self): Plots the response of the filter. This is a blocking operation.
 - plot_coefficients(self): Plots the coefficients of the filter. This is a blocking operation.
-- 
+
 ## ButterFilter - Stage
 A lowpass [butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter). A subclass of filter, inheriting all properties and functions
 
