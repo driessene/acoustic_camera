@@ -52,7 +52,7 @@ def main():
     recorder = DSP.AudioSimulator(
         elements=elements,
         wave_vectors=wave_vectors,
-        snr=50,
+        snr=20,
         samplerate=samplerate,
         blocksize=blocksize,
         sleep=True

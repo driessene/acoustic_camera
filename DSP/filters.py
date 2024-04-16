@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 # logging
 logger = logging.getLogger(__name__)
 
+
 class Filter(Stage):
     """
     Filters 2D data using FIR or IIR digital filters. Applied filters along the 0 axis.
@@ -111,6 +112,7 @@ class Filter(Stage):
         ax2.grid()
         ax2.axis('tight')
         plt.show()
+
 
 class ButterFilter(Filter):
     """
