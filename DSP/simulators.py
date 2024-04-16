@@ -1,5 +1,6 @@
-from .__config__ import *
+import numpy as np
 from Geometry.geometry import SteeringVector
+from Management import Stage, Message
 from time import sleep
 from functools import cached_property
 
@@ -47,15 +48,15 @@ class AudioSimulator(Stage):
     @cached_property
     def waveforms(self):
         frequencies = [wave_vector.frequency for wave_vector in self.wave_vectors]
-        return [np.exp(2j * np.pi * freq * self.time_vector) for freq in frequencies]
+        return np.array([np.exp(2j * np.pi * freq * self.time_vector) for freq in frequencies])
 
     @cached_property
     def steering_vectors(self):
-        return [SteeringVector(self.elements, wave_vector) for wave_vector in self.wave_vectors]
+        return np.array([SteeringVector(self.elements, wave_vector) for wave_vector in self.wave_vectors])
 
     @cached_property
     def signal_matrix(self):
-        return np.sum(np.array([np.outer(sig, steering.vector) for sig, steering in zip(self.waveforms, self.steering_vectors)]),
+        return np.sum(np.array([np.outer(sig, steering.vector) for (sig, steering) in zip(self.waveforms, self.steering_vectors)]),
                       axis=0).real
 
     @cached_property

@@ -1,8 +1,7 @@
 import logging
-
-from .__config__ import *
 import sounddevice as sd
 from datetime import datetime
+from Management import Stage, Message
 
 
 # Logging

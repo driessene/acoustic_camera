@@ -1,4 +1,5 @@
-from .__config__ import *
+import numpy as np
+from Management import Stage, Message
 
 
 class Beamformer(Stage):
@@ -30,7 +31,7 @@ class Beamformer(Stage):
         beamformed_data /= np.max(beamformed_data)
 
         # Put data
-        self.port_put(pipeline.Message(beamformed_data))
+        self.port_put(Message(beamformed_data))
 
 
 class MUSIC(Stage):

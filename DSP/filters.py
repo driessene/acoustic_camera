@@ -1,6 +1,9 @@
-from .__config__ import *
-import matplotlib.pyplot as plt
+import numpy as np
+import scipy.signal as sig
+import logging
+from Management import Stage, Message
 from functools import cached_property
+import matplotlib.pyplot as plt
 
 
 # logging
@@ -65,9 +68,9 @@ class Filter(Stage):
         if self.normazlize:
             data /= np.max(np.abs(data), axis=0, keepdims=True)
         if self.method == 'lfilter':
-            data, self.initial_conditions = sci.signal.lfilter(self.b, self.a, data, axis=0, zi=self.initial_conditions)
+            data, self.initial_conditions = sig.lfilter(self.b, self.a, data, axis=0, zi=self.initial_conditions)
         elif self.method == 'filtfilt':
-            data = sci.signal.filtfilt(self.b, self.a, data, axis=0)
+            data = sig.filtfilt(self.b, self.a, data, axis=0)
         else:
             raise NotImplementedError('Type must be either lfilter or filtfilt')
         self.port_put(Message(data))
@@ -77,7 +80,7 @@ class Filter(Stage):
         Plots the response of the filter using matplotlib. Blocking
         :return: None
         """
-        w, h = sci.signal.freqz(self.b, self.a)
+        w, h = sig.freqz(self.b, self.a)
         freq_hz = w * self.samplerate / (2 * np.pi)  # Convert frequency axis to Hz
         fig, ax1 = plt.subplots()
         ax1.set_title('Digital filter frequency response')
@@ -119,7 +122,7 @@ class ButterFilter(Filter):
         :param N: Order of the filter
         :param cutoff: Cutoff frequency of the filter in Hz
         """
-        b, a = sci.signal.butter(N=N, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
+        b, a = sig.butter(N=N, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
         super().__init__(b, a, samplerate, num_channels, method, remove_offset, normalize, port_size, destinations)
 
 
@@ -133,7 +136,7 @@ class FIRWINFilter(Filter):
         :param N: Length of the FIR filter
         :param cutoff: Cutoff frequency of the filter in Hz
         """
-        b = sci.signal.firwin(N, cutoff, fs=samplerate)
+        b = sig.firwin(N, cutoff, fs=samplerate)
         super().__init__(b, np.array(1), samplerate, num_channels, method, remove_offset, normalize, port_size, destinations)
 
 

@@ -1,6 +1,5 @@
 import DSP
 import Geometry
-from matplotlib.pyplot import show
 import numpy as np
 from itertools import product
 
@@ -8,6 +7,7 @@ from itertools import product
 def main():
 
     # Variables
+
     samplerate = 44100
     blocksize = 1024
     wave_number = 1.46
@@ -15,7 +15,7 @@ def main():
 
     # Sources
     spacing = np.arange(0, 4, 0.5)
-    elements = [Geometry.Element([i, j, 0]) for (i, j) in product(spacing, spacing)]
+    elements = [Geometry.Element(np.array([i, j, 0])) for (i, j) in product(spacing, spacing)]
 
     wave_vectors = [
         Geometry.WaveVector([wave_number * 1.0, 1.0 * np.pi / 4, 1.0 * np.pi / 4], speed_of_sound),
@@ -52,6 +52,7 @@ def main():
         y_extent=[-1, 1],
         interval=blocksize/samplerate
     )
+
     # Linking
     recorder.link_to_destination(filt, 0)
     filt.link_to_destination(plot, 0)
@@ -60,7 +61,7 @@ def main():
     recorder.start()
     filt.start()
     plot.start()
-    show()
+    plot.show()
 
 
 if __name__ == '__main__':

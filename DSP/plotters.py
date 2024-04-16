@@ -1,7 +1,9 @@
-from .__config__ import *
-from .__config__ import __use_cupy__
+import numpy as np
+import logging
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from Management import Stage, Message
+
 
 # logging
 logger = logging.getLogger(__name__)
@@ -77,10 +79,6 @@ class LinePlotter(Stage):
             logger.warning(f'Data shape of {data.shape} does not match expected shape of '
                            f'{(self.num_points, self.num_lines)}')
 
-        # Unpack if cupy
-        if __use_cupy__:
-            data = data.get()
-
         # If a signal matrix, transpose
         if data.ndim > 1:
             data = data.T
@@ -149,10 +147,6 @@ class ThreeDimPlotter(Stage):
 
     def _on_frame_update(self, frame):
         data = self.port_get()[0].payload
-
-        # Unpack if cupy
-        if __use_cupy__:
-            data = data.get()
 
         # Data checking
         if data.size != self.xx.size:

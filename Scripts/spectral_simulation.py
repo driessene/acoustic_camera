@@ -54,7 +54,7 @@ def main():
 
     # FFT
     fft_channel = Management.ChannelPicker(0)
-    fft = DSP.FFT(abs=True)
+    fft = DSP.FFT(return_abs=True)
 
     # Plotter
     delta_f = blocksize / samplerate

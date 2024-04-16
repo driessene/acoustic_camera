@@ -1,4 +1,4 @@
-from .__config__ import *
+import numpy as np
 from .pipeline import Stage, Message
 import logging
 from itertools import combinations

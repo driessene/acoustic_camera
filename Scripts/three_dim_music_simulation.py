@@ -8,13 +8,13 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 44100
+    blocksize = 1024
     wave_number = 2
     speed_of_sound = 343
 
     # ELEMENTS
     # sphere
-    elements = [Geometry.Element(Geometry.spherical_to_cartesian(1, theta, phi)) for (theta, phi)
+    elements = [Geometry.Element(Geometry.spherical_to_cartesian(np.array([1, theta, phi]))) for (theta, phi)
                 in product(np.linspace(0, np.pi, 5), np.linspace(0, 2 * np.pi, 10))]
 
     # Box

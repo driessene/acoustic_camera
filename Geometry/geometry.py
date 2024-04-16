@@ -1,24 +1,25 @@
-from .__config__ import *
-
+import numpy as np
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import product
 
 
-def spherical_to_cartesian(radius, inclination, azimuth):
+def spherical_to_cartesian(spherical_pos: np.array):
+    # (radius, inclination, azimuth) -> (x, y, z)
     return np.array([
-        radius * np.sin(inclination) * np.cos(azimuth),
-        radius * np.sin(inclination) * np.sin(azimuth),
-        radius * np.cos(inclination)
+        spherical_pos[0] * np.sin(spherical_pos[1]) * np.cos(spherical_pos[2]),
+        spherical_pos[0] * np.sin(spherical_pos[1]) * np.sin(spherical_pos[2]),
+        spherical_pos[0] * np.cos(spherical_pos[1])
     ])
 
 
-def cartesian_to_spherical(x, y, z):
-    r = np.sqrt(np.sum(np.square([x, y, z])))
+def cartesian_to_spherical(cartesian_pos: np.array):
+    # (x, y, z) -> (radius, inclination, azimuth)
+    r = np.sqrt(np.sum(np.square(cartesian_pos)))
     return np.array([
         r,
-        np.arctan(y / x),
-        np.arccos(z / r)
+        np.arctan(cartesian_pos[1] / cartesian_pos[0]),
+        np.arccos(cartesian_pos[2] / r)
     ])
 
 
@@ -31,7 +32,7 @@ class Element:
 
     @cached_property
     def spherical_position(self):
-        return cartesian_to_spherical(*self.cartesian_position)
+        return cartesian_to_spherical(self.cartesian_position)
 
 
 @dataclass
@@ -44,7 +45,7 @@ class WaveVector:
 
     @cached_property
     def cartesian_k(self):
-        return np.pi * 2 * spherical_to_cartesian(*self.spherical_k)
+        return np.pi * 2 * spherical_to_cartesian(self.spherical_k)
 
     @cached_property
     def wavelength(self):

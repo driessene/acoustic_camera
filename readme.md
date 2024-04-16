@@ -150,7 +150,10 @@ None
 Same as Stage
 
 ## FFT - Stage
-Applies FFT to data. Returns complex data to match [scipy](https://docs.scipy.org/doc/scipy/reference/generated/scipy.fft.fft.html#scipy.fft.fft). Just a **stage** that applies FFT to incoming data.
+Applies FFT to data. Returns complex data to match [scipy](https://docs.scipy.org/doc/scipy/reference/generated/scipy.fft.fft.html#scipy.fft.fft).
+
+### Properties
+- return_abs - bool: If true, instead of pushing complex data, push the absolute value of the FFT. Use for plotting.
 
 ### Properties
 None
