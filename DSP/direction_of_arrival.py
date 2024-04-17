@@ -56,7 +56,7 @@ class MUSIC(Stage):
         # step 2 - Take the smallest as the Noise subspace.
         noise_subspace = eigvecs[:, np.argsort(eigvals)[::-1]][:, self.num_sources:]
 
-        # Compute the music spectrum. Use np.sum or np.var to average all samples
+        # Compute the music spectrum. Use np.sum to take several samples into one result
         music_spectrum = 1 / np.sum(np.abs(np.dot(self.steering_matrix.matrix.conj().T, noise_subspace)) ** 2, axis=1)
 
         # Normalize and return results
