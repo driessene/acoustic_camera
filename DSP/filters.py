@@ -118,8 +118,15 @@ class ButterFilter(Filter):
     """
     Implements a butterworth filter
     """
-    def __init__(self, N: int, cutoff: int, samplerate, num_channels, method='filtfilt', remove_offset=True,
-                 normalize=True, port_size=4, destinations=None):
+    def __init__(self, N: int,
+                 cutoff: int,
+                 samplerate,
+                 num_channels,
+                 method='filtfilt',
+                 remove_offset=True,
+                 normalize=True,
+                 port_size=4,
+                 destinations=None):
         """
         :param N: Order of the filter
         :param cutoff: Cutoff frequency of the filter in Hz
@@ -132,11 +139,19 @@ class FIRWINFilter(Filter):
     """
     Implements a filter using an ideal FIR filter via the window method. Very sharp cutoff, ideal in digital systems
     """
-    def __init__(self, N: int, cutoff: int, samplerate, num_channels, method='filtfilt', remove_offset=True,
-                 normalize=True, port_size=4, destinations=None):
+    def __init__(self,
+                 N: int,
+                 cutoff: int or np.array,
+                 samplerate: int,
+                 num_channels: int,
+                 method='filtfilt',
+                 remove_offset=True,
+                 normalize=True,
+                 port_size=4,
+                 destinations=None):
         """
         :param N: Length of the FIR filter
-        :param cutoff: Cutoff frequency of the filter in Hz
+        :param cutoff: Cutoff frequency(s) of the filter in Hz
         """
         b = sig.firwin(N, cutoff, fs=samplerate)
         super().__init__(b, np.array(1), samplerate, num_channels, method, remove_offset, normalize, port_size, destinations)

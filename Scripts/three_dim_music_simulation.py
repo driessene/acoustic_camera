@@ -41,7 +41,6 @@ def main():
     wave_vectors = [
         Geometry.WaveVector([wave_number * 1.00, np.pi / 2.5, np.pi / 2.5], speed_of_sound),
         Geometry.WaveVector([wave_number * 1.02, np.pi / 3.5, np.pi / 3.5], speed_of_sound),
-        Geometry.WaveVector([wave_number * 1.04, np.pi / 4.5, np.pi / 4.5], speed_of_sound)
     ]
 
     # Print frequencies for debugging
@@ -78,7 +77,7 @@ def main():
     )
     music = DSP.MUSIC(
         steering_matrix=matrix,
-        num_sources=6
+        num_sources=4
     )
 
     # Plot
@@ -89,7 +88,7 @@ def main():
         x_data=inclination_angles,
         y_data=azimuth_angles,
         interval=blocksize/samplerate,
-        z_extent=(0, 0.5)
+        z_extent=(0, 1)
     )
 
     # Linking

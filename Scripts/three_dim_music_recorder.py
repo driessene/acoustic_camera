@@ -27,7 +27,7 @@ def main():
     # Recorder to get data
     DSP.print_audio_devices()
     recorder_x = DSP.AudioRecorder(
-        device_id=24,
+        device_id=22,
         samplerate=44100,
         num_channels=8,
         blocksize=blocksize,
