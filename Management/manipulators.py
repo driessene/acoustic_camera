@@ -19,7 +19,7 @@ def max_delta(messages: list[Message]) -> tuple[tuple, float]:
     return max_delta_t_pair, max_delta_t
 
 
-def verifty_timestamps(messages: list[Message], threshold: float):
+def verify_timestamps(messages: list[Message], threshold: float):
     """
     Verify the time integrity of data
     :param messages: The messages received
@@ -59,7 +59,7 @@ class Bus(Stage):
 
     def run(self):
         messages = self.port_get()
-        verifty_timestamps(messages, 1)
+        verify_timestamps(messages, 1)
 
         self.port_put(Message(tuple(messages)))
 
@@ -79,7 +79,7 @@ class Concatenator(Stage):
     def run(self):
         # Get message
         messages = self.port_get()
-        verifty_timestamps(messages, 1)
+        verify_timestamps(messages, 1)
 
         self.port_put(Message(np.concatenate([message.payload for message in messages], axis=self.axis)))
 
@@ -88,14 +88,14 @@ class Accumulator(Stage):
     """
     Save several messages, merge to one message, push to destinations
     """
-    def __init__(self, length: int, concatenate: int = None, port_size=4, destinations=None):
+    def __init__(self, length: int, axis: int = None, port_size=4, destinations=None):
         """
         :param length: Number of messages to accumulate
-        :param concatenate: If true, rather than retuning a list of messages, return a matrix of concatenated arrays
+        :param axis: If true, rather than retuning a list of messages, return a matrix of concatenated arrays
         """
         super().__init__(1, port_size, destinations)
         self.length = length
-        self.concatenate = concatenate
+        self.axis = axis
 
     def run(self):
         # Get messages
@@ -104,8 +104,30 @@ class Accumulator(Stage):
             messages.append(self.port_get()[0].payload)
 
         # If concatenate:
-        if self.concatenate is not None:
-            messages = np.concatenate(messages, axis=self.concatenate)
+        if self.axis is not None:
+            messages = np.concatenate(messages, axis=self.axis)
 
         # Push messages
         self.port_put(Message(messages))
+
+
+class Tap(Stage):
+    """
+    Tap into a pipeline. Have an output queue which can be pulled from whenever while continuing to push data to
+    destinations. The tap always had the latest sample at the outlet.
+    """
+    def __init__(self, num_ports, port_length, destinations):
+        super().__init__(num_ports, port_length, destinations)
+        self._tap = None
+
+    def run(self):
+        messages = self.port_get()
+        self._tap = messages
+        self.port_put(messages)
+
+    def tap(self):
+        """
+        Get the latest messages
+        :return: list[Message]
+        """
+        return self._tap

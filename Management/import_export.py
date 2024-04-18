@@ -1,13 +1,13 @@
 from Management import Stage, Message
 from datetime import datetime
-import pandas as pd
+import numpy as np
 import logging
 
 # logging
 logger = logging.getLogger(__name__)
 
 
-class MatrixToCSV(Stage):
+class ToDisk(Stage):
     """
     Save a matrix to a csv file. It is recommended to use Management.Accumulator before this stage to get data
     """
@@ -15,23 +15,20 @@ class MatrixToCSV(Stage):
         """
         :param label: Label of the file. For example, if label is RECORDING, the file will save as:
             RECORDING-04-18-2024-16-41-18.89 if the data is 4/18/2024 at 16:41:18.89
-        :param path: Path the put the file in. Must be a folder with no / or \ at the end of the string
-        :param port_size:
-        :param destinations:
+        :param path: Path the put the file in. Must be a folder with no / at the end of the string
         """
         super().__init__(1, port_size, destinations)
         self.label = label
         self.path = path
 
     def run(self):
-        data = self.port_get()[0]
-        df = pd.DataFrame(data)
-        path = f'{self.path}/{self.label}_{datetime.now().strftime("%y-%m-%d-%H-%M-%S.%f")}'
-        df.to_csv(path)
+        data = self.port_get()[0].payload
+        path = f'{self.path}/{self.label}_{datetime.now().strftime("%d-%m-%y-%H-%M-%S.%f")}.npy'
+        np.save(path, data)
         logger.info(f'data with shape of {data.shape} saved to {path}')
 
 
-class CSVToPipeline(Stage):
+class FromDisk(Stage):
     """
     Take a CSV, break it into blocks, and push into pipeline. Breaking it down allows for batch processing.
     Use an accumulator if you wouldn't like to break it down at the end of the pipeline.
@@ -46,7 +43,7 @@ class CSVToPipeline(Stage):
         self.path = path
         self.blocksize = blocksize
         self.axis = axis
-        self.dataframe = pd.read_csv(path).to_numpy()
+        self.dataframe = np.load(path)
         self._i = 0
 
     def run(self):

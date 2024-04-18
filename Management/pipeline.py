@@ -75,19 +75,19 @@ class Stage:
         """
         return [queue.get() for queue in self.input_queue]
 
-    def port_put(self, data: Message):
+    def port_put(self, message: Message):
         """
         Puts data to all destinations
-        :param data: Data to put
+        :param message: Message to put
         :return: None
         """
         for destination in self.destinations:
-            destination.put(data)
+            destination.put(message)
 
 
 class FunctionStage(Stage):
     """
-    Run a passed method in self.run. This allows for any custom method created in a script to be ran.
+    Run a passed method in self.run. This allows for any custom method created in a script to be run.
     Simpler than creating a subclass if it is only going to be used once, or only uses one numpy method like ravel().
     Can only have one port (remember, these are simple and designed to be one-time usages or numpy methods).
     """
