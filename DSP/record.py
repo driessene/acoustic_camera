@@ -1,7 +1,8 @@
+import numpy as np
 import logging
 import sounddevice as sd
 from datetime import datetime
-from Management import Stage, Message
+from Pipeline import Stage, Message
 
 
 # Logging

@@ -1,6 +1,6 @@
 import DSP
 import Geometry
-import Management
+import Pipeline
 import numpy as np
 
 
@@ -42,7 +42,7 @@ def main():
     )
 
     # Combine recorders
-    concat = Management.Concatenator(
+    concat = Pipeline.Concatenator(
         num_ports=2,
     )
 
@@ -56,10 +56,10 @@ def main():
     )
 
     # Accumulate for 1 min
-    accum = Management.Accumulator(10, axis=0)
+    accum = Pipeline.Accumulator(60 * samplerate / blocksize, axis=0)
 
     # Save
-    save = Management.ToDisk("simulator", "C:/Users/2020e/Desktop")
+    save = Pipeline.ToDisk("simulator", "C:/Users/2020e/Desktop")
 
     # Linking
     recorder.link_to_destination(filt, 0)

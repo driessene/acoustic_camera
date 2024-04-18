@@ -1,5 +1,5 @@
 import numpy as np
-from Management import Stage, Message
+from Pipeline import Stage, Message
 
 
 class Beamformer(Stage):

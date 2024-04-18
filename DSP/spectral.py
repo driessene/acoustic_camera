@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.fft as fft
-from Management import Stage, Message
+from Pipeline import Stage, Message
 
 
 class FFT(Stage):

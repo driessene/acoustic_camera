@@ -1,6 +1,6 @@
 import numpy as np
 from Geometry.geometry import SteeringVector
-from Management import Stage, Message
+from Pipeline import Stage, Message
 from time import sleep
 from functools import cached_property
 
@@ -26,7 +26,7 @@ class AudioSimulator(Stage):
         :param samplerate: The samplerate of the simulation
         :param blocksize: The number of samples per block
         :param sleep: If true, sleep between simulations.
-            This represents the acutal time it takes to get data for a recorder
+            This represents the real time it takes to get data for a recorder
         :param destinations: Where to push simulation data. Object should inherit from Stage
         """
         super().__init__(0, 0, destinations)
@@ -69,7 +69,7 @@ class AudioSimulator(Stage):
 
     def run(self):
         """
-        Updated properties that need to be updated every frame (ie. noise). Pushed data to desintations. Called by a
+        Updated properties that need to be updated every frame (i.e. noise). Pushed data to desintations. Called by a
         process.
         :return: None
         """

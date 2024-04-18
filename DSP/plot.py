@@ -2,7 +2,7 @@ import numpy as np
 import logging
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from Management import Stage, Message
+from Pipeline import Stage, Message
 
 
 # logging
@@ -31,8 +31,8 @@ class LinePlotter(Stage):
         :param y_label: The y label of the plot
         :param num_points: The number of data points per line
         :param num_lines: The number of lines to plot
-        :param interval: The time delay in seconds beteween each frame update
-        :param legend: If ture, show a lagend for each line
+        :param interval: The time delay in seconds between each frame update
+        :param legend: If ture, show a legend for each line
         :param x_data: If provided, set the x component for each line to this
         :param x_extent: If provided, set the visual range of the plot on the x-axis to this
         :param y_extent: If provided, set the visual range of the plot on the y-axis to this
@@ -113,8 +113,8 @@ class ThreeDimPlotter(Stage):
         :param title: The title of the plot
         :param x_label: The x label of the plot
         :param y_label: The y label of the plot
-        :param x_data: The x-axis data of the incoming data. If unknown, set to np.arange(data.shape[0])
-        :param y_data: The y-axis data of the incoming data. If unknown, set to np.arange(data.shape[1])
+        :param x_data: The x-axis data of the incoming data. If unknown, set to np.arrange(data.shape[0])
+        :param y_data: The y-axis data of the incoming data. If unknown, set to np.arrange(data.shape[1])
         :param interval: The time delay in seconds between each frame update
         :param x_extent: If provided, set the visual range of the plot on the x-axis to this
         :param y_extent: If provided, set the visual range of the plot on the y-axis to this

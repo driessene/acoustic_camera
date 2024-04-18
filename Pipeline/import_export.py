@@ -1,4 +1,4 @@
-from Management import Stage, Message
+from Pipeline import Stage, Message
 from datetime import datetime
 import numpy as np
 import logging

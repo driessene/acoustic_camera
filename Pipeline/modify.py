@@ -1,5 +1,5 @@
 import numpy as np
-from .pipeline import Stage, Message
+from .control import Stage, Message
 import logging
 from itertools import combinations
 
@@ -71,7 +71,7 @@ class Concatenator(Stage):
     def __init__(self, num_ports: int, axis: int = 1, port_size=4, destinations=None):
         """
         :param num_ports: Number of ports on the bus
-        :param axis: The axis to concatinate
+        :param axis: The axis to concatenate
         """
         super().__init__(num_ports, port_size, destinations)
         self.axis = axis

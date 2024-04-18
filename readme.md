@@ -14,31 +14,29 @@ This project creates real-time pipelines to record, simulate, process, and plot 
 Background knowledge in order to understand the project
 
 ### Array processing
-[Array processing](https://en.wikipedia.org/wiki/Array_processing) is a wide area of research in the field of signal processing that extends from the simplest form of 1 dimensional line arrays to 2 and 3 dimensional array geometries. Array processing is the backbone for DoA estimation.
+[Array processing](https://en.wikipedia.org/wiki/Array_processing) is a wide area of research in the field of signal processing that extends from the simplest form of 1 dimensional line arrays to 2 and 3-dimensional array geometries. Array processing is the backbone for DoA estimation.
 
 #### Steering vector
-Steering vectors are vectors which describe how a signal changes as elements receive the signal at different times. This happens as the same signal is delayed at different elements at different positions. Steering matrixes the position of each element, and the original wavevector(s) of the source(s).
+Steering vectors are vectors which describe how a signal changes as elements receive the signal at different times. This happens as the same signal is delayed at different elements at different positions. Steering matrices the position of each element, and the original wavevector(s) of the source(s).
 
 ![Graphic of a steering matrix](https://ars.els-cdn.com/content/image/3-s2.0-B978012398499900008X-f08-03-9780123984999.jpg)
 #### Steering matrix
-A steering matrix is composed of several steering vectors at several different angles. Each row on the matrix describes a different steering vector at a different angle. These matrixes are used in DoA estimation algorithms.
+A steering matrix is composed of several steering vectors at several different angles. Each row on the matrix describes a different steering vector at a different angle. These matrices are used in DoA estimation algorithms.
 
 # Management
 
-## Pipeline
-
-### Stage
-To achive real-time processing, pipelines can be created using **stages**. **Stages** have a list of **ports** (queues of data), a list of **destinations** (ports of another stage), and a **process**. Each stage is responsible for getting data from the ports, processing the data, and pushing the processed data to destinations. Destinations are ports of another stage.
+## Stage
+To archive real-time processing, pipelines can be created using **stages**. **Stages** have a list of **ports** (queues of data), a list of **destinations** (ports of another stage), and a **process**. Each stage is responsible for getting data from the ports, processing the data, and pushing the processed data to destinations. Destinations are ports of another stage.
 Stages also introduce multiprocessing. Each stage is ran by its own processes, letting the project leverage the whole CPU.
 To use a stage, one must create a subclass which inherits the stage class. The new subclass will create the correct amount of input ports , the length of the input ports (default is 4), and destinations.
 
-#### Properties
+### Properties
 - num_ports - int: The number of ports. i.e., the number of sources of data the stage requires
 - port_size - int: Ports are essentially queues inherited from multiprocessing. This is the length of the queue
 - destinations - multiprocessing.queue: Default to none. A list of ports from another stage. Recall that ports are multiprocessing queues of a stage.
 - has_process - bool: Default is true. Set to false if the stage does not require a process. For example, when using matplotlib for plotting, matplotlib runs its own thread to update plots, thus a process is not needed.
 
-#### methods
+### methods
 - run(self): To be implemented by a subclass. Runs forever in a while true loop. This is the code that the subclass customizes to it own purpose.
 - start(self): Starts the stage. Run whenever you are ready to begin the process
 - stop(self): Stops the stage.
@@ -46,38 +44,59 @@ To use a stage, one must create a subclass which inherits the stage class. The n
 - port_get(self): Gets data from all ports. Always use this than accessing individual queues/ports. If a single port is used, add [0] to the end of the call to get the data. This is a blocking operation.
 - port_put(self, data): Puts data to all destination ports.
 
-### Bus
-Busses are a stage which take several import ports, merges them into a tuple, and pushes to destinations. Useful for passing several stages to a single stage. It is preferred to have stages with several input ports, but this is an alternative if needed.
+## Bus
+Buses are a stage which take several import ports, merges them into a tuple, and pushes to destinations. Useful for passing several stages to a single stage. It is preferred to have stages with several input ports, but this is an alternative if needed.
 
-#### Properties
+### Properties
 - num_ports - int: The number of ports to merge.
 - port_size - int: The size of the ports.
 - destinations - multiprocessing.queue: The destinations of the bus.
 
-### Concatinator
+## Concatinator
 Concatinators concatenate several signal matrices. For example, if there are several recorders to be merged into one recorder, a concatenator will concatenate the signal matrices together. Same properties and methods as bus.
 
-#### Properties
+### Properties
 - axis - int: The axis which to concatenate over. Default is 1.
 
-### ChannelPicker
+## ChannelPicker
 When given a matrix, return a column of the matrix. Useful for example when you would like to play back a single channel of a signal matrix.
 
-#### Properties
+### Properties
 - channel - int: The index of the channel to grab
 
-### Accumulator
+## Accumulator
 Waits and merges several messages together. For example, wait until ten messages are received, put them together, and continue. Useful for saving data to CSV files for example.
 
-#### Properties
+### Properties
 - num_messages - int: The number of messages to merge
 - concatenate - int: If given, rather than returning a list of messages, return a numpy array of several payloads (which must be numpy arrays if ture) concatenated together. Give the axis to concatenate to (typically either 0 or 1)
 
-### FunctionStage
+## FunctionStage
 Pass a function to this class to create a stage which runs the function on input data. The function must only have one parameter which accepts data from other stages. This is simpler than creating subclasses for Stage, but is limited in functionality. For example, use this if you would like to call np.ravel() on data, or something just as simple
 
-#### Properties
+### Properties
 - function - function: The function of which to run on incoming data.
+
+## ToDisk
+Writes every payload it receives to disk. Be careful as this can flood data to a disk quickly. Only use when you actually need to record everything. Use a Tap for intermittent recording. It is recommended to put an Accumulator before this to collect data.
+
+### Properties
+- label - str: The label to put in the file-name. Every file name has a label and a timestamp
+- path - str: The folder where to save data. Do not include a / or \ at the end of the string.
+
+## FromDisk
+Takes a file, snips it into blocks, and injects it into a pipeline. Usefully for reading back data from ToDisk or Taps. Data must be saved by numpy. The stage automatically stops when the file is fully read.
+- path - str: The path to the file to load
+- blocksize - int: The size of the blocks to inject into the pipelines
+
+## Tap
+A tap into a pipeline. Does nothing to the data, but saves the last message and makes it user-accessible.
+
+### Properties
+- num_ports - int: The number of ports of the stage
+
+### Methods:
+- tap(self): Returns a list of messages. The length of messages matches num_ports.
 
 # DSP
 Hold sources, processes, and sinks for audio processing.
@@ -119,14 +138,6 @@ Simulates ideal audio matrixes. Only simulates a vector of microphones which are
 - signal_power - float: The power of the signal matrix.
 - noise_power - float: The power of the simulated noise.
 
-## CSVToPipeline
-Reads from a CSV file, and injects its contents into the pipeline. It is a good idea to record data to be used with this with MatrixToCSV.
-
-### Properties
-- path - str: The path of the source data
-- blocksize - int: The number of rows / cols to include per block
-- axis - int: The axis to iterate over. Must be either 0 or 1. Equivalent to numpy axis.
-
 ## Filter - Stage
 A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). These filters can either be FIR or IIR filters
 
@@ -137,7 +148,7 @@ A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). Th
 - num_channels - int: The number of elements of the incoming data
 - method - str: The method of which to apply the filter
   - lfilter: [Normal convolusion](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.lfilter.html)
-  - filtfilt: [apply the filter forwards, then backwards again](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html#scipy.signal.filtfilt). This guaranties that the phase of the data is not changed **(this is very important for DoA estimators)**, but squares the response of the filter. This is recommended over lfilter for this reason. Note that this is a non-causal operation, but that is okay since all data is know in the block.
+  - filtfilt: [apply the filter forwards, then backwards again](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html#scipy.signal.filtfilt). This guaranties that the phase of the data is not changed **(this is very important for DoA estimators)**, but squares the response of the filter. This is recommended over lfilter for this reason. Note that this is a non-causal operation, but that is okay since all data is known in the block.
 - remove_offset - bool: Sets the DC component of the data to zero if true.
 - normalize - bool: Set the maximum value of the signal to one if true.
 

@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.signal as sig
 import logging
-from Management import Stage, Message
+from Pipeline import Stage, Message
 from functools import cached_property
 import matplotlib.pyplot as plt
 
@@ -27,7 +27,7 @@ class Filter(Stage):
         """
         :param b_coefficients: B coefficients of the digital filter
         :param a_coefficients: A coefficients of the digital filter
-        :param samplerate: Samerate of the input data
+        :param samplerate: Samplerate of the input data
         :param num_channels: The number of channels in the signal matrix
         :param method:
             lfilter: A typical digital filter
@@ -45,7 +45,7 @@ class Filter(Stage):
         self.num_channels = num_channels
         self.method = method
         self.remove_offset = remove_offset
-        self.normazlize = normalize
+        self.normalize = normalize
         self.initial_conditions = np.zeros((self.filter_order, self.num_channels))
 
     @cached_property
@@ -66,7 +66,7 @@ class Filter(Stage):
 
         if self.remove_offset:
             data -= np.mean(data, axis=0, keepdims=True)
-        if self.normazlize:
+        if self.normalize:
             data /= np.max(np.abs(data), axis=0, keepdims=True)
         if self.method == 'lfilter':
             data, self.initial_conditions = sig.lfilter(self.b, self.a, data, axis=0, zi=self.initial_conditions)

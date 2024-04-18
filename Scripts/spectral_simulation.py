@@ -1,6 +1,6 @@
 import DSP
 import Geometry
-import Management
+import Pipeline
 from matplotlib.pyplot import show
 import numpy as np
 
@@ -53,7 +53,7 @@ def main():
     )
 
     # FFT
-    fft_channel = Management.ChannelPicker(0)
+    fft_channel = Pipeline.ChannelPicker(0)
     fft = DSP.FFT(return_abs=True)
 
     # Plotter

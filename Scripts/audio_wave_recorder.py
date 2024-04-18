@@ -1,6 +1,6 @@
 import DSP
 import Geometry
-import Management
+import Pipeline
 from matplotlib.pyplot import show
 
 
@@ -42,7 +42,7 @@ def main():
     )
 
     # Combine recorders
-    concat = Management.Concatenator(
+    concat = Pipeline.Concatenator(
         num_ports=2,
     )
 
