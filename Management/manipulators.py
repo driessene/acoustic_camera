@@ -39,12 +39,9 @@ class ChannelPicker(Stage):
     """
     takes and input matrix, picks a channel, and pushes the channel
     """
-
     def __init__(self, channel, port_size=4, destinations=None):
         """
         :param channel: The channel to push
-        :param port_size: Size of the queues
-        :param destinations: Other object input queue to push to
         """
         super().__init__(1, port_size, destinations, True)
         self.channel = channel
@@ -57,13 +54,7 @@ class Bus(Stage):
     """
     Takes several messages, warps data into a tuple, pushes to destinations
     """
-
     def __init__(self, num_ports, port_size, destinations):
-        """
-        :param num_ports: Number of ports on the bus
-        :param port_size: Size of the queues
-        :param destinations: Other object input queue to push to
-        """
         super().__init__(num_ports, port_size, destinations)
 
     def run(self):
@@ -77,19 +68,44 @@ class Concatenator(Stage):
     """
     Takes several inputs, concatenates, pushes to destinations
     """
-
-    def __init__(self, num_ports, port_size=4, destinations=None):
+    def __init__(self, num_ports: int, axis: int = 1, port_size=4, destinations=None):
         """
-        Initializes a concatinator
         :param num_ports: Number of ports on the bus
-        :param port_size: Size of the queues
-        :param destinations: Other object input queue to push to
+        :param axis: The axis to concatinate
         """
         super().__init__(num_ports, port_size, destinations)
+        self.axis = axis
 
     def run(self):
         # Get message
         messages = self.port_get()
         verifty_timestamps(messages, 1)
 
-        self.port_put(Message(np.concatenate([message.payload for message in messages], axis=1)))
+        self.port_put(Message(np.concatenate([message.payload for message in messages], axis=self.axis)))
+
+
+class Accumulator(Stage):
+    """
+    Save several messages, merge to one message, push to destinations
+    """
+    def __init__(self, length: int, concatenate: int = None, port_size=4, destinations=None):
+        """
+        :param length: Number of messages to accumulate
+        :param concatenate: If true, rather than retuning a list of messages, return a matrix of concatenated arrays
+        """
+        super().__init__(1, port_size, destinations)
+        self.length = length
+        self.concatenate = concatenate
+
+    def run(self):
+        # Get messages
+        messages = []
+        while len(messages) < self.length:
+            messages.append(self.port_get()[0].payload)
+
+        # If concatenate:
+        if self.concatenate is not None:
+            messages = np.concatenate(messages, axis=self.concatenate)
+
+        # Push messages
+        self.port_put(Message(messages))

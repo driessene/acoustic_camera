@@ -55,7 +55,23 @@ Busses are a stage which take several import ports, merges them into a tuple, an
 - destinations - multiprocessing.queue: The destinations of the bus.
 
 ### Concatinator
-Concatinators concatenate several signal matrixes. For example, if there are several recorders to be merged into one recorder, a concatinatinator will concatenate the signal matrixes together. Same properties and methods as bus.
+Concatinators concatenate several signal matrices. For example, if there are several recorders to be merged into one recorder, a concatenator will concatenate the signal matrices together. Same properties and methods as bus.
+
+#### Properties
+- axis - int: The axis which to concatenate over. Default is 1.
+
+### ChannelPicker
+When given a matrix, return a column of the matrix. Useful for example when you would like to play back a single channel of a signal matrix.
+
+#### Properties
+- channel - int: The index of the channel to grab
+
+### Accumulator
+Waits and merges several messages together. For example, wait until ten messages are received, put them together, and continue. Useful for saving data to CSV files for example.
+
+#### Properties
+- num_messages - int: The number of messages to merge
+- concatenate - int: If given, rather than returning a list of messages, return a numpy array of several payloads (which must be numpy arrays if ture) concatenated together. Give the axis to concatenate to (typically either 0 or 1)
 
 # DSP
 Hold sources, processes, and sinks for audio processing.
@@ -203,6 +219,13 @@ Play data back out to your speakers. Useful for hearing how filters effect data 
 - samplerate - int: The sample rate of the data
 - blocksize - int: The blocksize of the data
 - channel - int: The channel which to play
+
+## MatrixToCSV
+Saves a matrix to a csv file. Record data now and use it later. Saves to the path of (path)/(label)_(time). Time is in the format of year-month-day-hour-minute-seconds.millisecond.
+
+#### Properties
+- label - str: The label to pass to the file name
+- path - str: The path of where to save the file. Must be a folder with no / or \ at the end of the string.
 
 # Geometry
 Holds elements, wave vectors, steering vectors, and steering matrixes. Use to calculate steering vectors for simulators and steering matrixes for DoA algorithms. All classes here are dataclass. They have no methods, only hold and calculate data
