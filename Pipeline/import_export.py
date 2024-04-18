@@ -9,7 +9,8 @@ logger = logging.getLogger(__name__)
 
 class ToDisk(Stage):
     """
-    Save a matrix to a csv file. It is recommended to use Management.Accumulator before this stage to get data
+    Save a matrix to a csv file. It is recommended to use Management. Accumulator before this stage to get data.
+    Can also continue pushing data if asked to.
     """
     def __init__(self, label: str, path: str, port_size=4, destinations=None):
         """
@@ -26,6 +27,7 @@ class ToDisk(Stage):
         path = f'{self.path}/{self.label}_{datetime.now().strftime("%d-%m-%y-%H-%M-%S.%f")}.npy'
         np.save(path, data)
         logger.info(f'data with shape of {data.shape} saved to {path}')
+        self.port_put(data)
 
 
 class FromDisk(Stage):

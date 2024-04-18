@@ -24,7 +24,8 @@ class LinePlotter(Stage):
                  x_data: np.array = None,
                  x_extent: list = None,
                  y_extent: list = None,
-                 port_size=4):
+                 port_size=4,
+                 destinations=None):
         """
         :param title: The title of the plot
         :param x_label: The x label of the plot
@@ -38,7 +39,7 @@ class LinePlotter(Stage):
         :param y_extent: If provided, set the visual range of the plot on the y-axis to this
         :param port_size: The size of the input port
         """
-        super().__init__(1, port_size, None, False)
+        super().__init__(1, port_size, destinations, False)
 
         # Properties
         self.num_points = num_points
@@ -108,7 +109,8 @@ class ThreeDimPlotter(Stage):
                  x_extent: tuple = None,
                  y_extent: tuple = None,
                  z_extent: tuple = None,
-                 port_size=4):
+                 port_size=4,
+                 destinations=None):
         """
         :param title: The title of the plot
         :param x_label: The x label of the plot
@@ -121,7 +123,7 @@ class ThreeDimPlotter(Stage):
         :param z_extent: If provided, set the visual range of the plot on the z-axis to this
         :param port_size: The size of the input port
         """
-        super().__init__(1, port_size, None, False)
+        super().__init__(1, port_size, destinations, False)
 
         self.xx, self.yy = np.meshgrid(x_data, y_data)
         self.interval = interval
