@@ -73,6 +73,12 @@ Waits and merges several messages together. For example, wait until ten messages
 - num_messages - int: The number of messages to merge
 - concatenate - int: If given, rather than returning a list of messages, return a numpy array of several payloads (which must be numpy arrays if ture) concatenated together. Give the axis to concatenate to (typically either 0 or 1)
 
+### FunctionStage
+Pass a function to this class to create a stage which runs the function on input data. The function must only have one parameter which accepts data from other stages. This is simpler than creating subclasses for Stage, but is limited in functionality. For example, use this if you would like to call np.ravel() on data, or something just as simple
+
+#### Properties
+- function - function: The function of which to run on incoming data.
+
 # DSP
 Hold sources, processes, and sinks for audio processing.
 

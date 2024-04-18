@@ -85,15 +85,18 @@ class Stage:
             destination.put(data)
 
 
-class Message:
+class FunctionStage(Stage):
     """
-    Use messages to pass data between stages. Allows for metadata
+    Run a passed method in self.run. This allows for any custom method created in a script to be ran.
+    Simpler than creating a subclass if it is only going to be used once, or only uses one numpy method like ravel().
+    Can only have one port (remember, these are simple and designed to be one-time usages or numpy methods).
     """
-    def __init__(self, payload, **kwargs):
+    def __init__(self, function, port_size=4, destinations=None):
         """
-        :param payload: Payload to send to destination. Main set of data
-        :param kwargs: Metadata. For example, a timestamp
+        :param function: The function of which to run. Must be pass directly with the type "function".
         """
-        self.payload = payload
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+        super().__init__(1, port_size, destinations)
+        self.function = function
+
+    def run(self):
+        self.port_put(Message(self.function(self.port_get()[0].payload)))
