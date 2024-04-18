@@ -113,6 +113,13 @@ Simulates ideal audio matrixes. Only simulates a vector of microphones which are
 - signal_power - float: The power of the signal matrix.
 - noise_power - float: The power of the simulated noise.
 
+## CSVToPipeline
+Reads from a CSV file, and injects its contents into the pipeline. It is a good idea to record data to be used with this with MatrixToCSV.
+
+### Properties
+- path - str: The path of the source data
+- blocksize - int: The number of rows / cols to include per block
+- axis - int: The axis to iterate over. Must be either 0 or 1. Equivalent to numpy axis.
 
 ## Filter - Stage
 A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). These filters can either be FIR or IIR filters
@@ -132,34 +139,22 @@ A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). Th
 - plot_response(self): Plots the response of the filter. This is a blocking operation.
 - plot_coefficients(self): Plots the coefficients of the filter. This is a blocking operation.
 
-## ButterFilter - Stage
+## ButterFilter - Filter
 A lowpass [butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter). A subclass of filter, inheriting all properties and functions
 
 ### Properties
 - N - int: The order of the filter.
 - cutoff - float: The cutoff frequency of the filter in Hz.
 
-### Methods
-Same as Filter.
-
-## FIRWINFilter - Stage
+## FIRWINFilter - Filter
 A lowpass [ideal filter](https://en.wikipedia.org/wiki/Sinc_filter) using the window method. This is mathematically better than ButterFilter and is recomended. Can have extremely sharp cutoffs. A subclass of filter, inheriting all properties and methods.
 
 ### Properties
 - N - int: The length of the filter
 - cutoff - float: The cutoff frequency of the filter in Hz
 
-### Methods
-Same as Filter.
-
 ## HanningWindow - Stage
 Applies a [hanning window](https://en.wikipedia.org/wiki/Hann_function) to incoming data. Simply a **stage** that applies a hanning window.
-
-### Properties
-None
-
-### Methods
-Same as Stage
 
 ## FFT - Stage
 Applies FFT to data. Returns complex data to match [scipy](https://docs.scipy.org/doc/scipy/reference/generated/scipy.fft.fft.html#scipy.fft.fft).
@@ -167,20 +162,11 @@ Applies FFT to data. Returns complex data to match [scipy](https://docs.scipy.or
 ### Properties
 - return_abs - bool: If true, instead of pushing complex data, push the absolute value of the FFT. Use for plotting.
 
-### Properties
-None
-
-### Methods
-Same as Stage
-
 ## Beamformer - Stage
 A classic [beamforming](https://en.wikipedia.org/wiki/Beamforming) algorithm. Uses a steering matrix to guess which steering vector that was used to get incoming data.
 
 ### Properties
 - steering_matrix - Geometry.geometry.SteeringMatrix: The steering matrix for which to solve
-
-### Methods
-Same as Stage
 
 ## MUSIC - Stage
 Applies the [MUltiple SIgnal Classification (MUSIC) algorithm](https://en.wikipedia.org/wiki/MUSIC_(algorithm)) to incoming data. Significantly more accurate than beamformer, but much more computational intensive. Can find multiple sources simultaneously.
@@ -188,9 +174,6 @@ Applies the [MUltiple SIgnal Classification (MUSIC) algorithm](https://en.wikipe
 ### Properties
 - steering_matrix - Geometry.geometry.SteeringMatrix: The steering matrix for which to solve
 - num_sources - int: The number of sources in the environment
-
-### Methods
-Same as Stage
 
 ## LinePlotter - Stage
 Plots one line or several lines on a grid. If input data is a vector, plot one line. If a matrix, plot one line per list on axis=0.
