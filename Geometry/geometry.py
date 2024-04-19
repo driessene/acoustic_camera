@@ -107,25 +107,7 @@ class SteeringVector:
         positions = np.array([element.position for element in self.elements])
 
         # Algorithm for steering vector: e^(j * (pos . k))
-        return np.exp(1j * np.dot(positions, self.wavevector.k))
-
-@dataclass
-class SteeringMatrix:
-    """
-    Defines a steering matrix based on the position of elements and thetas for which to test
-    """
-    elements: list[Element]     # The elements to include in the vectors
-    inclinations: np.array      # The inclinations to include in the matrix
-    azimuths: np.array          # The azimuths to include in the matrix
-    wavenumber: float           # The wavenumber of the signal
-
-    @cached_property
-    def matrix(self):
-        return np.vstack(
-            [SteeringVector(
-                self.elements,
-                WaveVector(spherical_to_cartesian(np.array([self.wavenumber, inclination, azimuth])), 1)).vector
-             for (azimuth, inclination) in product(self.azimuths, self.inclinations)]).T
+        return np.exp(1j * (positions @ self.wavevector.k))
 
 
 @dataclass
@@ -137,6 +119,7 @@ class SteeringMatrix:
     inclinations: np.array      # The inclinations to include in the matrix
     azimuths: np.array          # The azimuths to include in the matrix
     wavenumber: float           # The wavenumber of the signal
+
     @cached_property
     def matrix(self):
         # Create 3D grid of inclination and azimuth

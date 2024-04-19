@@ -1,7 +1,7 @@
 import DSP
 import Geometry
 import numpy as np
-from sys import getsizeof
+import sys
 
 
 def main():
@@ -57,8 +57,8 @@ def main():
     )
 
     # MUSIC
-    azimuth_angles = np.linspace(0, 2 * np.pi, 1000)
-    inclination_angles = np.linspace(0, np.pi, 1000)
+    azimuth_angles = np.linspace(0, 2 * np.pi, 500)
+    inclination_angles = np.linspace(0, np.pi, 500)
     matrix = Geometry.SteeringMatrix(
         elements=elements,
         azimuths=azimuth_angles,
@@ -66,7 +66,7 @@ def main():
         wavenumber=wave_number,
     )
     print(matrix.matrix.shape)
-    print(getsizeof(matrix))
+
     music = DSP.MUSIC(
         steering_matrix=matrix,
         num_sources=4
