@@ -47,8 +47,8 @@ class AudioSimulator(Stage):
 
     @cached_property
     def waveforms(self):
-        frequencies = [wave_vector.frequency for wave_vector in self.wave_vectors]
-        return np.array([np.exp(2j * np.pi * freq * self.time_vector) for freq in frequencies])
+        frequencies = [wave_vector.angular_frequency for wave_vector in self.wave_vectors]
+        return np.array([np.exp(1j * freq * self.time_vector) for freq in frequencies])
 
     @cached_property
     def steering_vectors(self):

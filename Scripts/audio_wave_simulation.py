@@ -10,17 +10,34 @@ def main():
 
     samplerate = 44100
     blocksize = 1024
-    wave_number = 1.46
+    wave_number = 10
     speed_of_sound = 343
 
     # Sources
-    spacing = np.arange(0, 4, 0.5)
-    elements = [Geometry.Element(np.array([i, j, 0])) for (i, j) in product(spacing, spacing)]
+    elements = [Geometry.Element([-1.25, 0, 0]),
+                Geometry.Element([-0.75, 0, 0]),
+                Geometry.Element([-0.25, 0, 0]),
+                Geometry.Element([0.25, 0, 0]),
+                Geometry.Element([0.75, 0, 0]),
+                Geometry.Element([1.25, 0, 0]),
+                Geometry.Element([0, -1.25, 0]),
+                Geometry.Element([0, -0.75, 0]),
+                Geometry.Element([0, -0.25, 0]),
+                Geometry.Element([0, 0.25, 0]),
+                Geometry.Element([0, 0.75, 0]),
+                Geometry.Element([0, 1.25, 0]),
+                Geometry.Element([0, 0, 0.25]),
+                Geometry.Element([0, 0, 0.75]),
+                Geometry.Element([0, 0, 1.25])]
 
     wave_vectors = [
-        Geometry.WaveVector([wave_number * 1.0, 1.0 * np.pi / 4, 1.0 * np.pi / 4], speed_of_sound),
-        Geometry.WaveVector([wave_number * 1.1, 1.1 * np.pi / 4, 1.3 * np.pi / 4], speed_of_sound)
+        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.00, 1, 1])), speed_of_sound),
+        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
     ]
+
+    # Print frequency for debuging
+    for wave in wave_vectors:
+        print(wave.linear_frequency)
 
     # Recorder to get data
     recorder = DSP.AudioSimulator(
@@ -33,22 +50,21 @@ def main():
     )
 
     # Filter
-    filt = DSP.filters.FIRWINFilter(
+    filt = DSP.FIRWINFilter(
         N=101,
         num_channels=len(elements),
-        cutoff=1500,
+        cutoff=2000,
         samplerate=samplerate,
         method='filtfilt',
     )
 
     # Plot
-    plot = DSP.plotters.LinePlotter(
+    plot = DSP.LinePlotter(
         title='Audio Waves',
         x_label="N",
         y_label="Amplitude",
         num_lines=len(elements),
         num_points=blocksize,
-        x_extent=[100, 500],
         y_extent=[-1, 1],
         interval=blocksize/samplerate
     )

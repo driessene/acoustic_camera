@@ -38,22 +38,59 @@ class Element:
 @dataclass
 class WaveVector:
     """
-    Defines a wave vector.
+    Defines a wave vector. K must be given as np.array([kx, ky, kz]). Provides all properties of the wavevector
     """
-    spherical_k: np.array  # (wavenumber, inclination, azimuth)
+    k: np.array  # (kx, ky, kz)
     wave_speed: float   # speed in m/s of the wave in the environment
 
     @cached_property
-    def cartesian_k(self):
-        return np.pi * 2 * spherical_to_cartesian(self.spherical_k)
+    def spherical_k(self):
+        # (wavenumber, inclination, azimuth)
+        return cartesian_to_spherical(self.k)
+
+    # ANGULAR PROPERTIES
 
     @cached_property
-    def wavelength(self):
-        return 1 / self.spherical_k[0]
+    def inclination(self):
+        return self.spherical_k[1]
 
     @cached_property
-    def frequency(self):
-        return self.spherical_k[0] * self.wave_speed
+    def azimuth(self):
+        return self.spherical_k[2]
+
+    @cached_property
+    def angular_wavenumber(self):
+        return self.spherical_k[0]
+
+    @cached_property
+    def angular_wavelength(self):
+        return 1 / self.angular_wavenumber
+
+    @cached_property
+    def angular_frequency(self):
+        return self.angular_wavenumber * self.wave_speed
+
+    @cached_property
+    def angular_period(self):
+        return 1 / self.angular_frequency
+
+    # LINEAR PROPERTIES
+
+    @cached_property
+    def linear_wavenumber(self):
+        return self.angular_wavenumber / (2 * np.pi)
+
+    @cached_property
+    def linear_wavelength(self):
+        return self.angular_wavelength * (2 * np.pi)
+
+    @cached_property
+    def linear_frequency(self):
+        return self.angular_frequency / (2 * np.pi)
+
+    @cached_property
+    def linear_period(self):
+        return self.angular_period * (2 * np.pi)
 
 
 @dataclass
@@ -67,7 +104,7 @@ class SteeringVector:
     @cached_property
     def vector(self):
         return np.array(
-            [np.exp(1j * np.dot(element.cartesian_position, self.wavevector.cartesian_k))
+            [np.exp(1j * (element.cartesian_position @ self.wavevector.k))
              for element in self.elements])
 
 
@@ -84,5 +121,9 @@ class SteeringMatrix:
     @cached_property
     def matrix(self):
         return np.vstack(
-            [SteeringVector(self.elements, WaveVector((self.wavenumber, inclination, azimuth), 1)).vector
+            [SteeringVector(
+                self.elements,
+                WaveVector(spherical_to_cartesian(np.array([self.wavenumber, inclination, azimuth])), 1)).vector
              for (azimuth, inclination) in product(self.azimuths, self.inclinations)]).T
+
+

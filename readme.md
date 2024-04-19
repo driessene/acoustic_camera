@@ -228,28 +228,38 @@ Saves a matrix to a csv file. Record data now and use it later. Saves to the pat
 - path - str: The path of where to save the file. Must be a folder with no / or \ at the end of the string.
 
 # Geometry
-Holds elements, wave vectors, steering vectors, and steering matrixes. Use to calculate steering vectors for simulators and steering matrixes for DoA algorithms. All classes here are dataclass. They have no methods, only hold and calculate data
+Holds elements, wave vectors, steering vectors, and steering matrices. Use to calculate steering vectors for simulators and steering matrixes for DoA algorithms. All classes here are dataclass. They have no methods, only hold and calculate data
 
 ## Element
-Holds positional information about an element (a microphone or antena)
+Holds positional information about an element (a microphone or antenna)
 
 ### Properties
-- cartesian_position - tuple: A tuple holding (x, y, z) position
+- position - np.array: A numpy array holding (x, y, z) position. Units are in wavelengths of a theoretical wavevector.
 
 #### Calculated properties
-- spherical_position - tuple: A tuple holding (r, inclination, azimuth) position
+- spherical_position - np.array: A tuple holding (r, inclination, azimuth) position
 
 ## WaveVector
-Holds wave vector information (wavenumber, inclination, azimuth) and (kx, ky, kz)
+Holds wavevector. Remember to always pass (kx, ky, kz). If you want to pass (wavenumber, inclincation, azimuth), which is more common, translate using spherical_to_cartesian inside the declaration.
 
 ### Properties
-- spherical_k - tuple: A tuple holding (wavenumber, inclination, azimuth)
+- k - np.array: A numpy array holding (kx, ky, kz)
 
 #### Calculated properties
-- cartesian_k - tuple: A tuple holding (kx, ky, kz)
+- spherical_k - tuple: numpy array holding (wavenumber, inclination, azimuth)
+- inclination - float: The inclincation angle of the wavevector in radians. Equal to arctan(ky / kx). 
+- azimuth - float: The azimuth angle of the wavevector in radians. Equal to np.arccos(kz / |k|).
+- angular_wavenumber - float: The angular wavenumber of the wavevector. |k|.
+- angular_wavelength - float: The angular wavelength of the wavevector. Equal to 1 / angular_wavenumber.
+- angular_frequency - float: The angular frequency of the wavevector. Equal to angular_wavenumber * wave_speed.
+- angular_period - float: The angular period of the wavevector. Equal to 1 / angular_frequency.
+- linear_wavenumber - float: The linear wavenumber of the wavevector. Equal to angular_wavenumber / (2 * pi).
+- linear_wavelength - float: The linear wavelength of the wavevector. Equal to angular_wavelength * (2 * pi).
+- linear_frequency - float: The linear frequency of the wavevector. Equal to angular_frequency / (2 * pi).
+- linear_period - float: The linear period of the wavevector. Equal to angular_period * (2 * pi).
 
 ## SteeringVector
-Representes a steering vector when given elements and a wave vector
+Represents a steering vector when given elements and a wave vector
 
 ### Properties
 - elements - List[Element]: A list of elements to project a wavevector onto
@@ -276,52 +286,40 @@ Hold every possible steering vector when given elements, wavenumber, and all ang
 import DSP
 import Geometry
 import numpy as np
-from itertools import product
 
 
 def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 10000
-    wave_number = 2
+    blocksize = 1024
+    wave_number = 10
     speed_of_sound = 343
 
-    # ELEMENTS
-    # sphere
-    elements = [Geometry.Element(Geometry.spherical_to_cartesian(1, theta, phi)) for (theta, phi)
-                in product(np.linspace(0, np.pi, 5), np.linspace(0, 2 * np.pi, 10))]
-
-    # Box
-    # elements = [Geometry.Element([x, y, z]) for (x, y, z) in
-    #             product(np.arange(0, 4, 0.5), np.arange(0, 4, 0.5), np.arange(0, 4, 0.5))]
-
-    # +
-    # elements = [Geometry.Element([-1.25, 0, 0]),
-    #             Geometry.Element([-0.75, 0, 0]),
-    #             Geometry.Element([-0.25, 0, 0]),
-    #             Geometry.Element([0.25, 0, 0]),
-    #             Geometry.Element([0.75, 0, 0]),
-    #             Geometry.Element([1.25, 0, 0]),
-    #             Geometry.Element([0, -1.25, 0]),
-    #             Geometry.Element([0, -0.75, 0]),
-    #             Geometry.Element([0, -0.25, 0]),
-    #             Geometry.Element([0, 0.25, 0]),
-    #             Geometry.Element([0, 0.75, 0]),
-    #             Geometry.Element([0, 1.25, 0]),
-    #             Geometry.Element([0, 0, 0.25]),
-    #             Geometry.Element([0, 0, 0.75]),
-    #             Geometry.Element([0, 0, 1.25])]
+    elements = [Geometry.Element([-1.25, 0, 0]),
+                Geometry.Element([-0.75, 0, 0]),
+                Geometry.Element([-0.25, 0, 0]),
+                Geometry.Element([0.25, 0, 0]),
+                Geometry.Element([0.75, 0, 0]),
+                Geometry.Element([1.25, 0, 0]),
+                Geometry.Element([0, -1.25, 0]),
+                Geometry.Element([0, -0.75, 0]),
+                Geometry.Element([0, -0.25, 0]),
+                Geometry.Element([0, 0.25, 0]),
+                Geometry.Element([0, 0.75, 0]),
+                Geometry.Element([0, 1.25, 0]),
+                Geometry.Element([0, 0, 0.25]),
+                Geometry.Element([0, 0, 0.75]),
+                Geometry.Element([0, 0, 1.25])]
 
     wave_vectors = [
-        Geometry.WaveVector([wave_number * 1.00, np.pi / 2.5, np.pi / 2.5], speed_of_sound),
-        Geometry.WaveVector([wave_number * 1.02, np.pi / 3.5, np.pi / 3.5], speed_of_sound),
-        Geometry.WaveVector([wave_number * 1.04, np.pi / 4.5, np.pi / 4.5], speed_of_sound)
+        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.00, 1, 1])), speed_of_sound),
+        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
     ]
 
-    # Print frequencies for debugging
-    for vect in wave_vectors:
-        print(vect.frequency)
+    # Print frequencies for debug
+    for vector in wave_vectors:
+        print(vector.linear_frequency)
 
     # Recorder to get data
     recorder = DSP.AudioSimulator(
@@ -353,7 +351,7 @@ def main():
     )
     music = DSP.MUSIC(
         steering_matrix=matrix,
-        num_sources=6
+        num_sources=4
     )
 
     # Plot
@@ -364,7 +362,7 @@ def main():
         x_data=inclination_angles,
         y_data=azimuth_angles,
         interval=blocksize/samplerate,
-        z_extent=(0, 0.5)
+        z_extent=(0, 1)
     )
 
     # Linking
@@ -382,4 +380,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 ```
