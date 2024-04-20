@@ -124,17 +124,19 @@ class SteeringMatrix:
 
     @cached_property
     def matrix(self):
-        # Create 3D grid of inclination and azimuth
+        # Create 3D grid of inclination and azimuth. This gives every combination of angles on a grid
         inclinations, azimuths = np.meshgrid(self.inclinations, self.azimuths)
 
         # Convert inclination and azimuth to spherical coordinates
-        spherical_coords = np.array([self.wavenumber * np.ones_like(inclinations.ravel()), inclinations.ravel(), azimuths.ravel()]).T
+        spherical_coords = np.array([self.wavenumber * np.ones_like(inclinations.ravel()),  # Wave number
+                                     inclinations.ravel(),                                  # inclination
+                                     azimuths.ravel()]).T                                   # azimuth
 
-        # Convert spherical coordinates to wave vectors for all combinations of inclination and azimuth
+        # Convert spherical coordinates to wave vectors for each set of angles
         wave_vectors = [WaveVector(spherical_to_cartesian(coord), 1) for coord in spherical_coords]
 
-        # Calculate steering vectors for all elements and all combinations of inclination and azimuth
+        # Calculate steering vectors for all elements and all set of angles
         steering_vectors = np.array([SteeringVector(self.elements, wave_vector).vector for wave_vector in wave_vectors]).T
 
-        # Reshape the 3d matrix to 2d for DoA algorithms.
+        # Reshape the 3d matrix to 2d for DoA algorithms
         return steering_vectors.reshape(len(self.elements), len(self.inclinations) * len(self.azimuths))
