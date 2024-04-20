@@ -230,6 +230,12 @@ Saves a matrix to a csv file. Record data now and use it later. Saves to the pat
 # Geometry
 Holds elements, wave vectors, steering vectors, and steering matrices. Use to calculate steering vectors for simulators and steering matrixes for DoA algorithms. All classes here are dataclass. They have no methods, only hold and calculate data
 
+## Spherical_to_cartesian - function
+Converts spherical coordinates to cartesian coordinates. Accepts np.array([radius, inclination, azimuth]), returns np.array([x, y, z]).
+
+## cartesian_to_spherical - function
+Converts cartesian coordinates to spherical coordinates. Accepts np.array([x, y, z]), returns np.array([radius, inclination, azimuth]).
+
 ## Element
 Holds positional information about an element (a microphone or antenna)
 
@@ -240,7 +246,7 @@ Holds positional information about an element (a microphone or antenna)
 - spherical_position - np.array: A tuple holding (r, inclination, azimuth) position
 
 ## WaveVector
-Holds wavevector. Remember to always pass (kx, ky, kz). If you want to pass (wavenumber, inclincation, azimuth), which is more common, translate using spherical_to_cartesian inside the declaration.
+Holds a wavevector. Always pass (kx, ky, kz) in units of angular wavenumber. If you want to pass (angular wavenumber, inclincation, azimuth), which is more common, translate using spherical_to_cartesian inside the declaration.
 
 ### Properties
 - k - np.array: A numpy array holding (kx, ky, kz)

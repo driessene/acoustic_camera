@@ -28,11 +28,11 @@ class Element:
     """
     Defines a point in space where an element lays in distance from origin. Units are in wavelengths.
     """
-    cartesian_position: np.array   # (x, y, z) position
+    position: np.array   # (x, y, z) position
 
     @cached_property
     def spherical_position(self):
-        return cartesian_to_spherical(self.cartesian_position)
+        return cartesian_to_spherical(self.position)
 
 
 @dataclass
@@ -103,10 +103,11 @@ class SteeringVector:
 
     @cached_property
     def vector(self):
-        return np.array(
-            [np.exp(1j * (element.cartesian_position @ self.wavevector.k))
-             for element in self.elements])
+        # Get positions of elements
+        positions = np.array([element.position for element in self.elements])
 
+        # Algorithm for steering vector: e^(j * (pos . k))
+        return np.exp(1j * np.dot(positions, self.wavevector.k))
 
 @dataclass
 class SteeringMatrix:
@@ -127,3 +128,28 @@ class SteeringMatrix:
              for (azimuth, inclination) in product(self.azimuths, self.inclinations)]).T
 
 
+@dataclass
+class SteeringMatrix:
+    """
+    Defines a steering matrix based on the position of elements and thetas for which to test
+    """
+    elements: list[Element]     # The elements to include in the vectors
+    inclinations: np.array      # The inclinations to include in the matrix
+    azimuths: np.array          # The azimuths to include in the matrix
+    wavenumber: float           # The wavenumber of the signal
+    @cached_property
+    def matrix(self):
+        # Create 3D grid of inclination and azimuth
+        inclinations, azimuths = np.meshgrid(self.inclinations, self.azimuths)
+
+        # Convert inclination and azimuth to spherical coordinates
+        spherical_coords = np.array([self.wavenumber * np.ones_like(inclinations.ravel()), inclinations.ravel(), azimuths.ravel()]).T
+
+        # Convert spherical coordinates to wave vectors for all combinations of inclination and azimuth
+        wave_vectors = [WaveVector(spherical_to_cartesian(coord), 1) for coord in spherical_coords]
+
+        # Calculate steering vectors for all elements and all combinations of inclination and azimuth
+        steering_vectors = np.array([SteeringVector(self.elements, wave_vector).vector for wave_vector in wave_vectors]).T
+
+        # Reshape the 3d matrix to 2d for DoA algorithms.
+        return steering_vectors.reshape(len(self.elements), len(self.inclinations) * len(self.azimuths))
