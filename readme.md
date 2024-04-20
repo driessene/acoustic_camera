@@ -220,15 +220,18 @@ Play data back out to your speakers. Useful for hearing how filters effect data 
 - blocksize - int: The blocksize of the data
 - channel - int: The channel which to play
 
-## MatrixToCSV
-Saves a matrix to a csv file. Record data now and use it later. Saves to the path of (path)/(label)_(time). Time is in the format of year-month-day-hour-minute-seconds.millisecond.
-
 #### Properties
 - label - str: The label to pass to the file name
 - path - str: The path of where to save the file. Must be a folder with no / or \ at the end of the string.
 
 # Geometry
 Holds elements, wave vectors, steering vectors, and steering matrices. Use to calculate steering vectors for simulators and steering matrixes for DoA algorithms. All classes here are dataclass. They have no methods, only hold and calculate data
+
+## spherical_to_cartesian - function
+Takes np.array([radius, inclination, azimuth]) and returns np.array([x, y, z]).
+
+## cartesian_to_spherical - function
+Takes np.array([x, y, z]) are returns np.array([radius, inclination, azimuth]).
 
 ## Element
 Holds positional information about an element (a microphone or antenna)
