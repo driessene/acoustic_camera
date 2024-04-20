@@ -65,7 +65,6 @@ def main():
         inclinations=inclination_angles,
         wavenumber=wave_number,
     )
-    print(matrix.matrix.shape)
 
     music = DSP.MUSIC(
         steering_matrix=matrix,

@@ -1,7 +1,6 @@
 import numpy as np
 from dataclasses import dataclass
 from functools import cached_property
-from itertools import product
 
 
 def spherical_to_cartesian(spherical_pos: np.array):
@@ -38,7 +37,8 @@ class Element:
 @dataclass
 class WaveVector:
     """
-    Defines a wave vector. K must be given as np.array([kx, ky, kz]). Provides all properties of the wavevector
+    Defines a wave vector. K must be given as np.array([kx, ky, kz]) in units of angular wavenumber.
+    Provides all properties of the wavevector as properties.
     """
     k: np.array  # (kx, ky, kz)
     wave_speed: float   # speed in m/s of the wave in the environment
@@ -96,7 +96,8 @@ class WaveVector:
 @dataclass
 class SteeringVector:
     """
-    Defines a steering vector based on the position of elements
+    Defines a steering vector based on the position of elements. A steering vector defines how a signal changes based
+    on the positions of elements and the given wavevector.
     """
     elements: list[Element]     # The elements to include in the vector
     wavevector: WaveVector      # wave vector of the signal
@@ -113,7 +114,8 @@ class SteeringVector:
 @dataclass
 class SteeringMatrix:
     """
-    Defines a steering matrix based on the position of elements and thetas for which to test
+    Defines a steering matrix based on the position of elements and thetas for which to test. A Steering matrix just
+    holds every possible steering vector. Used in DoA algorithms.
     """
     elements: list[Element]     # The elements to include in the vectors
     inclinations: np.array      # The inclinations to include in the matrix
