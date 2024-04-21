@@ -114,7 +114,7 @@ class Accumulator(Stage):
 class Tap(Stage):
     """
     Tap into a pipeline. Have an output queue which can be pulled from whenever while continuing to push data to
-    destinations. The tap always had the latest sample at the outlet.
+    destinations. The tap always has the latest sample at the outlet.
     """
     def __init__(self, num_ports, port_length, destinations):
         super().__init__(num_ports, port_length, destinations)

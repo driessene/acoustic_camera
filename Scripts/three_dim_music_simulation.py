@@ -29,7 +29,7 @@ def main():
 
     wave_vectors = [
         Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.00, 1, 1])), speed_of_sound),
-        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.02, 1.2, 1.2])), speed_of_sound),
+        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.02, 1.5, 1.5])), speed_of_sound),
     ]
 
     # Print frequencies for debug
@@ -78,7 +78,6 @@ def main():
         x_data=inclination_angles,
         y_data=azimuth_angles,
         interval=blocksize/samplerate,
-        z_extent=(0, 1),
         cmap='inferno'
     )
 
