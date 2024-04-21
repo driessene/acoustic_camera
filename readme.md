@@ -44,6 +44,14 @@ To use a stage, one must create a subclass which inherits the stage class. The n
 - port_get(self): Gets data from all ports. Always use this than accessing individual queues/ports. If a single port is used, add [0] to the end of the call to get the data. This is a blocking operation.
 - port_put(self, data): Puts data to all destination ports.
 
+## Message
+Messages are used to send data between stages. They are similar in thinking of emails between people. Messages have a main payload and metadata about the payload.
+
+### Properties
+payload - any: The main content of the message.
+timestamp - datetime.time: The time the message was created. This is also automatically set.
+kwargs: Pass any other key word arguments as metadata if wanted. For example: source, size, state, etc.
+
 ## Bus
 Buses are a stage which take several import ports, merges them into a tuple, and pushes to destinations. Useful for passing several stages to a single stage. It is preferred to have stages with several input ports, but this is an alternative if needed.
 
@@ -210,7 +218,9 @@ Plots one line or several lines on a grid. If input data is a vector, plot one l
 - show: Show the plot. This is a blocking methods. Call it at the end of your script.
 
 ## ThreeDimPlotter - Stage
-Plots a matrix on a heatmap. Same properties and methods as LinePlotter with the addition of z_extent. z_extent - tuple sets the maximum and minimum values for the color map.
+Plots a matrix on a heatmap. Same properties and methods as LinePlotter with the addition of:
+- z_extent - tuple: sets the maximum and minimum values for the color map.
+- cmap - str: The [color map](https://matplotlib.org/stable/users/explain/colors/colormaps.html) which to use for the heatmap. Default is viridis.
 
 ## AudioPlayback - Stage
 Play data back out to your speakers. Useful for hearing how filters effect data easily for demonstrative purposes. Expects a matrix to keep consistency from recorders and simulators

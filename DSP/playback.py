@@ -5,6 +5,7 @@ from Pipeline import Stage
 # logging
 logger = logging.getLogger(__name__)
 
+
 class AudioPlayback(Stage):
     """
     Plays audio from a numpy array. Expects a matrix of multiple channels like the rest of this project.
@@ -36,7 +37,8 @@ class AudioPlayback(Stage):
         if status:
             print(status)
 
-        data = self.port_get()[0].payload[:, self.channel]
+        message = self.port_get()[0]
+        data = message.payload[:, self.channel]
 
         # Data checking
         if data.size != self.blocksize:

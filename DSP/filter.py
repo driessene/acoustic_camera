@@ -57,7 +57,9 @@ class Filter(Stage):
         Runs the filter along input data. Ran by a process
         :return: None
         """
-        data = self.port_get()[0].payload
+        message = self.port_get()[0]
+        data = message.payload
+
 
         # Data checking
         if data.shape[1] != self.num_channels:
@@ -165,6 +167,8 @@ class HanningWindow(Stage):
         super().__init__(1, port_size, destinations)
 
     def run(self):
-        data = self.port_get()[0]
+        message = self.port_get()[0]
+        data = message.payload
+
         data *= np.hanning(len(data))[:, np.newaxis]
         self.port_put(Message(data))

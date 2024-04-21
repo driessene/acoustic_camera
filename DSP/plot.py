@@ -73,7 +73,8 @@ class LinePlotter(Stage):
         self.anim = FuncAnimation(self.fig, self._on_frame_update, interval=interval)
 
     def _on_frame_update(self, frame):
-        data = self.port_get()[0].payload
+        message = self.port_get()[0]
+        data = message.payload
 
         # Data checking
         if data.shape != (self.num_points, self.num_lines):
@@ -109,6 +110,7 @@ class ThreeDimPlotter(Stage):
                  x_extent: tuple = None,
                  y_extent: tuple = None,
                  z_extent: tuple = None,
+                 cmap: str = 'viridis',
                  port_size=4,
                  destinations=None):
         """
@@ -133,6 +135,8 @@ class ThreeDimPlotter(Stage):
         self.ax.set_xlabel(x_label)
         self.ax.set_ylabel(y_label)
 
+        self.cmap = cmap
+
         if x_extent is not None:
             self.ax.set_xlim(x_extent)
         if y_extent is not None:
@@ -143,12 +147,13 @@ class ThreeDimPlotter(Stage):
             self.z_extent = (0, 1)
 
         self.plot = self.ax.pcolormesh(self.xx, self.yy, np.zeros_like(self.xx),
-                                       vmin=self.z_extent[0], vmax=self.z_extent[1])
+                                       vmin=self.z_extent[0], vmax=self.z_extent[1], cmap=self.cmap)
 
         self.anim = FuncAnimation(self.fig, self._on_frame_update, interval=self.interval)
 
     def _on_frame_update(self, frame):
-        data = self.port_get()[0].payload
+        message = self.port_get()[0]
+        data = message.payload
 
         # Data checking
         if data.size != self.xx.size:

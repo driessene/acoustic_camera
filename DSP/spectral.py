@@ -12,7 +12,10 @@ class FFT(Stage):
         super().__init__(1, port_size, destinations)
 
     def run(self):
-        f = fft.fft(self.port_get()[0].payload, axis=0)
+        message = self.port_get()[0]
+        data = message.payload
+
+        f = fft.fft(data, axis=0)
         if self.return_abs:
             f = np.abs(f)
         self.port_put(Message(f))

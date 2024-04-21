@@ -17,7 +17,8 @@ class Beamformer(Stage):
 
     def run(self):
         # Get input data
-        data = self.port_get()[0].payload
+        message = self.port_get()[0]
+        data = message.payload
 
         # Apply beamforming, then measure power
         beamformed_data = 10 * np.log10(np.var((self.steering_matrix.matrix.conj().T @ data.T), axis=1))
@@ -46,7 +47,9 @@ class MUSIC(Stage):
 
     def run(self):
         # Calculate the covariance matrix
-        data = self.port_get()[0].payload
+        message = self.port_get()[0]
+        data = message.payload
+
         Rx = np.cov(data.T)
 
         # Decompose into eigenvalues and vectors

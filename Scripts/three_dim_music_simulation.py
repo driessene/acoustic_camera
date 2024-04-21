@@ -1,7 +1,6 @@
 import DSP
 import Geometry
 import numpy as np
-import sys
 
 
 def main():
@@ -30,7 +29,7 @@ def main():
 
     wave_vectors = [
         Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.00, 1, 1])), speed_of_sound),
-        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
+        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.02, 1.2, 1.2])), speed_of_sound),
     ]
 
     # Print frequencies for debug
@@ -79,7 +78,8 @@ def main():
         x_data=inclination_angles,
         y_data=azimuth_angles,
         interval=blocksize/samplerate,
-        z_extent=(0, 1)
+        z_extent=(0, 1),
+        cmap='inferno'
     )
 
     # Linking
