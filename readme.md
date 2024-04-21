@@ -207,9 +207,9 @@ Plots one line or several lines on a grid. If input data is a vector, plot one l
 - title - str: The title of the plot.
 - x_label - str: The X label of the plot.
 - y_label - str: The Y label of the plot.
-- num_points - int: The number of points per line. SHould match .shape[0] of incoming data if a matrix of length of the data if a vector.
-- num_lines - int: The number of lines to draw. Should match .shape[0] of incoming data if a matrix, or simpily one if the data is a vector.
-- interval - float: The delay in seconds between frame updates. SHould match the period of data arrivals to the port (blocksize / samplerate)
+- num_points - int: The number of points per line. Should match .shape[0] of incoming data if a matrix of length of the data if a vector.
+- num_lines - int: The number of lines to draw. Should match .shape[1] of incoming data if a matrix, or simply one if the data is a vector.
+- interval - float: The delay in seconds between frame updates. Should match the period of data arrivals to the port (blocksize / samplerate)
 - x_data - np.array: If provided, use this as the x-axis data component. If not provided, it is 0 to num_points.
 - x_extent - tuple: If provided, show this range on the x-axis by cropping
 - y_extent - tuple: If provided, show this range on the y-axis by cropping
@@ -217,7 +217,19 @@ Plots one line or several lines on a grid. If input data is a vector, plot one l
 ### Methods
 - show: Show the plot. This is a blocking methods. Call it at the end of your script.
 
-## ThreeDimPlotter - Stage
+## PolarPlotter - STage
+Similar to LienPlotter, but plots (theta, radius) rather than (x, y).
+
+### Properties
+- title - str: The title of the plot.
+- num_points - int: The number of points per line. Should match .shape[0] of incoming data if a matrix of length of the data if a vector.
+- num_lines - int: The number of lines to draw. Should match .shape[1] of incoming data if a matrix, or simply one if the data is a vector.
+- interval - float: The delay in seconds between frame updates. Should match the period of data arrivals to the port (blocksize / samplerate)
+- theta_data - np.array: If provided, use this as the x-axis data component. If not provided, it is 0 to num_points, incrementing by 1 (this is never right, always give this. It is optional just for consistency).
+- theta_extent - tuple: If provided, show this range on the theta-axis by cropping
+- radius_extent - tuple: If provided, show this range on the radius-axis by cropping
+
+## HeatmapPlotter - Stage
 Plots a matrix on a heatmap. Same properties and methods as LinePlotter with the addition of:
 - z_extent - tuple: sets the maximum and minimum values for the color map.
 - cmap - str: The [color map](https://matplotlib.org/stable/users/explain/colors/colormaps.html) which to use for the heatmap. Default is viridis.
@@ -302,96 +314,95 @@ import numpy as np
 
 
 def main():
+  # Variables
+  samplerate = 44100
+  blocksize = 1024
+  wave_number = 10
+  speed_of_sound = 343
 
-    # Variables
-    samplerate = 44100
-    blocksize = 1024
-    wave_number = 10
-    speed_of_sound = 343
+  elements = [Geometry.Element([-1.25, 0, 0]),
+              Geometry.Element([-0.75, 0, 0]),
+              Geometry.Element([-0.25, 0, 0]),
+              Geometry.Element([0.25, 0, 0]),
+              Geometry.Element([0.75, 0, 0]),
+              Geometry.Element([1.25, 0, 0]),
+              Geometry.Element([0, -1.25, 0]),
+              Geometry.Element([0, -0.75, 0]),
+              Geometry.Element([0, -0.25, 0]),
+              Geometry.Element([0, 0.25, 0]),
+              Geometry.Element([0, 0.75, 0]),
+              Geometry.Element([0, 1.25, 0]),
+              Geometry.Element([0, 0, 0.25]),
+              Geometry.Element([0, 0, 0.75]),
+              Geometry.Element([0, 0, 1.25])]
 
-    elements = [Geometry.Element([-1.25, 0, 0]),
-                Geometry.Element([-0.75, 0, 0]),
-                Geometry.Element([-0.25, 0, 0]),
-                Geometry.Element([0.25, 0, 0]),
-                Geometry.Element([0.75, 0, 0]),
-                Geometry.Element([1.25, 0, 0]),
-                Geometry.Element([0, -1.25, 0]),
-                Geometry.Element([0, -0.75, 0]),
-                Geometry.Element([0, -0.25, 0]),
-                Geometry.Element([0, 0.25, 0]),
-                Geometry.Element([0, 0.75, 0]),
-                Geometry.Element([0, 1.25, 0]),
-                Geometry.Element([0, 0, 0.25]),
-                Geometry.Element([0, 0, 0.75]),
-                Geometry.Element([0, 0, 1.25])]
+  wave_vectors = [
+    Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.00, 1, 1])), speed_of_sound),
+    Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
+  ]
 
-    wave_vectors = [
-        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.00, 1, 1])), speed_of_sound),
-        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
-    ]
+  # Print frequencies for debug
+  for vector in wave_vectors:
+    print(vector.linear_frequency)
 
-    # Print frequencies for debug
-    for vector in wave_vectors:
-        print(vector.linear_frequency)
+  # Recorder to get data
+  recorder = DSP.AudioSimulator(
+    elements=elements,
+    wave_vectors=wave_vectors,
+    snr=50,
+    samplerate=samplerate,
+    blocksize=blocksize,
+    sleep=True
+  )
 
-    # Recorder to get data
-    recorder = DSP.AudioSimulator(
-        elements=elements,
-        wave_vectors=wave_vectors,
-        snr=50,
-        samplerate=samplerate,
-        blocksize=blocksize,
-        sleep=True
-    )
+  # Filter
+  filt = DSP.FIRWINFilter(
+    N=101,
+    num_channels=len(elements),
+    cutoff=2000,
+    samplerate=samplerate,
+    method='filtfilt',
+  )
 
-    # Filter
-    filt = DSP.FIRWINFilter(
-        N=101,
-        num_channels=len(elements),
-        cutoff=2000,
-        samplerate=samplerate,
-        method='filtfilt',
-    )
+  # MUSIC
+  azimuth_angles = np.linspace(0, 2 * np.pi, 500)
+  inclination_angles = np.linspace(0, np.pi, 500)
+  matrix = Geometry.SteeringMatrix(
+    elements=elements,
+    azimuths=azimuth_angles,
+    inclinations=inclination_angles,
+    wavenumber=wave_number,
+  )
+  music = DSP.MUSIC(
+    steering_matrix=matrix,
+    num_sources=4
+  )
 
-    # MUSIC
-    azimuth_angles = np.linspace(0, 2 * np.pi, 500)
-    inclination_angles = np.linspace(0, np.pi, 500)
-    matrix = Geometry.SteeringMatrix(
-        elements=elements,
-        azimuths=azimuth_angles,
-        inclinations=inclination_angles,
-        wavenumber=wave_number,
-    )
-    music = DSP.MUSIC(
-        steering_matrix=matrix,
-        num_sources=4
-    )
+  # Plot
+  plot = DSP.HeatmapPlotter(
+    title='MUSIC',
+    x_label="inclination",
+    y_label="azimuth",
+    x_data=inclination_angles,
+    y_data=azimuth_angles,
+    interval=blocksize / samplerate,
+    z_extent=(0, 1)
+  )
 
-    # Plot
-    plot = DSP.ThreeDimPlotter(
-        title='MUSIC',
-        x_label="inclination",
-        y_label="azimuth",
-        x_data=inclination_angles,
-        y_data=azimuth_angles,
-        interval=blocksize/samplerate,
-        z_extent=(0, 1)
-    )
+  # Linking
+  recorder.link_to_destination(filt, 0)
+  filt.link_to_destination(music, 0)
+  music.link_to_destination(plot, 0)
 
-    # Linking
-    recorder.link_to_destination(filt, 0)
-    filt.link_to_destination(music, 0)
-    music.link_to_destination(plot, 0)
-
-    # Start processes
-    recorder.start()
-    filt.start()
-    music.start()
-    plot.start()
-    plot.show()
+  # Start processes
+  recorder.start()
+  filt.start()
+  music.start()
+  plot.start()
+  plot.show()
 
 
 if __name__ == '__main__':
-    main()
+  main()
 
 ```

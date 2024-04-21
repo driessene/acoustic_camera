@@ -28,7 +28,7 @@ def main():
                 Geometry.Element([0, 0, 1.25])]
 
     wave_vectors = [
-        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.00, 1, 1])), speed_of_sound),
+        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.00, 1.2, 1.2])), speed_of_sound),
         Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.02, 1.5, 1.5])), speed_of_sound),
     ]
 
@@ -71,7 +71,7 @@ def main():
     )
 
     # Plot
-    plot = DSP.ThreeDimPlotter(
+    plot = DSP.HeatmapPlotter(
         title='MUSIC',
         x_label="inclination",
         y_label="azimuth",
