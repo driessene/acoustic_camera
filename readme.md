@@ -23,7 +23,7 @@ Steering vectors are vectors which describe how a signal changes as elements rec
 #### Steering matrix
 A steering matrix is composed of several steering vectors at several different angles. Each row on the matrix describes a different steering vector at a different angle. These matrices are used in DoA estimation algorithms.
 
-# Management
+# Realtime DSP
 
 ## Stage
 To archive real-time processing, pipelines can be created using **stages**. **Stages** have a list of **ports** (queues of data), a list of **destinations** (ports of another stage), and a **process**. Each stage is responsible for getting data from the ports, processing the data, and pushing the processed data to destinations. Destinations are ports of another stage.
@@ -106,9 +106,6 @@ A tap into a pipeline. Does nothing to the data, but saves the last message and 
 ### Methods:
 - tap(self): Returns a list of messages. The length of messages matches num_ports.
 
-# DSP
-Hold sources, processes, and sinks for audio processing.
-
 ## print_audio_devices - Function
 This function prints all available audio devices to the terminal. Useful for finding the ID of the device you are looking to record data from
 
@@ -187,18 +184,11 @@ Applies FFT to data. Returns complex data to match [scipy](https://docs.scipy.or
 ### Properties
 - return_abs - bool: If true, instead of pushing complex data, push the absolute value of the FFT. Use for plotting.
 
-## Beamformer - Stage
-A classic [beamforming](https://en.wikipedia.org/wiki/Beamforming) algorithm. Uses a steering matrix to guess which steering vector that was used to get incoming data.
+## DOAEstimator - Stage
+Takes a DoA estimator and places it into the pipeline.
 
 ### Properties
-- steering_matrix - Geometry.geometry.SteeringMatrix: The steering matrix for which to solve
-
-## MUSIC - Stage
-Applies the [MUltiple SIgnal Classification (MUSIC) algorithm](https://en.wikipedia.org/wiki/MUSIC_(algorithm)) to incoming data. Significantly more accurate than beamformer, but much more computational intensive. Can find multiple sources simultaneously.
-
-### Properties
-- steering_matrix - Geometry.geometry.SteeringMatrix: The steering matrix for which to solve
-- num_sources - int: The number of sources in the environment
+- estimator - direction_of_arival.Estimator: The estimator to utilize
 
 ## LinePlotter - Stage
 Plots one line or several lines on a grid. If input data is a vector, plot one line. If a matrix, plot one line per list on axis=0.
@@ -246,7 +236,7 @@ Play data back out to your speakers. Useful for hearing how filters effect data 
 - label - str: The label to pass to the file name
 - path - str: The path of where to save the file. Must be a folder with no / or \ at the end of the string.
 
-# Geometry
+# direction of arival
 Holds elements, wave vectors, steering vectors, and steering matrices. Use to calculate steering vectors for simulators and steering matrixes for DoA algorithms. All classes here are dataclass. They have no methods, only hold and calculate data
 
 ## spherical_to_cartesian - function
@@ -305,104 +295,129 @@ Hold every possible steering vector when given elements, wavenumber, and all ang
 ### Calculated properties
 - matrix - np.array: The resulting steering matrix
 
+## Estimator
+A base class for all estimators. Do not use directly
+
+### Properties
+- steering_matrix - SteeringMatrix: The main steering matrix to use in the algorithm. All subclasses have a steering matrix.
+
+### Methods
+- process(self, data): Runs the algorithm on incoming data. Reservation for subclasses. Raises a NotImplementedError by default.
+
+## DelaySumBeamformer
+A classical beamformer. The simpilist to understand and use. However, this is expensive to use and gives sub-par results, thus it is not recomended for this program. Only needs steering_matrix property.
+
+## BartlettBeamformer
+A newer beamformer and much more efficient than DelaySumBeamformer. Gives similar results to DelaySUmBeamformer. Only needs steering_matrix property.
+
+## MVDRBeamformer
+A very accurate beamformer while being more computationally expensive. Gives, in general good results. Only needs steering_matrix
+
+## Music
+The most accurate and most computationally expensive algorithm. Gives extremely accurate results when in an optimal environment.
+
+### Properties
+- steering_matrix: Still required as normal
+- num_sources: The number of sources in the environment.
+
 # Example
 
 ```python
-import DSP
-import Geometry
+import AccCam.realtime_dsp as dsp
+import AccCam.direction_of_arival as doa
 import numpy as np
 
 
 def main():
-  # Variables
-  samplerate = 44100
-  blocksize = 1024
-  wave_number = 10
-  speed_of_sound = 343
 
-  elements = [Geometry.Element([-1.25, 0, 0]),
-              Geometry.Element([-0.75, 0, 0]),
-              Geometry.Element([-0.25, 0, 0]),
-              Geometry.Element([0.25, 0, 0]),
-              Geometry.Element([0.75, 0, 0]),
-              Geometry.Element([1.25, 0, 0]),
-              Geometry.Element([0, -1.25, 0]),
-              Geometry.Element([0, -0.75, 0]),
-              Geometry.Element([0, -0.25, 0]),
-              Geometry.Element([0, 0.25, 0]),
-              Geometry.Element([0, 0.75, 0]),
-              Geometry.Element([0, 1.25, 0]),
-              Geometry.Element([0, 0, 0.25]),
-              Geometry.Element([0, 0, 0.75]),
-              Geometry.Element([0, 0, 1.25])]
+    # Variables
+    samplerate = 44100
+    blocksize = 1024
+    wave_number = 10
+    speed_of_sound = 343
 
-  wave_vectors = [
-    Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.00, 1, 1])), speed_of_sound),
-    Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
-  ]
+    elements = [doa.Element([-1.25, 0, 0]),
+                doa.Element([-0.75, 0, 0]),
+                doa.Element([-0.25, 0, 0]),
+                doa.Element([0.25, 0, 0]),
+                doa.Element([0.75, 0, 0]),
+                doa.Element([1.25, 0, 0]),
+                doa.Element([0, -1.25, 0]),
+                doa.Element([0, -0.75, 0]),
+                doa.Element([0, -0.25, 0]),
+                doa.Element([0, 0.25, 0]),
+                doa.Element([0, 0.75, 0]),
+                doa.Element([0, 1.25, 0]),
+                doa.Element([0, 0, 0.25]),
+                doa.Element([0, 0, 0.75]),
+                doa.Element([0, 0, 1.25])]
 
-  # Print frequencies for debug
-  for vector in wave_vectors:
-    print(vector.linear_frequency)
+    wave_vectors = [
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 0.98, 1, 1])), speed_of_sound),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
+    ]
 
-  # Recorder to get data
-  recorder = DSP.AudioSimulator(
-    elements=elements,
-    wave_vectors=wave_vectors,
-    snr=50,
-    samplerate=samplerate,
-    blocksize=blocksize,
-    sleep=True
-  )
+    # Print frequencies for debug
+    for vector in wave_vectors:
+        print(vector.linear_frequency)
 
-  # Filter
-  filt = DSP.FIRWINFilter(
-    N=101,
-    num_channels=len(elements),
-    cutoff=2000,
-    samplerate=samplerate,
-    method='filtfilt',
-  )
+    # Recorder to get data
+    recorder = dsp.AudioSimulator(
+        elements=elements,
+        wave_vectors=wave_vectors,
+        snr=50,
+        samplerate=samplerate,
+        blocksize=blocksize,
+        sleep=True
+    )
 
-  # MUSIC
-  azimuth_angles = np.linspace(0, 2 * np.pi, 500)
-  inclination_angles = np.linspace(0, np.pi, 500)
-  matrix = Geometry.SteeringMatrix(
-    elements=elements,
-    azimuths=azimuth_angles,
-    inclinations=inclination_angles,
-    wavenumber=wave_number,
-  )
-  music = DSP.MUSIC(
-    steering_matrix=matrix,
-    num_sources=4
-  )
+    # Filter
+    filt = dsp.FIRWINFilter(
+        N=101,
+        num_channels=len(elements),
+        cutoff=2000,
+        samplerate=samplerate,
+        method='filtfilt',
+    )
 
-  # Plot
-  plot = DSP.HeatmapPlotter(
-    title='MUSIC',
-    x_label="inclination",
-    y_label="azimuth",
-    x_data=inclination_angles,
-    y_data=azimuth_angles,
-    interval=blocksize / samplerate,
-    z_extent=(0, 1)
-  )
+    # MUSIC
+    azimuth_angles = np.linspace(0, 2 * np.pi, 500)
+    inclination_angles = np.linspace(0, np.pi, 500)
+    matrix = doa.SteeringMatrix(
+        elements=elements,
+        azimuths=azimuth_angles,
+        inclinations=inclination_angles,
+        wavenumber=wave_number
+    )
+    estimator = doa.MVDRBeamformer(matrix)
 
-  # Linking
-  recorder.link_to_destination(filt, 0)
-  filt.link_to_destination(music, 0)
-  music.link_to_destination(plot, 0)
+    music = dsp.DOAEstimator(estimator)
 
-  # Start processes
-  recorder.start()
-  filt.start()
-  music.start()
-  plot.start()
-  plot.show()
+    # Plot
+    plot = dsp.HeatmapPlotter(
+        title='MUSIC',
+        x_label="inclination",
+        y_label="azimuth",
+        x_data=inclination_angles,
+        y_data=azimuth_angles,
+        interval=blocksize/samplerate,
+        cmap='inferno'
+    )
+
+    # Linking
+    recorder.link_to_destination(filt, 0)
+    filt.link_to_destination(music, 0)
+    music.link_to_destination(plot, 0)
+
+    # Start processes
+    recorder.start()
+    filt.start()
+    music.start()
+    plot.start()
+    plot.show()
 
 
 if __name__ == '__main__':
-  main()
+    main()
 
 ```
