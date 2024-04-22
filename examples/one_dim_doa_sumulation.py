@@ -37,7 +37,7 @@ def main():
         print(vector.linear_frequency)
 
     # Recorder to get data
-    recorder = doa.AudioSimulator(
+    recorder = dsp.AudioSimulator(
         elements=elements,
         wave_vectors=wave_vectors,
         snr=50,
@@ -47,7 +47,7 @@ def main():
     )
 
     # Filter
-    filt = doa.FIRWINFilter(
+    filt = dsp.FIRWINFilter(
         N=101,
         num_channels=len(elements),
         cutoff=2000,
@@ -65,12 +65,12 @@ def main():
         wavenumber=wave_number,
     )
 
-    music = doa.Beamformer(
+    music = dsp.MVDRBeamformer(
         steering_matrix=matrix,
     )
 
     # Plot
-    plot = doa.PolarPlotter(
+    plot = dsp.PolarPlotter(
         title='MUSIC',
         num_points=azimuth_angles.size,
         num_lines=1,

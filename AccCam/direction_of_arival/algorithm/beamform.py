@@ -8,9 +8,10 @@ def delay_sum_beamformer(data: np.array, steering_matrix: SteeringMatrix) -> np.
     :param data: The source data to perform the algorithm on
     :param steering_matrix: The steering matrix to utilize to find the sources
     """
-    beamformed_data = (steering_matrix.matrix.conj().T @ data.T).real
+    beamformed_data = np.var(steering_matrix.matrix.conj().T @ data.T, axis=1).real
 
-    # No need for normalization in delay-and-sum beamformer
+    # Normalize
+    beamformed_data /= np.max(beamformed_data)
     return beamformed_data
 
 
@@ -20,9 +21,8 @@ def bartlett_beamformer(data: np.array, steering_matrix: SteeringMatrix) -> np.a
     :param data: The source data to perform the algorithm on
     :param steering_matrix: The steering matrix to utilize to find the sources
     """
-    bartlett_window = np.bartlett(data.shape[0])
-    weighted_data = data * bartlett_window[:, None]
-    beamformed_data = (steering_matrix.matrix.conj().T @ weighted_data.T).real
+    cov_matrix = np.cov(data.T)
+    beamformed_data = np.sum(steering_matrix.matrix.conj().T * (cov_matrix @ steering_matrix.matrix).T, axis=1).real
 
     # Normalize
     beamformed_data /= np.max(beamformed_data)
@@ -36,9 +36,8 @@ def mvdr_beamformer(data: np.array, steering_matrix: SteeringMatrix) -> np.array
     :param steering_matrix: The steering matrix to utilize to find the sources
     """
     cov_matrix = np.cov(data.T)
-    cov_matrix_inv = np.linalg.inv(cov_matrix)
-    weights = cov_matrix_inv @ steering_matrix.matrix
-    beamformed_data = 1 / np.sum(steering_matrix.matrix.conj().T * weights.T, axis=1).real
+    beamformed_data = 1 / np.sum(steering_matrix.matrix.conj().T *
+                                 np.linalg.lstsq(cov_matrix, steering_matrix.matrix, None)[0].T, axis=1).real
 
     # Normalize
     beamformed_data /= np.max(beamformed_data)
@@ -53,8 +52,8 @@ def msnr_beamformer(data: np.array, steering_matrix: SteeringMatrix, noise_covar
     :param noise_covariance: The covariance matrix of the noise
     """
     noise_cov_inv = np.linalg.inv(noise_covariance)
-    weights = noise_cov_inv @ steering_matrix.matrix
-    beamformed_data = np.sum(steering_matrix.matrix.conj().T * weights.T, axis=1).real
+    beamformed_data = np.sum(steering_matrix.matrix.conj().T *
+                             (noise_cov_inv @ steering_matrix.matrix).T, axis=1).real
 
     # Normalize
     beamformed_data /= np.max(beamformed_data)
@@ -69,8 +68,8 @@ def lcmv_beamformer(data: np.array, steering_matrix: SteeringMatrix, constraints
     :param constraints: The linear constraints on the beamformer response
     """
     constraints_inv = np.linalg.inv(constraints)
-    weights = constraints_inv @ steering_matrix.matrix
-    beamformed_data = np.sum(steering_matrix.matrix.conj().T * weights.T, axis=1).real
+    beamformed_data = np.sum(steering_matrix.matrix.conj().T *
+                             (constraints_inv @ steering_matrix.matrix).T, axis=1).real
 
     # Normalize
     beamformed_data /= np.max(beamformed_data)
