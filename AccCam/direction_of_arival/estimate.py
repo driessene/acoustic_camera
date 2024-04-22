@@ -64,7 +64,7 @@ class BartlettBeamformer(Estimator):
         """
         :param steering_matrix: The steering matrix to utilize to find the sources
         """
-        super().__init__(SteeringMatrix)
+        super().__init__(steering_matrix)
 
     def process(self, data: np.array) -> np.array:
         cov_matrix = np.cov(data.T)
@@ -84,7 +84,7 @@ class MVDRBeamformer(Estimator):
         """
         :param steering_matrix: The steering matrix to utilize to find the sources
         """
-        super().__init__(SteeringMatrix)
+        super().__init__(steering_matrix)
 
     def process(self, data: np.array) -> np.array:
         cov_matrix = np.cov(data.T)
