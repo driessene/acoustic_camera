@@ -207,7 +207,7 @@ Plots one line or several lines on a grid. If input data is a vector, plot one l
 ### Methods
 - show: Show the plot. This is a blocking methods. Call it at the end of your script.
 
-## PolarPlotter - STage
+## PolarPlotter - Stage
 Similar to LienPlotter, but plots (theta, radius) rather than (x, y).
 
 ### Properties
