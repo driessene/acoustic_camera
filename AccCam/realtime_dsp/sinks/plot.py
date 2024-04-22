@@ -2,14 +2,14 @@ import numpy as np
 import logging
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from Pipeline import Stage, Message
+import AccCam.realtime_dsp.pipeline as pipe
 
 
 # logging
 logger = logging.getLogger(__name__)
 
 
-class LinePlotter(Stage):
+class LinePlotter(pipe.Stage):
     """
     Plot a line or several lines on a plot. Data is expected to be 2d, with each 0'th axis being a line
     (1d for one line).
@@ -95,7 +95,7 @@ class LinePlotter(Stage):
         plt.show()
 
 
-class PolarPlotter(Stage):
+class PolarPlotter(pipe.Stage):
     """
     Take a vector (1d numpy array) and plot it on a pollar plot. Same as LinePlotter, but plots r, theta rather
     than x, y
@@ -182,7 +182,7 @@ class PolarPlotter(Stage):
 
 
 
-class HeatmapPlotter(Stage):
+class HeatmapPlotter(pipe.Stage):
     """
     Plots a 2d matrix flat on a surface. Data is expected to be 1D, which is from a 2D matrix, but flattened. Use
     np.ravel() if needed to flatten a matrix. For example, a MUSIC output can have 2 axes (inclination, azimuth), but is

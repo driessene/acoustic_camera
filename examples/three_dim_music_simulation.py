@@ -1,5 +1,5 @@
-import DSP
-import Geometry
+import AccCam.realtime_dsp as dsp
+import AccCam.direction_of_arival as doa
 import numpy as np
 
 
@@ -11,25 +11,25 @@ def main():
     wave_number = 10
     speed_of_sound = 343
 
-    elements = [Geometry.Element([-1.25, 0, 0]),
-                Geometry.Element([-0.75, 0, 0]),
-                Geometry.Element([-0.25, 0, 0]),
-                Geometry.Element([0.25, 0, 0]),
-                Geometry.Element([0.75, 0, 0]),
-                Geometry.Element([1.25, 0, 0]),
-                Geometry.Element([0, -1.25, 0]),
-                Geometry.Element([0, -0.75, 0]),
-                Geometry.Element([0, -0.25, 0]),
-                Geometry.Element([0, 0.25, 0]),
-                Geometry.Element([0, 0.75, 0]),
-                Geometry.Element([0, 1.25, 0]),
-                Geometry.Element([0, 0, 0.25]),
-                Geometry.Element([0, 0, 0.75]),
-                Geometry.Element([0, 0, 1.25])]
+    elements = [doa.Element([-1.25, 0, 0]),
+                doa.Element([-0.75, 0, 0]),
+                doa.Element([-0.25, 0, 0]),
+                doa.Element([0.25, 0, 0]),
+                doa.Element([0.75, 0, 0]),
+                doa.Element([1.25, 0, 0]),
+                doa.Element([0, -1.25, 0]),
+                doa.Element([0, -0.75, 0]),
+                doa.Element([0, -0.25, 0]),
+                doa.Element([0, 0.25, 0]),
+                doa.Element([0, 0.75, 0]),
+                doa.Element([0, 1.25, 0]),
+                doa.Element([0, 0, 0.25]),
+                doa.Element([0, 0, 0.75]),
+                doa.Element([0, 0, 1.25])]
 
     wave_vectors = [
-        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.00, 1.2, 1.2])), speed_of_sound),
-        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.02, 1.5, 1.5])), speed_of_sound),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 1.00, 1.2, 1.2])), speed_of_sound),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 1.02, 1.5, 1.5])), speed_of_sound),
     ]
 
     # Print frequencies for debug
@@ -37,7 +37,7 @@ def main():
         print(vector.linear_frequency)
 
     # Recorder to get data
-    recorder = DSP.AudioSimulator(
+    recorder = dsp.AudioSimulator(
         elements=elements,
         wave_vectors=wave_vectors,
         snr=50,
@@ -47,7 +47,7 @@ def main():
     )
 
     # Filter
-    filt = DSP.FIRWINFilter(
+    filt = dsp.FIRWINFilter(
         N=101,
         num_channels=len(elements),
         cutoff=2000,
@@ -58,20 +58,20 @@ def main():
     # MUSIC
     azimuth_angles = np.linspace(0, 2 * np.pi, 500)
     inclination_angles = np.linspace(0, np.pi, 500)
-    matrix = Geometry.SteeringMatrix(
+    matrix = doa.SteeringMatrix(
         elements=elements,
         azimuths=azimuth_angles,
         inclinations=inclination_angles,
         wavenumber=wave_number,
     )
 
-    music = DSP.MUSIC(
+    music = dsp.Music(
         steering_matrix=matrix,
         num_sources=4
     )
 
     # Plot
-    plot = DSP.HeatmapPlotter(
+    plot = dsp.HeatmapPlotter(
         title='MUSIC',
         x_label="inclination",
         y_label="azimuth",

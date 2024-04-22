@@ -1,11 +1,11 @@
 import numpy as np
-from Geometry.geometry import SteeringVector
-from Pipeline import Stage, Message
+import AccCam.direction_of_arival as doa
+import AccCam.realtime_dsp.pipeline as pipe
 from time import sleep
 from functools import cached_property
 
 
-class AudioSimulator(Stage):
+class AudioSimulator(pipe.Stage):
     """
     Simulates audio recordings. Can be used in place of AudioRecorder for testing
     """
@@ -52,7 +52,7 @@ class AudioSimulator(Stage):
 
     @cached_property
     def steering_vectors(self):
-        return np.array([SteeringVector(self.elements, wave_vector) for wave_vector in self.wave_vectors])
+        return np.array([doa.SteeringVector(self.elements, wave_vector) for wave_vector in self.wave_vectors])
 
     @cached_property
     def signal_matrix(self):
@@ -81,4 +81,4 @@ class AudioSimulator(Stage):
         if self.sleep:
             sleep(self.blocksize / self.samplerate)  # simulate delay for recording
 
-        self.port_put(Message(signal))
+        self.port_put(pipe.Message(signal))

@@ -1,8 +1,7 @@
+import AccCam.realtime_dsp.pipeline as pipe
 import numpy as np
 import scipy.signal as sig
 import logging
-from Pipeline import Stage, Message
-from functools import cached_property
 import matplotlib.pyplot as plt
 
 
@@ -10,7 +9,7 @@ import matplotlib.pyplot as plt
 logger = logging.getLogger(__name__)
 
 
-class Filter(Stage):
+class Filter(pipe.Stage):
     """
     Filters 2D data using FIR or IIR digital filters. Applied filters along the 0 axis.
     """
@@ -48,7 +47,7 @@ class Filter(Stage):
         self.normalize = normalize
         self.initial_conditions = np.zeros((self.filter_order, self.num_channels))
 
-    @cached_property
+    @property
     def filter_order(self):
         return max(self.b.size, self.a.size) - 1
 
@@ -76,7 +75,7 @@ class Filter(Stage):
             data = sig.filtfilt(self.b, self.a, data, axis=0)
         else:
             raise NotImplementedError('Type must be either lfilter or filtfilt')
-        self.port_put(Message(data))
+        self.port_put(pipe.Message(data))
 
     def plot_response(self):
         """
@@ -159,7 +158,7 @@ class FIRWINFilter(Filter):
         super().__init__(b, np.array(1), samplerate, num_channels, method, remove_offset, normalize, port_size, destinations)
 
 
-class HanningWindow(Stage):
+class HanningWindow(pipe.Stage):
     """
     Applied a hanning window to input data
     """
@@ -171,4 +170,4 @@ class HanningWindow(Stage):
         data = message.payload
 
         data *= np.hanning(len(data))[:, np.newaxis]
-        self.port_put(Message(data))
+        self.port_put(pipe.Message(data))

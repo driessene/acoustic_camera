@@ -1,5 +1,5 @@
+import AccCam.realtime_dsp.pipeline as control
 import numpy as np
-from .control import Stage, Message
 import logging
 from itertools import combinations
 
@@ -7,7 +7,7 @@ from itertools import combinations
 logger = logging.getLogger(__name__)
 
 
-def max_delta(messages: list[Message]) -> tuple[tuple, float]:
+def max_delta(messages: list[control.Message]) -> tuple[tuple, float]:
     """
     Returns the max delta pair of a list and its value
     :param messages: The messages to find the difference of
@@ -19,23 +19,28 @@ def max_delta(messages: list[Message]) -> tuple[tuple, float]:
     return max_delta_t_pair, max_delta_t
 
 
-def verify_timestamps(messages: list[Message], threshold: float):
+def verify_timestamps(messages: list[control.Message], threshold: float) -> bool:
     """
     Verify the time integrity of data
     :param messages: The messages received
     :return: Threshold in seconds to raise a warning
     """
+    safe = True
     try:
         timestamps = [message.timestamp for message in messages]
         pair, value = max_delta(timestamps)
         if value > threshold:  # 1 millisecond
             logger.warning(f'Messages {pair} had a time delta of {value * 1000} milliseconds')
+            safe = False
 
     except KeyError:
         logging.warning('Time delta could not be calculated')
+        safe = False
+
+    return safe
 
 
-class ChannelPicker(Stage):
+class ChannelPicker(control.Stage):
     """
     takes and input matrix, picks a channel, and pushes the channel
     """
@@ -47,10 +52,10 @@ class ChannelPicker(Stage):
         self.channel = channel
 
     def run(self):
-        self.port_put(Message(self.port_get()[0].payload[:, self.channel]))
+        self.port_put(control.Message(self.port_get()[0].payload[:, self.channel]))
 
 
-class Bus(Stage):
+class Bus(control.Stage):
     """
     Takes several messages, warps data into a tuple, pushes to destinations
     """
@@ -61,10 +66,10 @@ class Bus(Stage):
         messages = self.port_get()
         verify_timestamps(messages, 1)
 
-        self.port_put(Message(tuple(messages)))
+        self.port_put(control.Message(tuple(messages)))
 
 
-class Concatenator(Stage):
+class Concatenator(control.Stage):
     """
     Takes several inputs, concatenates, pushes to destinations
     """
@@ -81,10 +86,10 @@ class Concatenator(Stage):
         messages = self.port_get()
         verify_timestamps(messages, 1)
 
-        self.port_put(Message(np.concatenate([message.payload for message in messages], axis=self.axis)))
+        self.port_put(control.Message(np.concatenate([message.payload for message in messages], axis=self.axis)))
 
 
-class Accumulator(Stage):
+class Accumulator(control.Stage):
     """
     Save several messages, merge to one message, push to destinations
     """
@@ -108,10 +113,10 @@ class Accumulator(Stage):
             messages = np.concatenate(messages, axis=self.axis)
 
         # Push messages
-        self.port_put(Message(messages))
+        self.port_put(control.Message(messages))
 
 
-class Tap(Stage):
+class Tap(control.Stage):
     """
     Tap into a pipeline. Have an output queue which can be pulled from whenever while continuing to push data to
     destinations. The tap always has the latest sample at the outlet.

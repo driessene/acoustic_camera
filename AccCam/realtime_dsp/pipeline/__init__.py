@@ -1,3 +1,3 @@
 from .control import *
-from .modify import *
+from .merge_break import *
 from .import_export import *

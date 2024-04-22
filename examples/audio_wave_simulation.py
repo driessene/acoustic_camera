@@ -1,5 +1,4 @@
 import DSP
-import Geometry
 import numpy as np
 from itertools import product
 
@@ -14,25 +13,25 @@ def main():
     speed_of_sound = 343
 
     # Sources
-    elements = [Geometry.Element([-1.25, 0, 0]),
-                Geometry.Element([-0.75, 0, 0]),
-                Geometry.Element([-0.25, 0, 0]),
-                Geometry.Element([0.25, 0, 0]),
-                Geometry.Element([0.75, 0, 0]),
-                Geometry.Element([1.25, 0, 0]),
-                Geometry.Element([0, -1.25, 0]),
-                Geometry.Element([0, -0.75, 0]),
-                Geometry.Element([0, -0.25, 0]),
-                Geometry.Element([0, 0.25, 0]),
-                Geometry.Element([0, 0.75, 0]),
-                Geometry.Element([0, 1.25, 0]),
-                Geometry.Element([0, 0, 0.25]),
-                Geometry.Element([0, 0, 0.75]),
-                Geometry.Element([0, 0, 1.25])]
+    elements = [DSP.Element([-1.25, 0, 0]),
+                DSP.Element([-0.75, 0, 0]),
+                DSP.Element([-0.25, 0, 0]),
+                DSP.Element([0.25, 0, 0]),
+                DSP.Element([0.75, 0, 0]),
+                DSP.Element([1.25, 0, 0]),
+                DSP.Element([0, -1.25, 0]),
+                DSP.Element([0, -0.75, 0]),
+                DSP.Element([0, -0.25, 0]),
+                DSP.Element([0, 0.25, 0]),
+                DSP.Element([0, 0.75, 0]),
+                DSP.Element([0, 1.25, 0]),
+                DSP.Element([0, 0, 0.25]),
+                DSP.Element([0, 0, 0.75]),
+                DSP.Element([0, 0, 1.25])]
 
     wave_vectors = [
-        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.00, 1, 1])), speed_of_sound),
-        Geometry.WaveVector(Geometry.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
+        DSP.WaveVector(DSP.spherical_to_cartesian(np.array([wave_number * 1.00, 1, 1])), speed_of_sound),
+        DSP.WaveVector(DSP.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
     ]
 
     # Print frequency for debuging

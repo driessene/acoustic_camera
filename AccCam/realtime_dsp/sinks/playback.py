@@ -1,12 +1,12 @@
 import sounddevice as sd
 import logging
-from Pipeline import Stage
+import AccCam.realtime_dsp.pipeline as pipe
 
 # logging
 logger = logging.getLogger(__name__)
 
 
-class AudioPlayback(Stage):
+class AudioPlayback(pipe.Stage):
     """
     Plays audio from a numpy array. Expects a matrix of multiple channels like the rest of this project.
     """

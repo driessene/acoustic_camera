@@ -1,5 +1,4 @@
 import DSP
-import Geometry
 import numpy as np
 
 
@@ -65,9 +64,8 @@ def main():
         wavenumber=wave_number,
     )
 
-    music = DSP.MUSIC(
+    music = DSP.Beamformer(
         steering_matrix=matrix,
-        num_sources=4
     )
 
     # Plot

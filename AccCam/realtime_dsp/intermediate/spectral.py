@@ -1,9 +1,9 @@
 import numpy as np
 import scipy.fft as fft
-from Pipeline import Stage, Message
+import AccCam.realtime_dsp.pipeline as pipe
 
 
-class FFT(Stage):
+class FFT(pipe.Stage):
     """
     Applies an FFT to data
     """
@@ -18,4 +18,4 @@ class FFT(Stage):
         f = fft.fft(data, axis=0)
         if self.return_abs:
             f = np.abs(f)
-        self.port_put(Message(f))
+        self.port_put(pipe.Message(f))

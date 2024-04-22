@@ -1,8 +1,7 @@
 import numpy as np
 import logging
 import sounddevice as sd
-from datetime import datetime
-from Pipeline import Stage, Message
+import AccCam.realtime_dsp.pipeline as pipe
 
 
 # Logging
@@ -21,7 +20,7 @@ def print_audio_devices():
             print(f"Device {i}: {device['name']}, Channels: {device['max_input_channels']}")
 
 
-class AudioRecorder(Stage):
+class AudioRecorder(pipe.Stage):
     """
     Records audio from a real-world recorder via sounddevice
     """
@@ -64,7 +63,7 @@ class AudioRecorder(Stage):
         data = np.array(indata)
         if self.channel_map is not None:
             data = data[:, self.channel_map]
-        self.port_put(Message(data))
+        self.port_put(pipe.Message(data))
 
     def start(self):
         """

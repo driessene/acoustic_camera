@@ -1,4 +1,4 @@
-from Pipeline import Stage, Message
+import AccCam.realtime_dsp.pipeline as control
 from datetime import datetime
 import numpy as np
 import logging
@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ToDisk(Stage):
+class ToDisk(control.Stage):
     """
     Save a matrix to a csv file. It is recommended to use Management. Accumulator before this stage to get data.
     Can also continue pushing data if asked to.
@@ -30,7 +30,7 @@ class ToDisk(Stage):
         self.port_put(data)
 
 
-class FromDisk(Stage):
+class FromDisk(control.Stage):
     """
     Take a CSV, break it into blocks, and push into pipeline. Breaking it down allows for batch processing.
     Use an accumulator if you wouldn't like to break it down at the end of the pipeline.
@@ -57,7 +57,7 @@ class FromDisk(Stage):
             else:
                 logger.warning(f'axis = {self.axis} is not valid, defaulting to axis 0.')
                 block = self.dataframe[:, self._i * self.blocksize:self._i * self.blocksize + self.blocksize]
-            self.port_put(Message(block, index=self._i))
+            self.port_put(control.Message(block, index=self._i))
             self._i += 1
         except IndexError:
             logger.warning(f'Data source from path {self.path} depleted')

@@ -1,6 +1,4 @@
-import DSP
-import Geometry
-import Pipeline
+from DSP import direction_of_arival
 from matplotlib.pyplot import show
 
 
@@ -11,18 +9,18 @@ def main():
     blocksize = 8192
 
     # Sources
-    elements = [Geometry.Element([-1.25, 0, 0]),
-                Geometry.Element([-0.75, 0, 0]),
-                Geometry.Element([-0.25, 0, 0]),
-                Geometry.Element([0.25, 0, 0]),
-                Geometry.Element([0.75, 0, 0]),
-                Geometry.Element([1.25, 0, 0]),
-                Geometry.Element([0, -1.25, 0]),
-                Geometry.Element([0, -0.75, 0]),
-                Geometry.Element([0, -0.25, 0]),
-                Geometry.Element([0, 0.25, 0]),
-                Geometry.Element([0, 0.75, 0]),
-                Geometry.Element([0, 1.25, 0])]
+    elements = [DSP.Element([-1.25, 0, 0]),
+                DSP.Element([-0.75, 0, 0]),
+                DSP.Element([-0.25, 0, 0]),
+                DSP.Element([0.25, 0, 0]),
+                DSP.Element([0.75, 0, 0]),
+                DSP.Element([1.25, 0, 0]),
+                DSP.Element([0, -1.25, 0]),
+                DSP.Element([0, -0.75, 0]),
+                DSP.Element([0, -0.25, 0]),
+                DSP.Element([0, 0.25, 0]),
+                DSP.Element([0, 0.75, 0]),
+                DSP.Element([0, 1.25, 0])]
 
     # Recorder to get data
     DSP.print_audio_devices()
@@ -42,7 +40,7 @@ def main():
     )
 
     # Combine recorders
-    concat = Pipeline.Concatenator(
+    concat = DSP.Concatenator(
         num_ports=2,
     )
 
