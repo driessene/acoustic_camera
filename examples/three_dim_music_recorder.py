@@ -1,6 +1,5 @@
-import DSP
-import Geometry
-import Pipeline
+import AccCam.realtime_dsp as dsp
+import AccCam.direction_of_arival as doa
 import numpy as np
 
 
@@ -11,29 +10,29 @@ def main():
     blocksize = 8192
 
     # Sources
-    elements = [Geometry.Element([-1.25, 0, 0]),
-                Geometry.Element([-0.75, 0, 0]),
-                Geometry.Element([-0.25, 0, 0]),
-                Geometry.Element([0.25, 0, 0]),
-                Geometry.Element([0.75, 0, 0]),
-                Geometry.Element([1.25, 0, 0]),
-                Geometry.Element([0, -1.25, 0]),
-                Geometry.Element([0, -0.75, 0]),
-                Geometry.Element([0, -0.25, 0]),
-                Geometry.Element([0, 0.25, 0]),
-                Geometry.Element([0, 0.75, 0]),
-                Geometry.Element([0, 1.25, 0])]
+    elements = [doa.Element([-1.25, 0, 0]),
+                doa.Element([-0.75, 0, 0]),
+                doa.Element([-0.25, 0, 0]),
+                doa.Element([0.25, 0, 0]),
+                doa.Element([0.75, 0, 0]),
+                doa.Element([1.25, 0, 0]),
+                doa.Element([0, -1.25, 0]),
+                doa.Element([0, -0.75, 0]),
+                doa.Element([0, -0.25, 0]),
+                doa.Element([0, 0.25, 0]),
+                doa.Element([0, 0.75, 0]),
+                doa.Element([0, 1.25, 0])]
 
     # Recorder to get data
-    DSP.print_audio_devices()
-    recorder_x = DSP.AudioRecorder(
+    dsp.print_audio_devices()
+    recorder_x = dsp.AudioRecorder(
         device_id=22,
         samplerate=44100,
         num_channels=8,
         blocksize=blocksize,
         channel_map=[2, 3, 4, 5, 6, 7],
     )
-    recorder_y = DSP.AudioRecorder(
+    recorder_y = dsp.AudioRecorder(
         device_id=23,
         samplerate=44100,
         num_channels=8,
@@ -42,12 +41,12 @@ def main():
     )
 
     # Combine recorders
-    concat = Pipeline.Concatenator(
+    concat = dsp.Concatenator(
         num_ports=2,
     )
 
     # Filter
-    filt = DSP.FIRWINFilter(
+    filt = dsp.FIRWINFilter(
         N=101,
         num_channels=len(elements),
         cutoff=1000,
@@ -58,19 +57,19 @@ def main():
     # MUSIC
     azimuth_angles = np.linspace(0, 2 * np.pi, 100)
     inclination_angles = np.linspace(0, np.pi, 100)
-    matrix = Geometry.SteeringMatrix(
+    matrix = doa.SteeringMatrix(
         elements=elements,
         azimuths=azimuth_angles,
         inclinations=inclination_angles,
         wavenumber=1.48,
     )
-    music = DSP.MUSIC(
+    music = dsp.MUSIC(
         steering_matrix=matrix,
         num_sources=2
     )
 
     # Plot
-    plot = DSP.HeatmapPlotter(
+    plot = dsp.HeatmapPlotter(
         title='MUSIC',
         x_label="inclination",
         y_label="azimuth",

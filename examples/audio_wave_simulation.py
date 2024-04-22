@@ -1,6 +1,6 @@
-import DSP
+import AccCam.realtime_dsp as dsp
+import AccCam.direction_of_arival as doa
 import numpy as np
-from itertools import product
 
 
 def main():
@@ -13,25 +13,25 @@ def main():
     speed_of_sound = 343
 
     # Sources
-    elements = [DSP.Element([-1.25, 0, 0]),
-                DSP.Element([-0.75, 0, 0]),
-                DSP.Element([-0.25, 0, 0]),
-                DSP.Element([0.25, 0, 0]),
-                DSP.Element([0.75, 0, 0]),
-                DSP.Element([1.25, 0, 0]),
-                DSP.Element([0, -1.25, 0]),
-                DSP.Element([0, -0.75, 0]),
-                DSP.Element([0, -0.25, 0]),
-                DSP.Element([0, 0.25, 0]),
-                DSP.Element([0, 0.75, 0]),
-                DSP.Element([0, 1.25, 0]),
-                DSP.Element([0, 0, 0.25]),
-                DSP.Element([0, 0, 0.75]),
-                DSP.Element([0, 0, 1.25])]
+    elements = [doa.Element([-1.25, 0, 0]),
+                doa.Element([-0.75, 0, 0]),
+                doa.Element([-0.25, 0, 0]),
+                doa.Element([0.25, 0, 0]),
+                doa.Element([0.75, 0, 0]),
+                doa.Element([1.25, 0, 0]),
+                doa.Element([0, -1.25, 0]),
+                doa.Element([0, -0.75, 0]),
+                doa.Element([0, -0.25, 0]),
+                doa.Element([0, 0.25, 0]),
+                doa.Element([0, 0.75, 0]),
+                doa.Element([0, 1.25, 0]),
+                doa.Element([0, 0, 0.25]),
+                doa.Element([0, 0, 0.75]),
+                doa.Element([0, 0, 1.25])]
 
     wave_vectors = [
-        DSP.WaveVector(DSP.spherical_to_cartesian(np.array([wave_number * 1.00, 1, 1])), speed_of_sound),
-        DSP.WaveVector(DSP.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 1.00, 1, 1])), speed_of_sound),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
     ]
 
     # Print frequency for debuging
@@ -39,7 +39,7 @@ def main():
         print(wave.linear_frequency)
 
     # Recorder to get data
-    recorder = DSP.AudioSimulator(
+    recorder = dsp.AudioSimulator(
         elements=elements,
         wave_vectors=wave_vectors,
         snr=50,
@@ -49,7 +49,7 @@ def main():
     )
 
     # Filter
-    filt = DSP.FIRWINFilter(
+    filt = dsp.FIRWINFilter(
         N=101,
         num_channels=len(elements),
         cutoff=2000,
@@ -58,7 +58,7 @@ def main():
     )
 
     # Plot
-    plot = DSP.LinePlotter(
+    plot = dsp.LinePlotter(
         title='Audio Waves',
         x_label="N",
         y_label="Amplitude",
