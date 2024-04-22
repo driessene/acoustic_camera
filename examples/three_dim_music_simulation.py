@@ -28,8 +28,8 @@ def main():
                 doa.Element([0, 0, 1.25])]
 
     wave_vectors = [
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 1.00, 1.2, 1.2])), speed_of_sound),
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 1.02, 1.5, 1.5])), speed_of_sound),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 0.98, 1, 1])), speed_of_sound),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
     ]
 
     # Print frequencies for debug
@@ -65,9 +65,8 @@ def main():
         wavenumber=wave_number,
     )
 
-    music = dsp.Music(
+    music = dsp.MVDRBeamformer(
         steering_matrix=matrix,
-        num_sources=4
     )
 
     # Plot

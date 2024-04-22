@@ -1,2 +1,2 @@
-from .algorithms import *
+from .algorithm import *
 from .geometry import *
