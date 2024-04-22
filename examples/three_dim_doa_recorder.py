@@ -63,10 +63,8 @@ def main():
         inclinations=inclination_angles,
         wavenumber=1.48,
     )
-    music = dsp.MUSIC(
-        steering_matrix=matrix,
-        num_sources=2
-    )
+    estimator = doa.Music(matrix, 4)
+    music = dsp.DOAEstimator(estimator)
 
     # Plot
     plot = dsp.HeatmapPlotter(

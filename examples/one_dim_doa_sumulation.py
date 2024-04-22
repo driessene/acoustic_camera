@@ -64,10 +64,9 @@ def main():
         inclinations=inclination_angles,
         wavenumber=wave_number,
     )
+    estimator = doa.Music(matrix, 4)
 
-    music = dsp.MVDRBeamformer(
-        steering_matrix=matrix,
-    )
+    music = dsp.DOAEstimator(estimator)
 
     # Plot
     plot = dsp.PolarPlotter(
