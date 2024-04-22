@@ -63,7 +63,7 @@ def main():
         inclinations=inclination_angles,
         wavenumber=1.48,
     )
-    estimator = doa.Music(matrix, 4)
+    estimator = doa.MVDRBeamformer(matrix)
     music = dsp.DOAEstimator(estimator)
 
     # Plot

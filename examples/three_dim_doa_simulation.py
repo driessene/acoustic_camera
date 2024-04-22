@@ -62,9 +62,9 @@ def main():
         elements=elements,
         azimuths=azimuth_angles,
         inclinations=inclination_angles,
-        wavenumber=wave_number,
+        wavenumber=wave_number
     )
-    estimator = doa.Music(matrix, 4)
+    estimator = doa.MVDRBeamformer(matrix)
 
     music = dsp.DOAEstimator(estimator)
 
