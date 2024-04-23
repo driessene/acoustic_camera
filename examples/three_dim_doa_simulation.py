@@ -1,5 +1,5 @@
 import AccCam.realtime_dsp as dsp
-import AccCam.direction_of_arival as doa
+import AccCam.direction_of_arrival as doa
 import numpy as np
 
 
@@ -29,7 +29,7 @@ def main():
 
     wave_vectors = [
         doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 0.98, 1, 1])), speed_of_sound),
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 1.02, 1.2, 1.2])), speed_of_sound),
     ]
 
     # Print frequencies for debug
@@ -43,7 +43,8 @@ def main():
         snr=50,
         samplerate=samplerate,
         blocksize=blocksize,
-        sleep=True
+        sleep=True,
+        random_phase=True
     )
 
     # Filter
@@ -64,8 +65,7 @@ def main():
         inclinations=inclination_angles,
         wavenumber=wave_number
     )
-    estimator = doa.MVDRBeamformer(matrix)
-
+    estimator = doa.Music(matrix, 4)
     music = dsp.DOAEstimator(estimator)
 
     # Plot
@@ -88,7 +88,6 @@ def main():
     recorder.start()
     filt.start()
     music.start()
-    plot.start()
     plot.show()
 
 

@@ -1,5 +1,5 @@
 import AccCam.realtime_dsp as dsp
-import AccCam.direction_of_arival as doa
+import AccCam.direction_of_arrival as doa
 from matplotlib.pyplot import show
 import numpy as np
 

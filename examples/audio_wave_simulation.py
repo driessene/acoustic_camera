@@ -1,5 +1,5 @@
 import AccCam.realtime_dsp as dsp
-import AccCam.direction_of_arival as doa
+import AccCam.direction_of_arrival as doa
 import numpy as np
 
 
@@ -45,7 +45,8 @@ def main():
         snr=50,
         samplerate=samplerate,
         blocksize=blocksize,
-        sleep=True
+        sleep=True,
+        random_phase=True
     )
 
     # Filter

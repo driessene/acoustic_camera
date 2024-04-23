@@ -3,19 +3,26 @@ from AccCam.direction_of_arrival.geometry import SteeringMatrix
 from abc import ABC, abstractmethod
 
 
-def find_noise_subspace(data: np.array, num_sources: int) -> np.array:
+def get_covariance(data: np.array) -> np.array:
+    """
+    Get the covariance of the input data. Always transpose for this project.
+    :param data: Input data to compute covariance of
+    :return: np.array
+    """
+    return np.cov(data.T)
+
+
+def get_noise_subspace(cov_data: np.array, num_sources: int) -> np.array:
     """
     Find the noise subspace of a provided signal
-    :param data: The signal to find the noise subspace of
+    :param cov_data: The covariance matrix to find the noise subspace of
     :param num_sources: The number of sources in the environment
     :return: np.array
     """
-    # Calculate the covariance matrix
-    Rx = np.cov(data.T)
-
     # Decompose into eigenvalues and vectors
-    eigvals, eigvecs = np.linalg.eigh(Rx)
+    eigvals, eigvecs = np.linalg.eigh(cov_data)
 
+    # Get smallest eigenvectors
     noise_subspace = eigvecs[:, np.argsort(eigvals)][:, :-num_sources]
     return noise_subspace
 
@@ -101,30 +108,6 @@ class MVDRBeamformer(Estimator):
         return beamformed_data
 
 
-# WIP
-class MSNRBeamformer(Estimator):
-    """
-    Implements a maximum signal-to-noise ratio (MSNR) beamformer
-    """
-    def __init__(self, steering_matrix: SteeringMatrix, noise_covariance):
-        """
-        :param steering_matrix: The steering matrix to utilize to find the sources
-        :param noise_covariance: A covariance array representing the noise of the environment. If unknow, use
-            np.eye(num_elements) * noise_power.
-        """
-        super().__init__(SteeringMatrix)
-        self.noise_covariance = noise_covariance
-
-    def process(self, data: np.array) -> np.array:
-        noise_cov_inv = np.linalg.inv(self.noise_covariance)
-        beamformed_data = np.sum(self.steering_matrix.matrix.conj().T *
-                                 (noise_cov_inv @ self.steering_matrix.matrix).T, axis=1).real
-
-        # Normalize
-        beamformed_data /= np.max(beamformed_data)
-        return beamformed_data
-
-
 class Music(Estimator):
     """
     Implements the MUSIC (MUltiple SIgnal Classification) algorithm
@@ -137,11 +120,14 @@ class Music(Estimator):
         self.num_sources = num_sources
 
     def process(self, data: np.array) -> np.array:
+        # Get covariance matrix
+        cov_matrix = get_covariance(data)
+
         # Get noise subspace
-        noise_subspace = find_noise_subspace(data, self.num_sources)
+        noise_subspace = get_noise_subspace(cov_matrix, self.num_sources)
 
         # Compute the music spectrum. Use np.sum to take several samples into one result
-        music_spectrum = 1 / np.sum(np.abs(np.dot(self.steering_matrix.matrix.conj().T, noise_subspace)) ** 2, axis=1)
+        music_spectrum = 1 / np.sum(np.abs(self.steering_matrix.matrix.conj().T @ noise_subspace) ** 2, axis=1)
 
         # Normalize and return results
         music_spectrum /= np.max(music_spectrum)

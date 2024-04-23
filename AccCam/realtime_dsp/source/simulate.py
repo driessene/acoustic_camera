@@ -15,8 +15,8 @@ class AudioSimulator(pipe.Stage):
                  snr: float = 50,
                  samplerate: int = 44100,
                  blocksize: int = 1024,
-                 speed_of_sound: float = 343.0,
                  sleep: bool = True,
+                 random_phase: bool = True,
                  destinations=None
                  ):
         """
@@ -27,6 +27,8 @@ class AudioSimulator(pipe.Stage):
         :param blocksize: The number of samples per block
         :param sleep: If true, sleep between simulations.
             This represents the real time it takes to get data for a recorder
+        :param random_phase: If true, add random phase to each signal. Note that each phase for each element is
+            equal, but is randomized each time.
         :param destinations: Where to push simulation data. Object should inherit from Stage
         """
         super().__init__(0, 0, destinations)
@@ -35,6 +37,7 @@ class AudioSimulator(pipe.Stage):
         self.snr = snr
         self.samplerate = samplerate
         self.blocksize = blocksize
+        self.random_phase = random_phase
         self.sleep = sleep
 
         # Mock inherited properties
@@ -46,26 +49,12 @@ class AudioSimulator(pipe.Stage):
         return np.arange(self.blocksize) / self.samplerate
 
     @cached_property
-    def waveforms(self):
-        frequencies = [wave_vector.angular_frequency for wave_vector in self.wave_vectors]
-        return np.array([np.exp(1j * freq * self.time_vector) for freq in frequencies])
+    def frequencies(self):
+        return np.array([wave_vector.angular_frequency for wave_vector in self.wave_vectors])
 
     @cached_property
     def steering_vectors(self):
         return np.array([doa.SteeringVector(self.elements, wave_vector) for wave_vector in self.wave_vectors])
-
-    @cached_property
-    def signal_matrix(self):
-        return np.sum(np.array([np.outer(sig, steering.vector) for (sig, steering) in zip(self.waveforms, self.steering_vectors)]),
-                      axis=0).real
-
-    @cached_property
-    def signal_power(self):
-        return np.mean(np.abs(self.signal_matrix) ** 2)
-
-    @cached_property
-    def noise_power(self):
-        return 10 ** ((10 * np.log10(self.signal_power) - self.snr) / 20)
 
     def run(self):
         """
@@ -73,9 +62,22 @@ class AudioSimulator(pipe.Stage):
         process.
         :return: None
         """
-        # Generate noise and normalize
-        noise = np.random.normal(0, np.sqrt(self.noise_power), (self.blocksize, self.channels))
-        signal = self.signal_matrix + noise
+        # Generate phase
+        phase = 0
+        if self.random_phase:
+            phase = np.random.uniform(-np.pi, np.pi)
+
+        # Simulate audio
+        waveforms = np.array([np.exp(1j * freq * self.time_vector + phase) for freq in self.frequencies])
+        signal_matrix = np.sum(np.array([np.outer(sig, steering.vector) for (sig, steering) in
+                                         zip(waveforms, self.steering_vectors)]), axis=0).real
+
+        # Simulate noise
+        signal_power = np.mean(np.abs(signal_matrix) ** 2)
+        noise_power = 10 ** ((10 * np.log10(signal_power) - self.snr) / 20)
+        noise = np.random.normal(0, np.sqrt(noise_power), (self.blocksize, self.channels))
+
+        signal = signal_matrix + noise
         signal /= np.max(np.abs(signal))
 
         if self.sleep:
