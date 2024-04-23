@@ -7,21 +7,32 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 8192
+    blocksize = 1024
+    wavenumber = 10
 
-    # Sources
-    elements = [doa.Element([-1.25, 0, 0]),
-                doa.Element([-0.75, 0, 0]),
-                doa.Element([-0.25, 0, 0]),
-                doa.Element([0.25, 0, 0]),
-                doa.Element([0.75, 0, 0]),
-                doa.Element([1.25, 0, 0]),
-                doa.Element([0, -1.25, 0]),
-                doa.Element([0, -0.75, 0]),
-                doa.Element([0, -0.25, 0]),
-                doa.Element([0, 0.25, 0]),
-                doa.Element([0, 0.75, 0]),
-                doa.Element([0, 1.25, 0])]
+    elements = [doa.Element([-1.25, 0, 0], samplerate),
+                doa.Element([-0.75, 0, 0], samplerate),
+                doa.Element([-0.25, 0, 0], samplerate),
+                doa.Element([0.25, 0, 0], samplerate),
+                doa.Element([0.75, 0, 0], samplerate),
+                doa.Element([1.25, 0, 0], samplerate),
+                doa.Element([0, -1.25, 0], samplerate),
+                doa.Element([0, -0.75, 0], samplerate),
+                doa.Element([0, -0.25, 0], samplerate),
+                doa.Element([0, 0.25, 0], samplerate),
+                doa.Element([0, 0.75, 0], samplerate),
+                doa.Element([0, 1.25, 0], samplerate),
+                doa.Element([0, 0, 0.25], samplerate),
+                doa.Element([0, 0, 0.75], samplerate),
+                doa.Element([0, 0, 1.25], samplerate)]
+
+    structure = doa.Structure(
+        elements=elements,
+        wavenumber=wavenumber,
+        snr=50,
+        blocksize=blocksize,
+    )
+    structure.visualize()
 
     # Recorder to get data
     dsp.print_audio_devices()

@@ -124,24 +124,13 @@ Manages an audio device and pushes data to destinations.
 - Stop(self): Stops the recorder.
 
 ## AudioSimulator - Stage
-Simulates ideal audio matrixes. Only simulates a vector of microphones which are evenly spaced for now. Precomputes all signals. Each block of data is the same, but with different noise to simulate real life.
+Injects simulated audio into the pipeline. Uses a Structure to simulate audio.
 
 ### Properties
-- wave_vectors - List[Geometry.geometry.WaveVector] - The list of wavevectors to simulate projected onto elements.
-- elements - List[Geometry.geometry.Element]: The list of elements that wavevectors is projected onto.
-- snr - float: Signal-to-noise ratio of the simulator.
-- samplerate - int: The sample rate of the simulator.
-- num_channels - int: The number of elements on the element vector. i.e., the number of audio channels.
-- blocksize - int: The number of samples per block of data.
-- sleep: If true, add a delay to simulate the delay it takes to get a block of audio in real life.
-
-### Calculated properties
-- time_vector - np.array: The points in time that samples are generated at.
-- waveforms - np.array: The sound waves generated from the provided wavevectors.
-- steering_vectors - np.array: A list of steering vectors. Index matches index of elements.
-- signal_matrix - np.array: The simulation result for each element. Result of the optimal simulation
-- signal_power - float: The power of the signal matrix.
-- noise_power - float: The power of the simulated noise.
+- structure - Structure: The structure to take simulations from. Structures represent a set of elements and can simulate their respective data when given wavevectors. More detail is under its own documentation.
+- wavevectors - list[WaveVector]: The wavevectors to project onto the structure. More documentation on wavevectors is under its own documentation.
+- wait - bool: If true, add a delay to simulate the delay it takes to get a block of audio in real life. Default is True.
+- randomize_phase - bool: If true, randomize the phase of elements. All elements will have the same randomized phase. Default is True.
 
 ## Filter - Stage
 A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). These filters can either be FIR or IIR filters
@@ -236,7 +225,7 @@ Play data back out to your speakers. Useful for hearing how filters effect data 
 - label - str: The label to pass to the file name
 - path - str: The path of where to save the file. Must be a folder with no / or \ at the end of the string.
 
-# direction of arival
+# direction of arrival
 Holds elements, wave vectors, steering vectors, and steering matrices. Use to calculate steering vectors for simulators and steering matrixes for DoA algorithms. All classes here are dataclass. They have no methods, only hold and calculate data
 
 ## spherical_to_cartesian - function
@@ -246,10 +235,11 @@ Takes np.array([radius, inclination, azimuth]) and returns np.array([x, y, z]).
 Takes np.array([x, y, z]) are returns np.array([radius, inclination, azimuth]).
 
 ## Element
-Holds positional information about an element (a microphone or antenna)
+Represents and element (a microphone or antenna).
 
 ### Properties
 - position - np.array: A numpy array holding (x, y, z) position. Units are in wavelengths of a theoretical wavevector.
+- samplerate - int: The sample rate of the element.
 
 #### Calculated properties
 - spherical_position - np.array: A tuple holding (r, inclination, azimuth) position
@@ -273,24 +263,35 @@ Holds wavevector. Remember to always pass (kx, ky, kz). If you want to pass (wav
 - linear_frequency - float: The linear frequency of the wavevector. Equal to angular_frequency / (2 * pi).
 - linear_period - float: The linear period of the wavevector. Equal to angular_period * (2 * pi).
 
-## SteeringVector
-Represents a steering vector when given elements and a wave vector
+## calculate_steering_vector
+Calculates a steering vector when given:
+- elements - list[Elements]: A list of elements to project the wavevector onto
+- wavevector - WaveVector: A wave vector to project onto elements.
+Returns a wavevector with type of np.array.
 
-### Properties
-- elements - List[Element]: A list of elements to project a wavevector onto
-- wavevector - WaveVector: A wave vector to project onto elements
-
-#### Calculated properties
-- vector - np.array: The resulting steering vector
-
-## SteeringMatrix
-Hold every possible steering vector when given elements, wavenumber, and all angles to include
+## Structure
+Represents and assembly of elements. Takes several elements and provided functionality with the elements.
 
 ### Properties
 - elements - List[Element]: A list of elements to project a wavevector onto
 - wavenumber - float: The wave number of the incoming signal
-- inclinations - np.array: An array of all possible inclinations to include in the matrix
-- azimuths - np.array: An array of all possible azimuths to include in the matrix
+- snr - float: The expected or to be simulated signal-to-noise ratio of the audio waves.
+- samplerate - int: The global samplerate of the structure. This is taken from the first element. All elements should have the same samplerate.
+- inclination_range - tuple(float): The range of possible inclinations the structure is capable of scanning.
+- azimuth_range - tuple(float): The range of possible azimuths the structure is capable of scanning.
+- inclination_resolution: The number of inclinations to scan for. The higher the number, the more accurate the structure is with the cost of computation time.
+- azimuth_resolution: The number of azimuths to scan for. Same compromises as inclination_resolution.
+
+### Calculated properties
+- inclination_values - np.array: An array of inclinations which it scans for. This can be helpfully for getting axis data for plotters.
+- azimuth_values - np.array: An array of azimuths which it scans for. This can be helpfully for getting axis data for plotters.
+- steering_matrix - np.array: The steering matrix of the structure. Holds all possible steering vectors when considering its elements, wavenumber, ranges, and resolutions.
+
+### Methods
+- simulate_audio(self, wavevectors: list[WaveVector], random_phase). Simulates ideal audio from the structure
+  - wavevectors: A list of wavevectors which hit the structure.
+  - random_phase: If true, randomize the phase of elements. All elements will have the same randomized phase. Default is True.
+- visualize(self): Shows a 3D scatterplot with element positions. Helps verify that the structure is what the user expects.
 
 ### Calculated properties
 - matrix - np.array: The resulting steering matrix
@@ -299,13 +300,13 @@ Hold every possible steering vector when given elements, wavenumber, and all ang
 A base class for all estimators. Do not use directly
 
 ### Properties
-- steering_matrix - SteeringMatrix: The main steering matrix to use in the algorithm. All subclasses have a steering matrix.
+- structure - Structure: The structure to use in the algorithm. All subclasses have a steering matrix.
 
 ### Methods
 - process(self, data): Runs the algorithm on incoming data. Reservation for subclasses. Raises a NotImplementedError by default.
 
 ## DelaySumBeamformer
-A classical beamformer. The simpilist to understand and use. However, this is expensive to use and gives sub-par results, thus it is not recomended for this program. Only needs steering_matrix property.
+A classical beamformer. The easiest to understand and use. However, this is expensive to use and gives sub-par results, thus it is not recomended for this program. Only needs steering_matrix property.
 
 ## BartlettBeamformer
 A newer beamformer and much more efficient than DelaySumBeamformer. Gives similar results to DelaySUmBeamformer. Only needs steering_matrix property.
@@ -333,42 +334,46 @@ def main():
     # Variables
     samplerate = 44100
     blocksize = 1024
-    wave_number = 10
+    wavenumber = 10
     speed_of_sound = 343
 
-    elements = [doa.Element([-1.25, 0, 0]),
-                doa.Element([-0.75, 0, 0]),
-                doa.Element([-0.25, 0, 0]),
-                doa.Element([0.25, 0, 0]),
-                doa.Element([0.75, 0, 0]),
-                doa.Element([1.25, 0, 0]),
-                doa.Element([0, -1.25, 0]),
-                doa.Element([0, -0.75, 0]),
-                doa.Element([0, -0.25, 0]),
-                doa.Element([0, 0.25, 0]),
-                doa.Element([0, 0.75, 0]),
-                doa.Element([0, 1.25, 0]),
-                doa.Element([0, 0, 0.25]),
-                doa.Element([0, 0, 0.75]),
-                doa.Element([0, 0, 1.25])]
+    elements = [doa.Element([-1.25, 0, 0], samplerate),
+                doa.Element([-0.75, 0, 0], samplerate),
+                doa.Element([-0.25, 0, 0], samplerate),
+                doa.Element([0.25, 0, 0], samplerate),
+                doa.Element([0.75, 0, 0], samplerate),
+                doa.Element([1.25, 0, 0], samplerate),
+                doa.Element([0, -1.25, 0], samplerate),
+                doa.Element([0, -0.75, 0], samplerate),
+                doa.Element([0, -0.25, 0], samplerate),
+                doa.Element([0, 0.25, 0], samplerate),
+                doa.Element([0, 0.75, 0], samplerate),
+                doa.Element([0, 1.25, 0], samplerate),
+                doa.Element([0, 0, 0.25], samplerate),
+                doa.Element([0, 0, 0.75], samplerate),
+                doa.Element([0, 0, 1.25], samplerate)]
 
-    wave_vectors = [
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 0.98, 1, 1])), speed_of_sound),
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
+    structure = doa.Structure(
+        elements=elements,
+        wavenumber=wavenumber,
+        snr=50,
+        blocksize=blocksize,
+    )
+    structure.visualize()
+
+    wavevectors = [
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 0.98, 1, 1])), speed_of_sound),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.02, 2, 2])), speed_of_sound),
     ]
 
     # Print frequencies for debug
-    for vector in wave_vectors:
+    for vector in wavevectors:
         print(vector.linear_frequency)
 
     # Recorder to get data
     recorder = dsp.AudioSimulator(
-        elements=elements,
-        wave_vectors=wave_vectors,
-        snr=50,
-        samplerate=samplerate,
-        blocksize=blocksize,
-        sleep=True
+        structure=structure,
+        wavevectors=wavevectors
     )
 
     # Filter
@@ -381,15 +386,7 @@ def main():
     )
 
     # MUSIC
-    azimuth_angles = np.linspace(0, 2 * np.pi, 500)
-    inclination_angles = np.linspace(0, np.pi, 500)
-    matrix = doa.SteeringMatrix(
-        elements=elements,
-        azimuths=azimuth_angles,
-        inclinations=inclination_angles,
-        wavenumber=wave_number
-    )
-    estimator = doa.MVDRBeamformer(matrix)
+    estimator = doa.MVDRBeamformer(structure)
 
     music = dsp.DOAEstimator(estimator)
 
@@ -398,8 +395,8 @@ def main():
         title='MUSIC',
         x_label="inclination",
         y_label="azimuth",
-        x_data=inclination_angles,
-        y_data=azimuth_angles,
+        x_data=structure.inclination_values,
+        y_data=structure.azimuths_values,
         interval=blocksize/samplerate,
         cmap='inferno'
     )

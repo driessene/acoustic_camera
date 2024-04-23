@@ -8,20 +8,31 @@ def main():
     # Variables
     samplerate = 44100
     blocksize = 8192
+    wavenumber = 10
 
-    # Sources
-    elements = [doa.Element([-1.25, 0, 0]),
-                doa.Element([-0.75, 0, 0]),
-                doa.Element([-0.25, 0, 0]),
-                doa.Element([0.25, 0, 0]),
-                doa.Element([0.75, 0, 0]),
-                doa.Element([1.25, 0, 0]),
-                doa.Element([0, -1.25, 0]),
-                doa.Element([0, -0.75, 0]),
-                doa.Element([0, -0.25, 0]),
-                doa.Element([0, 0.25, 0]),
-                doa.Element([0, 0.75, 0]),
-                doa.Element([0, 1.25, 0])]
+    elements = [doa.Element([-1.25, 0, 0], samplerate),
+                doa.Element([-0.75, 0, 0], samplerate),
+                doa.Element([-0.25, 0, 0], samplerate),
+                doa.Element([0.25, 0, 0], samplerate),
+                doa.Element([0.75, 0, 0], samplerate),
+                doa.Element([1.25, 0, 0], samplerate),
+                doa.Element([0, -1.25, 0], samplerate),
+                doa.Element([0, -0.75, 0], samplerate),
+                doa.Element([0, -0.25, 0], samplerate),
+                doa.Element([0, 0.25, 0], samplerate),
+                doa.Element([0, 0.75, 0], samplerate),
+                doa.Element([0, 1.25, 0], samplerate),
+                doa.Element([0, 0, 0.25], samplerate),
+                doa.Element([0, 0, 0.75], samplerate),
+                doa.Element([0, 0, 1.25], samplerate)]
+
+    structure = doa.Structure(
+        elements=elements,
+        wavenumber=wavenumber,
+        snr=50,
+        blocksize=blocksize,
+    )
+    structure.visualize()
 
     # Recorder to get data
     dsp.print_audio_devices()
@@ -55,15 +66,7 @@ def main():
     )
 
     # MUSIC
-    azimuth_angles = np.linspace(0, 2 * np.pi, 100)
-    inclination_angles = np.linspace(0, np.pi, 100)
-    matrix = doa.SteeringMatrix(
-        elements=elements,
-        azimuths=azimuth_angles,
-        inclinations=inclination_angles,
-        wavenumber=1.48,
-    )
-    estimator = doa.MVDRBeamformer(matrix)
+    estimator = doa.MVDRBeamformer(structure)
     music = dsp.DOAEstimator(estimator)
 
     # Plot
@@ -71,8 +74,8 @@ def main():
         title='MUSIC',
         x_label="inclination",
         y_label="azimuth",
-        x_data=inclination_angles,
-        y_data=azimuth_angles,
+        x_data=structure.inclination_values,
+        y_data=structure.azimuths_values,
         interval=blocksize/samplerate
     )
 
