@@ -1,5 +1,5 @@
 import numpy as np
-from AccCam.direction_of_arival.geometry import Structure
+from AccCam.direction_of_arrival.geometry import Structure
 
 
 def find_noise_subspace(data: np.array, num_sources: int) -> np.array:

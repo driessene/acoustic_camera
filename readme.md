@@ -320,7 +320,7 @@ The most accurate and most computationally expensive algorithm. Gives extremely 
 
 ```python
 import AccCam.realtime_dsp as dsp
-import AccCam.direction_of_arival as doa
+import AccCam.direction_of_arrival as doa
 import numpy as np
 
 
