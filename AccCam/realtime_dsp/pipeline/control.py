@@ -1,12 +1,13 @@
 import multiprocessing as mp
 from datetime import datetime
+from abc import ABC
 
 
 class Message:
     """
     A message class for transferring  data between stages in a pipeline.
     """
-    def __init__(self, payload, source=None, timestamp=None, **kwargs):
+    def __init__(self, payload, timestamp=None, **kwargs):
         """
         :param payload: Main data to be sent to a stage
         :param timestamp: The time the message was sent. Automatically set
@@ -19,7 +20,7 @@ class Message:
             setattr(self, k, v)
 
 
-class Stage:
+class Stage(ABC):
     def __init__(self, num_ports=1, port_size=4, destinations=None, has_process=True):
         """
         Initializes the process
@@ -50,16 +51,25 @@ class Stage:
 
     def run(self):
         """
-        To be implemented by a subclass. Ran in a loop forever. This is the script the subclass will run
-        :return:
+        To be implemented by a subclass. Ran in a loop forever. This is the script the subclass will run. If a process
+        is not needed (plotters, sounddevice stages), ignore this.
+        :return: None
         """
-        raise NotImplementedError
+        pass
 
     def start(self):
+        """
+        Start the stage
+        :return: None
+        """
         if self.process:
             self.process.start()
 
     def stop(self):
+        """
+        Stop the stage
+        :return: None
+        """
         if self.process:
             self.process.terminate()
             self.process.join()
@@ -77,7 +87,7 @@ class Stage:
     def port_get(self):
         """
         Gets data from all input queues in a list
-        :return: list
+        :return: list[Message]
         """
         return [queue.get() for queue in self.input_queue]
 
