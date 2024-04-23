@@ -188,7 +188,7 @@ Applies FFT to data. Returns complex data to match [scipy](https://docs.scipy.or
 Takes a DoA estimator and places it into the pipeline.
 
 ### Properties
-- estimator - direction_of_arival.Estimator: The estimator to utilize
+- estimator - direction_of_arrival.Estimator: The estimator to utilize
 
 ## LinePlotter - Stage
 Plots one line or several lines on a grid. If input data is a vector, plot one line. If a matrix, plot one line per list on axis=0.
@@ -324,7 +324,7 @@ The most accurate and most computationally expensive algorithm. Gives extremely 
 
 ```python
 import AccCam.realtime_dsp as dsp
-import AccCam.direction_of_arival as doa
+import AccCam.direction_of_arrival as doa
 import numpy as np
 
 
