@@ -1,5 +1,6 @@
 import numpy as np
 from AccCam.direction_of_arrival.geometry import SteeringMatrix
+from abc import ABC, abstractmethod
 
 
 def find_noise_subspace(data: np.array, num_sources: int) -> np.array:
@@ -7,7 +8,7 @@ def find_noise_subspace(data: np.array, num_sources: int) -> np.array:
     Find the noise subspace of a provided signal
     :param data: The signal to find the noise subspace of
     :param num_sources: The number of sources in the environment
-    :return:
+    :return: np.array
     """
     # Calculate the covariance matrix
     Rx = np.cov(data.T)
@@ -19,9 +20,7 @@ def find_noise_subspace(data: np.array, num_sources: int) -> np.array:
     return noise_subspace
 
 
-
-
-class Estimator:
+class Estimator(ABC):
     """
     Holds a beamformer. Use as a subclass for beamformers.
     """
@@ -31,13 +30,14 @@ class Estimator:
         """
         self.steering_matrix = steering_matrix
 
+    @abstractmethod
     def process(self, data: np.array) -> np.array:
         """
         Preform calcuations here
         :param data: The source data
         :return: np.array
         """
-        raise NotImplementedError
+        pass
 
 
 class DelaySumBeamformer(Estimator):

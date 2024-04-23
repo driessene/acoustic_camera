@@ -85,7 +85,7 @@ class AudioRecorder(pipe.Stage):
     def stop(self):
         """
         Stops the recording stream
-        :return:
+        :return: None
         """
         if self.stream:
             self.stream.stop()

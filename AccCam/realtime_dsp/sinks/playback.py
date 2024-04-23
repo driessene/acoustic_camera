@@ -62,7 +62,7 @@ class AudioPlayback(pipe.Stage):
     def stop(self):
         """
         Stops the playback stream
-        :return:
+        :return: None
         """
         if self.stream:
             self.stream.stop()
