@@ -1,6 +1,5 @@
 import AccCam.realtime_dsp as dsp
 import AccCam.direction_of_arrival as doa
-import numpy as np
 
 
 def main():
