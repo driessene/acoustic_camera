@@ -7,7 +7,7 @@ class Message:
     """
     A message class for transferring  data between stages in a pipeline.
     """
-    def __init__(self, payload, source=None, timestamp=None, **kwargs):
+    def __init__(self, payload, timestamp=None, **kwargs):
         """
         :param payload: Main data to be sent to a stage
         :param timestamp: The time the message was sent. Automatically set
