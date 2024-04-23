@@ -3,7 +3,6 @@ This project creates real-time pipelines to record, simulate, process, and plot 
 - Real-time processing
 - Pipelines
 - Multiprocessing
-- Hardware acceleration
 - Recording signals
 - Simulating signals
 - Filtering signals
@@ -66,44 +65,41 @@ Concatinators concatenate several signal matrices. For example, if there are sev
 ### Properties
 - axis - int: The axis which to concatenate over. Default is 1.
 
-## ChannelPicker
+## ChannelPicker - Stage
 When given a matrix, return a column of the matrix. Useful for example when you would like to play back a single channel of a signal matrix.
 
 ### Properties
 - channel - int: The index of the channel to grab
 
-## Accumulator
+## Accumulator - Stage
 Waits and merges several messages together. For example, wait until ten messages are received, put them together, and continue. Useful for saving data to CSV files for example.
 
 ### Properties
 - num_messages - int: The number of messages to merge
 - concatenate - int: If given, rather than returning a list of messages, return a numpy array of several payloads (which must be numpy arrays if ture) concatenated together. Give the axis to concatenate to (typically either 0 or 1)
 
-## FunctionStage
-Pass a function to this class to create a stage which runs the function on input data. The function must only have one parameter which accepts data from other stages. This is simpler than creating subclasses for Stage, but is limited in functionality. For example, use this if you would like to call np.ravel() on data, or something just as simple
-
 ### Properties
 - function - function: The function of which to run on incoming data.
 
-## ToDisk
+## ToDisk - Stage
 Writes every payload it receives to disk. Be careful as this can flood data to a disk quickly. Only use when you actually need to record everything. Use a Tap for intermittent recording. It is recommended to put an Accumulator before this to collect data.
 
 ### Properties
 - label - str: The label to put in the file-name. Every file name has a label and a timestamp
 - path - str: The folder where to save data. Do not include a / or \ at the end of the string.
 
-## FromDisk
+## FromDisk - Stage
 Takes a file, snips it into blocks, and injects it into a pipeline. Usefully for reading back data from ToDisk or Taps. Data must be saved by numpy. The stage automatically stops when the file is fully read.
 - path - str: The path to the file to load
 - blocksize - int: The size of the blocks to inject into the pipelines
 
-## Tap
+## Tap - Stage
 A tap into a pipeline. Does nothing to the data, but saves the last message and makes it user-accessible.
 
 ### Properties
 - num_ports - int: The number of ports of the stage
 
-### Methods:
+### Methods
 - tap(self): Returns a list of messages. The length of messages matches num_ports.
 
 ## print_audio_devices - Function
@@ -124,7 +120,7 @@ Manages an audio device and pushes data to destinations.
 - Stop(self): Stops the recorder.
 
 ## AudioSimulator - Stage
-Simulates ideal audio matrixes. Only simulates a vector of microphones which are evenly spaced for now. Precomputes all signals. Each block of data is the same, but with different noise to simulate real life.
+Simulates ideal audio matrices. Takes elements and wave-vectors, and simulates the resulting signal for each individual element.
 
 ### Properties
 - wave_vectors - List[Geometry.geometry.WaveVector] - The list of wavevectors to simulate projected onto elements.
@@ -133,15 +129,8 @@ Simulates ideal audio matrixes. Only simulates a vector of microphones which are
 - samplerate - int: The sample rate of the simulator.
 - num_channels - int: The number of elements on the element vector. i.e., the number of audio channels.
 - blocksize - int: The number of samples per block of data.
-- sleep: If true, add a delay to simulate the delay it takes to get a block of audio in real life.
-
-### Calculated properties
-- time_vector - np.array: The points in time that samples are generated at.
-- waveforms - np.array: The sound waves generated from the provided wavevectors.
-- steering_vectors - np.array: A list of steering vectors. Index matches index of elements.
-- signal_matrix - np.array: The simulation result for each element. Result of the optimal simulation
-- signal_power - float: The power of the signal matrix.
-- noise_power - float: The power of the simulated noise.
+- sleep: If true, add a delay to simulate the delay it takes to get a block of audio in real life. Default is True.
+- random_phase: If true, randomize the phase of the elements. Effectivly moves the signal matrix for each block. Each element has the same phase change. Default is True.
 
 ## Filter - Stage
 A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). These filters can either be FIR or IIR filters
@@ -236,7 +225,7 @@ Play data back out to your speakers. Useful for hearing how filters effect data 
 - label - str: The label to pass to the file name
 - path - str: The path of where to save the file. Must be a folder with no / or \ at the end of the string.
 
-# direction of arival
+# direction of arrival
 Holds elements, wave vectors, steering vectors, and steering matrices. Use to calculate steering vectors for simulators and steering matrixes for DoA algorithms. All classes here are dataclass. They have no methods, only hold and calculate data
 
 ## spherical_to_cartesian - function
@@ -262,7 +251,7 @@ Holds wavevector. Remember to always pass (kx, ky, kz). If you want to pass (wav
 
 #### Calculated properties
 - spherical_k - tuple: numpy array holding (wavenumber, inclination, azimuth)
-- inclination - float: The inclincation angle of the wavevector in radians. Equal to arctan(ky / kx). 
+- inclination - float: The inclination angle of the wavevector in radians. Equal to arctan(ky / kx). 
 - azimuth - float: The azimuth angle of the wavevector in radians. Equal to np.arccos(kz / |k|).
 - angular_wavenumber - float: The angular wavenumber of the wavevector. |k|.
 - angular_wavelength - float: The angular wavelength of the wavevector. Equal to 1 / angular_wavenumber.
@@ -296,7 +285,7 @@ Hold every possible steering vector when given elements, wavenumber, and all ang
 - matrix - np.array: The resulting steering matrix
 
 ## Estimator
-A base class for all estimators. Do not use directly
+A base class for all estimators. Do not use directly ad this is an abstract base class. All DoA estimators require the properties of this class in addition to their own properties.
 
 ### Properties
 - steering_matrix - SteeringMatrix: The main steering matrix to use in the algorithm. All subclasses have a steering matrix.
@@ -305,19 +294,18 @@ A base class for all estimators. Do not use directly
 - process(self, data): Runs the algorithm on incoming data. Reservation for subclasses. Raises a NotImplementedError by default.
 
 ## DelaySumBeamformer
-A classical beamformer. The simpilist to understand and use. However, this is expensive to use and gives sub-par results, thus it is not recomended for this program. Only needs steering_matrix property.
+A classical beamformer. The simplistic to understand and use. However, this is expensive to use and gives sub-par results, thus it is not recommended for this program. Only needs steering_matrix property.
 
 ## BartlettBeamformer
-A newer beamformer and much more efficient than DelaySumBeamformer. Gives similar results to DelaySUmBeamformer. Only needs steering_matrix property.
+A beamformer much more efficient than DelaySumBeamformer. Gives similar results to DelaySUmBeamformer. Only needs steering_matrix property.
 
 ## MVDRBeamformer
-A very accurate beamformer while being more computationally expensive. Gives, in general good results. Only needs steering_matrix
+A very accurate beamformer while being more computationally expensive. Gives, in general, good results. Only needs steering_matrix
 
 ## Music
 The most accurate and most computationally expensive algorithm. Gives extremely accurate results when in an optimal environment.
 
 ### Properties
-- steering_matrix: Still required as normal
 - num_sources: The number of sources in the environment.
 
 # Example
