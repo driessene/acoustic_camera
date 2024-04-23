@@ -1,4 +1,4 @@
-import AccCam.direction_of_arival as doa
+import AccCam.direction_of_arrival as doa
 import AccCam.realtime_dsp.pipeline as pipe
 
 

@@ -1,5 +1,5 @@
 import numpy as np
-from AccCam.direction_of_arival.geometry import SteeringMatrix
+from AccCam.direction_of_arrival.geometry import SteeringMatrix
 
 
 def find_noise_subspace(data: np.array, num_sources: int) -> np.array:
@@ -17,6 +17,8 @@ def find_noise_subspace(data: np.array, num_sources: int) -> np.array:
 
     noise_subspace = eigvecs[:, np.argsort(eigvals)][:, :-num_sources]
     return noise_subspace
+
+
 
 
 class Estimator:
@@ -135,7 +137,7 @@ class Music(Estimator):
         self.num_sources = num_sources
 
     def process(self, data: np.array) -> np.array:
-        # Get noise subspace:
+        # Get noise subspace
         noise_subspace = find_noise_subspace(data, self.num_sources)
 
         # Compute the music spectrum. Use np.sum to take several samples into one result
