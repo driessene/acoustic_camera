@@ -123,29 +123,6 @@ class MSNRBeamformer(Estimator):
         return beamformed_data
 
 
-# WIP
-class LCMVBeamformer(Estimator):
-    """
-    Implements a linearly constrained minimum variance (LCMV) beamformer
-    """
-    def __init__(self, steering_matrix: SteeringMatrix, constraints: np.array):
-        """
-        :param steering_matrix: The steering matrix to utilize to find the sources
-        :param constraints: A array of contrains
-        """
-        super().__init__(steering_matrix)
-        self.constrains = constraints
-
-    def process(self, data: np.array) -> np.array:
-        constraints_inv = np.linalg.inv(self.constrains)
-        beamformed_data = np.sum(self.steering_matrix.matrix.conj().T *
-                                 (constraints_inv @ self.steering_matrix.matrix).T, axis=1).real
-
-        # Normalize
-        beamformed_data /= np.max(beamformed_data)
-        return beamformed_data
-
-
 class Music(Estimator):
     """
     Implements the MUSIC (MUltiple SIgnal Classification) algorithm
