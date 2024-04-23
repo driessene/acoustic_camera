@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class ToDisk(control.Stage):
     """
     Save a matrix to a csv file. It is recommended to use Management. Accumulator before this stage to get data.
-    Can also continue pushing data if asked to.
+    Can also continue pushing data if asked.
     """
     def __init__(self, label: str, path: str, port_size=4, destinations=None):
         """

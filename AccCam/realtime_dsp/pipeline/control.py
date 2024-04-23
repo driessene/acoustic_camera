@@ -52,7 +52,7 @@ class Stage(ABC):
     def run(self):
         """
         To be implemented by a subclass. Ran in a loop forever. This is the script the subclass will run. If a process
-        is not needed, ignore this.
+        is not needed (plotters, sounddevice stages), ignore this.
         :return: None
         """
         pass
