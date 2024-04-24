@@ -11,21 +11,21 @@ def main():
     wavenumber = 10
     speed_of_sound = 343
 
-    elements = [doa.Element([-1.25, 0, 0], samplerate),
-                doa.Element([-0.75, 0, 0], samplerate),
-                doa.Element([-0.25, 0, 0], samplerate),
-                doa.Element([0.25, 0, 0], samplerate),
-                doa.Element([0.75, 0, 0], samplerate),
-                doa.Element([1.25, 0, 0], samplerate),
-                doa.Element([0, -1.25, 0], samplerate),
-                doa.Element([0, -0.75, 0], samplerate),
-                doa.Element([0, -0.25, 0], samplerate),
-                doa.Element([0, 0.25, 0], samplerate),
-                doa.Element([0, 0.75, 0], samplerate),
-                doa.Element([0, 1.25, 0], samplerate),
-                doa.Element([0, 0, 0.25], samplerate),
-                doa.Element([0, 0, 0.75], samplerate),
-                doa.Element([0, 0, 1.25], samplerate)]
+    elements = [doa.Element(np.array([-1.25, 0, 0]), samplerate),
+                doa.Element(np.array([-0.75, 0, 0]), samplerate),
+                doa.Element(np.array([-0.25, 0, 0]), samplerate),
+                doa.Element(np.array([0.25, 0, 0]), samplerate),
+                doa.Element(np.array([0.75, 0, 0]), samplerate),
+                doa.Element(np.array([1.25, 0, 0]), samplerate),
+                doa.Element(np.array([0, -1.25, 0]), samplerate),
+                doa.Element(np.array([0, -0.75, 0]), samplerate),
+                doa.Element(np.array([0, -0.25, 0]), samplerate),
+                doa.Element(np.array([0, 0.25, 0]), samplerate),
+                doa.Element(np.array([0, 0.75, 0]), samplerate),
+                doa.Element(np.array([0, 1.25, 0]), samplerate),
+                doa.Element(np.array([0, 0, 0.25]), samplerate),
+                doa.Element(np.array([0, 0, 0.75]), samplerate),
+                doa.Element(np.array([0, 0, 1.25]), samplerate)]
 
     structure = doa.Structure(
         elements=elements,
