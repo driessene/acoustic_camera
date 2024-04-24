@@ -7,7 +7,7 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 1024
+    blocksize = 10240
     wavenumber = 10
     speed_of_sound = 343
 
@@ -40,7 +40,7 @@ def main():
         doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.02, 2, 2])), speed_of_sound),
     ]
 
-    # Print frequency for debuging
+    # Print frequency for debugging
     for wave in wavevectors:
         print(wave.linear_frequency)
 
