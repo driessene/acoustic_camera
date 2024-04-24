@@ -33,8 +33,7 @@ class AudioSimulator(pipe.Stage):
 
     def run(self):
         """
-        Updated properties that need to be updated every frame (i.e. noise). Pushed data to desintations. Called by a
-        process.
+        Updated properties that need to be updated every frame (i.e. noise)
         :return: None
         """
         # Generate noise and normalize

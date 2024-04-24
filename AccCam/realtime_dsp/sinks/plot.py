@@ -180,8 +180,6 @@ class PolarPlotter(pipe.Stage):
         plt.show()
 
 
-
-
 class HeatmapPlotter(pipe.Stage):
     """
     Plots a 2d matrix flat on a surface. Data is expected to be 1D, which is from a 2D matrix, but flattened. Use

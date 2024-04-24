@@ -10,10 +10,10 @@ def find_noise_subspace(data: np.array, num_sources: int) -> np.array:
     :return:
     """
     # Calculate the covariance matrix
-    Rx = np.cov(data.T)
+    rx = np.cov(data.T)
 
     # Decompose into eigenvalues and vectors
-    eigvals, eigvecs = np.linalg.eigh(Rx)
+    eigvals, eigvecs = np.linalg.eigh(rx)
 
     noise_subspace = eigvecs[:, np.argsort(eigvals)][:, :-num_sources]
     return noise_subspace
@@ -23,9 +23,9 @@ class Estimator:
     """
     Holds a beamformer. Use as a subclass for beamformers.
     """
-    def __init__(self, structure):
+    def __init__(self, structure: Structure):
         """
-        :param steering_vector: The steering matrix to utilize to find the sources
+        :param structure: The steering matrix to utilize to find the sources
         """
         self.structure = structure
 

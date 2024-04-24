@@ -59,11 +59,10 @@ class Filter(pipe.Stage):
         message = self.port_get()[0]
         data = message.payload
 
-
         # Data checking
         if data.shape[1] != self.num_channels:
             logger.critical(f'num of channels of data ({data.shape[0]}) does not match expected num of channels of'
-                             f' {self.num_channels}')
+                            f' {self.num_channels}')
 
         if self.remove_offset:
             data -= np.mean(data, axis=0, keepdims=True)
@@ -119,7 +118,7 @@ class ButterFilter(Filter):
     """
     Implements a butterworth filter
     """
-    def __init__(self, N: int,
+    def __init__(self, n: int,
                  cutoff: int,
                  samplerate,
                  num_channels,
@@ -129,10 +128,10 @@ class ButterFilter(Filter):
                  port_size=4,
                  destinations=None):
         """
-        :param N: Order of the filter
+        :param n: Order of the filter
         :param cutoff: Cutoff frequency of the filter in Hz
         """
-        b, a = sig.butter(N=N, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
+        b, a = sig.butter(N=n, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
         super().__init__(b, a, samplerate, num_channels, method, remove_offset, normalize, port_size, destinations)
 
 
@@ -141,7 +140,7 @@ class FIRWINFilter(Filter):
     Implements a filter using an ideal FIR filter via the window method. Very sharp cutoff, ideal in digital systems
     """
     def __init__(self,
-                 N: int,
+                 n: int,
                  cutoff: int or np.array,
                  samplerate: int,
                  num_channels: int,
@@ -151,11 +150,12 @@ class FIRWINFilter(Filter):
                  port_size=4,
                  destinations=None):
         """
-        :param N: Length of the FIR filter
+        :param n: Length of the FIR filter
         :param cutoff: Cutoff frequency(s) of the filter in Hz
         """
-        b = sig.firwin(N, cutoff, fs=samplerate)
-        super().__init__(b, np.array(1), samplerate, num_channels, method, remove_offset, normalize, port_size, destinations)
+        b = sig.firwin(n, cutoff, fs=samplerate)
+        super().__init__(b, np.array(1), samplerate, num_channels, method, remove_offset, normalize, port_size,
+                         destinations)
 
 
 class HanningWindow(pipe.Stage):

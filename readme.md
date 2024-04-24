@@ -1,4 +1,4 @@
-# Indroduction
+# Introduction
 This project creates real-time pipelines to record, simulate, process, and plot signal data. The following are key features and highlights:
 - Real-time processing
 - Pipelines
@@ -154,7 +154,7 @@ A lowpass [butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter)
 - cutoff - float: The cutoff frequency of the filter in Hz.
 
 ## FIRWINFilter - Filter
-A lowpass [ideal filter](https://en.wikipedia.org/wiki/Sinc_filter) using the window method. This is mathematically better than ButterFilter and is recomended. Can have extremely sharp cutoffs. A subclass of filter, inheriting all properties and methods.
+A lowpass [ideal filter](https://en.wikipedia.org/wiki/Sinc_filter) using the window method. This is mathematically better than ButterFilter and is recommended. Can have extremely sharp cutoffs. A subclass of filter, inheriting all properties and methods.
 
 ### Properties
 - N - int: The length of the filter
@@ -222,7 +222,7 @@ Play data back out to your speakers. Useful for hearing how filters effect data 
 - path - str: The path of where to save the file. Must be a folder with no / or \ at the end of the string.
 
 # direction of arrival
-Holds elements, wave vectors, steering vectors, and steering matrices. Use to calculate steering vectors for simulators and steering matrixes for DoA algorithms. All classes here are dataclass. They have no methods, only hold and calculate data
+Holds elements, wave vectors, steering vectors, and steering matrices. Use to calculate steering vectors for simulators and steering matrices for DoA algorithms. All classes here are dataclass. They have no methods, only hold and calculate data
 
 ## spherical_to_cartesian - function
 Takes np.array([radius, inclination, azimuth]) and returns np.array([x, y, z]).
@@ -241,7 +241,7 @@ Represents and element (a microphone or antenna).
 - spherical_position - np.array: A tuple holding (r, inclination, azimuth) position
 
 ## WaveVector
-Holds wavevector. Remember to always pass (kx, ky, kz). If you want to pass (wavenumber, inclincation, azimuth), which is more common, translate using spherical_to_cartesian inside the declaration.
+Holds wavevector. Remember to always pass (kx, ky, kz). If you want to pass (wavenumber, inclination, azimuth), which is more common, translate using spherical_to_cartesian inside the declaration.
 
 ### Properties
 - k - np.array: A numpy array holding (kx, ky, kz)
@@ -302,7 +302,7 @@ A base class for all estimators. Do not use directly
 - process(self, data): Runs the algorithm on incoming data. Reservation for subclasses. Raises a NotImplementedError by default.
 
 ## DelaySumBeamformer
-A classical beamformer. The simpilist to understand and use. However, this is expensive to use and gives sub-par results, thus it is not recomended for this program. Only needs steering_matrix property.
+A classical beamformer. The easiest to understand and use. However, this is expensive to use and gives sub-par results, thus it is not recommended for this program. Only needs steering_matrix property.
 
 ## BartlettBeamformer
 A beamformer much more efficient than DelaySumBeamformer. Gives similar results to DelaySUmBeamformer. Only needs steering_matrix property.
@@ -325,95 +325,94 @@ import numpy as np
 
 
 def main():
+  # Variables
+  samplerate = 44100
+  blocksize = 1024
+  wave_number = 10
+  speed_of_sound = 343
 
-    # Variables
-    samplerate = 44100
-    blocksize = 1024
-    wave_number = 10
-    speed_of_sound = 343
+  elements = [doa.Element([-1.25, 0, 0]),
+              doa.Element([-0.75, 0, 0]),
+              doa.Element([-0.25, 0, 0]),
+              doa.Element([0.25, 0, 0]),
+              doa.Element([0.75, 0, 0]),
+              doa.Element([1.25, 0, 0]),
+              doa.Element([0, -1.25, 0]),
+              doa.Element([0, -0.75, 0]),
+              doa.Element([0, -0.25, 0]),
+              doa.Element([0, 0.25, 0]),
+              doa.Element([0, 0.75, 0]),
+              doa.Element([0, 1.25, 0]),
+              doa.Element([0, 0, 0.25]),
+              doa.Element([0, 0, 0.75]),
+              doa.Element([0, 0, 1.25])]
 
-    elements = [doa.Element([-1.25, 0, 0]),
-                doa.Element([-0.75, 0, 0]),
-                doa.Element([-0.25, 0, 0]),
-                doa.Element([0.25, 0, 0]),
-                doa.Element([0.75, 0, 0]),
-                doa.Element([1.25, 0, 0]),
-                doa.Element([0, -1.25, 0]),
-                doa.Element([0, -0.75, 0]),
-                doa.Element([0, -0.25, 0]),
-                doa.Element([0, 0.25, 0]),
-                doa.Element([0, 0.75, 0]),
-                doa.Element([0, 1.25, 0]),
-                doa.Element([0, 0, 0.25]),
-                doa.Element([0, 0, 0.75]),
-                doa.Element([0, 0, 1.25])]
+  wave_vectors = [
+    doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 0.98, 1, 1])), speed_of_sound),
+    doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
+  ]
 
-    wave_vectors = [
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 0.98, 1, 1])), speed_of_sound),
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
-    ]
+  # Print frequencies for debug
+  for vector in wave_vectors:
+    print(vector.linear_frequency)
 
-    # Print frequencies for debug
-    for vector in wave_vectors:
-        print(vector.linear_frequency)
+  # Recorder to get data
+  recorder = dsp.AudioSimulator(
+    elements=elements,
+    wave_vectors=wave_vectors,
+    snr=50,
+    samplerate=samplerate,
+    blocksize=blocksize,
+    sleep=True
+  )
 
-    # Recorder to get data
-    recorder = dsp.AudioSimulator(
-        elements=elements,
-        wave_vectors=wave_vectors,
-        snr=50,
-        samplerate=samplerate,
-        blocksize=blocksize,
-        sleep=True
-    )
+  # Filter
+  filt = dsp.FIRWINFilter(
+    n=101,
+    num_channels=len(elements),
+    cutoff=2000,
+    samplerate=samplerate,
+    method='filtfilt',
+  )
 
-    # Filter
-    filt = dsp.FIRWINFilter(
-        N=101,
-        num_channels=len(elements),
-        cutoff=2000,
-        samplerate=samplerate,
-        method='filtfilt',
-    )
+  # MUSIC
+  azimuth_angles = np.linspace(0, 2 * np.pi, 500)
+  inclination_angles = np.linspace(0, np.pi, 500)
+  matrix = doa.SteeringMatrix(
+    elements=elements,
+    azimuths=azimuth_angles,
+    inclinations=inclination_angles,
+    wavenumber=wave_number
+  )
+  estimator = doa.MVDRBeamformer(matrix)
 
-    # MUSIC
-    azimuth_angles = np.linspace(0, 2 * np.pi, 500)
-    inclination_angles = np.linspace(0, np.pi, 500)
-    matrix = doa.SteeringMatrix(
-        elements=elements,
-        azimuths=azimuth_angles,
-        inclinations=inclination_angles,
-        wavenumber=wave_number
-    )
-    estimator = doa.MVDRBeamformer(matrix)
+  music = dsp.DOAEstimator(estimator)
 
-    music = dsp.DOAEstimator(estimator)
+  # Plot
+  plot = dsp.HeatmapPlotter(
+    title='MUSIC',
+    x_label="inclination",
+    y_label="azimuth",
+    x_data=inclination_angles,
+    y_data=azimuth_angles,
+    interval=blocksize / samplerate,
+    cmap='inferno'
+  )
 
-    # Plot
-    plot = dsp.HeatmapPlotter(
-        title='MUSIC',
-        x_label="inclination",
-        y_label="azimuth",
-        x_data=inclination_angles,
-        y_data=azimuth_angles,
-        interval=blocksize/samplerate,
-        cmap='inferno'
-    )
+  # Linking
+  recorder.link_to_destination(filt, 0)
+  filt.link_to_destination(music, 0)
+  music.link_to_destination(plot, 0)
 
-    # Linking
-    recorder.link_to_destination(filt, 0)
-    filt.link_to_destination(music, 0)
-    music.link_to_destination(plot, 0)
-
-    # Start processes
-    recorder.start()
-    filt.start()
-    music.start()
-    plot.start()
-    plot.show()
+  # Start processes
+  recorder.start()
+  filt.start()
+  music.start()
+  plot.start()
+  plot.show()
 
 
 if __name__ == '__main__':
-    main()
+  main()
 
 ```

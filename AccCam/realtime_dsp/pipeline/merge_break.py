@@ -23,6 +23,7 @@ def verify_timestamps(messages: list[control.Message], threshold: float) -> bool
     """
     Verify the time integrity of data
     :param messages: The messages received
+    :param threshold: The maximum safe time difference in milliseconds.
     :return: Threshold in seconds to raise a warning
     """
     safe = True
