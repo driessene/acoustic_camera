@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def spherical_to_cartesian(spherical_pos: np.array):
+def spherical_to_cartesian(spherical_pos: np.ndarray):
     # (radius, inclination, azimuth) -> (x, y, z)
     return np.array([
         spherical_pos[0] * np.sin(spherical_pos[1]) * np.cos(spherical_pos[2]),
@@ -15,7 +15,7 @@ def spherical_to_cartesian(spherical_pos: np.array):
     ])
 
 
-def cartesian_to_spherical(cartesian_pos: np.array):
+def cartesian_to_spherical(cartesian_pos: np.ndarray):
     # (x, y, z) -> (radius, inclination, azimuth)
     r = np.sqrt(np.sum(np.square(cartesian_pos)))
     return np.array([
@@ -29,7 +29,7 @@ class Element:
     """
     Defines a point in space where an element lays in distance from origin. Units are in wavelengths.
     """
-    def __init__(self, position: np.array, samplerate: int):
+    def __init__(self, position: np.ndarray, samplerate: int):
         """
         :param position: (x, y, z). In units of meters * wavenumber. For example, for a uniformly spaced array, all
             elements are seperated by 0.5 ideally.
@@ -48,7 +48,7 @@ class WaveVector:
     Defines a wave vector. K must be given as np.array([kx, ky, kz]) in units of angular wavenumber.
     Provides all properties of the wavevector as properties.
     """
-    def __init__(self, k: np.array, wave_speed: float):
+    def __init__(self, k: np.ndarray, wave_speed: float):
         """
         :param k: The 3-dimensional vector representing the wavevector (kx, ky, kz). Each of these are the angular
             wavenumber in said dimension. If you would like fo give (wavenumber, inclination, azimuth), which is more

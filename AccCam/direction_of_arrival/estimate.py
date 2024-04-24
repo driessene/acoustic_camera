@@ -1,8 +1,9 @@
 import numpy as np
 from AccCam.direction_of_arrival.geometry import Structure
+from abc import ABC, abstractmethod
 
 
-def find_noise_subspace(data: np.array, num_sources: int) -> np.array:
+def find_noise_subspace(data: np.ndarray, num_sources: int) -> np.ndarray:
     """
     Find the noise subspace of a provided signal
     :param data: The signal to find the noise subspace of
@@ -19,7 +20,7 @@ def find_noise_subspace(data: np.array, num_sources: int) -> np.array:
     return noise_subspace
 
 
-class Estimator:
+class Estimator(ABC):
     """
     Holds a beamformer. Use as a subclass for beamformers.
     """
@@ -29,11 +30,12 @@ class Estimator:
         """
         self.structure = structure
 
-    def process(self, data: np.array) -> np.array:
+    @abstractmethod
+    def process(self, data: np.ndarray) -> np.ndarray:
         """
-        Preform calcuations here
+        Preform calculations here
         :param data: The source data
-        :return: np.array
+        :return: Estimated locations in a 2d matrix with the same shape as the steering matrix.
         """
         raise NotImplementedError
 
@@ -48,7 +50,7 @@ class DelaySumBeamformer(Estimator):
         """
         super().__init__(structure)
 
-    def process(self, data: np.array) -> np.array:
+    def process(self, data: np.ndarray) -> np.ndarray:
         beamformed_data = np.var(self.structure.steering_matrix.conj().T @ data.T, axis=1).real
 
         # Normalize
@@ -66,7 +68,7 @@ class BartlettBeamformer(Estimator):
         """
         super().__init__(structure)
 
-    def process(self, data: np.array) -> np.array:
+    def process(self, data: np.ndarray) -> np.ndarray:
         cov_matrix = np.cov(data.T)
         beamformed_data = np.sum(self.structure.steering_matrix.conj().T *
                                  (cov_matrix @ self.structure.steering_matrix).T, axis=1).real
@@ -86,7 +88,7 @@ class MVDRBeamformer(Estimator):
         """
         super().__init__(structure)
 
-    def process(self, data: np.array) -> np.array:
+    def process(self, data: np.ndarray) -> np.ndarray:
         cov_matrix = np.cov(data.T)
         beamformed_data = 1 / np.sum(self.structure.steering_matrix.conj().T *
                                      np.linalg.lstsq(
@@ -110,7 +112,7 @@ class Music(Estimator):
         super().__init__(structure)
         self.num_sources = num_sources
 
-    def process(self, data: np.array) -> np.array:
+    def process(self, data: np.ndarray) -> np.ndarray:
         # Get noise subspace:
         noise_subspace = find_noise_subspace(data, self.num_sources)
 
