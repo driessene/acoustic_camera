@@ -1,6 +1,7 @@
 import AccCam.realtime_dsp as dsp
 import AccCam.direction_of_arrival as doa
 import numpy as np
+from itertools import product
 
 
 def main():
@@ -11,21 +12,10 @@ def main():
     wavenumber = 10
     speed_of_sound = 343
 
-    elements = [doa.Element(np.array([-1.25, 0, 0]), samplerate),
-                doa.Element(np.array([-0.75, 0, 0]), samplerate),
-                doa.Element(np.array([-0.25, 0, 0]), samplerate),
-                doa.Element(np.array([0.25, 0, 0]), samplerate),
-                doa.Element(np.array([0.75, 0, 0]), samplerate),
-                doa.Element(np.array([1.25, 0, 0]), samplerate),
-                doa.Element(np.array([0, -1.25, 0]), samplerate),
-                doa.Element(np.array([0, -0.75, 0]), samplerate),
-                doa.Element(np.array([0, -0.25, 0]), samplerate),
-                doa.Element(np.array([0, 0.25, 0]), samplerate),
-                doa.Element(np.array([0, 0.75, 0]), samplerate),
-                doa.Element(np.array([0, 1.25, 0]), samplerate),
-                doa.Element(np.array([0, 0, 0.25]), samplerate),
-                doa.Element(np.array([0, 0, 0.75]), samplerate),
-                doa.Element(np.array([0, 0, 1.25]), samplerate)]
+    # Sphere
+    elements = [doa.Element(doa.spherical_to_cartesian(np.array([1, inclination, azimuth])), samplerate)
+                for (inclination, azimuth) in
+                product(np.linspace(0.1 * np.pi, 0.9 * np.pi, 5), np.linspace(0, 1.8 * np.pi, 10))]
 
     structure = doa.Structure(
         elements=elements,
