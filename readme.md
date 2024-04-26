@@ -172,10 +172,20 @@ A multi-bandpass filter. Use this if you would like to have multiple discrete ba
 Applies a [hanning window](https://en.wikipedia.org/wiki/Hann_function) to incoming data. Simply a **stage** that applies a hanning window. Remember to use this before a fft to remove spectral leakage.
 
 ## FFT - Stage
-Applies FFT to data. Returns complex data to match [scipy](https://docs.scipy.org/doc/scipy/reference/generated/scipy.fft.fft.html#scipy.fft.fft).
+Applies FFT to data. Can return different results of the fft such as complex data, phase, absolute value, and power.
 
 ### Properties
-- return_abs - bool: If true, instead of pushing complex data, push the absolute value of the FFT. Use for plotting.
+- type - str: The type of output of the fft.
+  - complex: Return the raw complex output of the fft
+  - phase: Return the phase of the fft
+  - abs: Return the absolute value (magnitude) of the fft
+  - power: return the special power of the fft.
+- shift: If true, shift the zero-frequency component to the center of the spectrum. Use for plotting.
+
+### Note:
+When plotting fft, make sure to provide x_data of the plot the following to get accurate results:
+scipy.fft.fftshift(scipy.fft.fftfreq(blocksize, 1/samplerate))
+This provides the frequency of each index to the plotter. If you are not shifting, remove the fftshift.
 
 ## DOAEstimator - Stage
 Takes a DoA estimator and places it into the pipeline.
