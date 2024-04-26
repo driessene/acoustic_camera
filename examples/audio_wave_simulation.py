@@ -36,8 +36,7 @@ def main():
     structure.visualize()
 
     wavevectors = [
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.00, 1, 1])), speed_of_sound),
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.02, 2, 2])), speed_of_sound),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.00, 1, 1])), speed_of_sound)
     ]
 
     # Print frequency for debugging

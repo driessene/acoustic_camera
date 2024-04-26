@@ -85,7 +85,7 @@ class Concatenator(control.Stage):
     def run(self):
         # Get message
         messages = self.port_get()
-        verify_timestamps(messages, 1)
+        # verify_timestamps(messages, 1)
 
         self.port_put(control.Message(np.concatenate([message.payload for message in messages], axis=self.axis)))
 

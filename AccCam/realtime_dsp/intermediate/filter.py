@@ -61,7 +61,7 @@ class Filter(pipe.Stage):
 
         # Data checking
         if data.shape[1] != self.num_channels:
-            logger.critical(f'num of channels of data ({data.shape[0]}) does not match expected num of channels of'
+            logger.critical(f'num of channels of data ({data.shape[1]}) does not match expected num of channels of'
                             f' {self.num_channels}')
 
         if self.remove_offset:

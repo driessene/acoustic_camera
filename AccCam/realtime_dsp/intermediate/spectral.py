@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.fft as fft
 import AccCam.realtime_dsp.pipeline as pipe
 
 
@@ -15,7 +14,7 @@ class FFT(pipe.Stage):
         message = self.port_get()[0]
         data = message.payload
 
-        f = fft.fft(data, axis=0)
+        f = np.fft.fft(data, axis=0)
         if self.return_abs:
             f = np.abs(f)
         self.port_put(pipe.Message(f))
