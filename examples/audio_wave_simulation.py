@@ -50,7 +50,7 @@ def main():
     )
 
     # Filter
-    filt = dsp.FIRWINFilter(
+    filt = dsp.FirwinFilter(
         n=101,
         num_channels=len(elements),
         cutoff=2000,

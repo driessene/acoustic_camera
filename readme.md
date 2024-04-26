@@ -153,15 +153,23 @@ A lowpass [butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter)
 - N - int: The order of the filter.
 - cutoff - float: The cutoff frequency of the filter in Hz.
 
-## FIRWINFilter - Filter
+## Firwinilter - Filter
 A lowpass [ideal filter](https://en.wikipedia.org/wiki/Sinc_filter) using the window method. This is mathematically better than ButterFilter and is recommended. Can have extremely sharp cutoffs. A subclass of filter, inheriting all properties and methods.
 
 ### Properties
-- N - int: The length of the filter
+- n - int: The length of the filter
 - cutoff - float: The cutoff frequency of the filter in Hz
 
+## FirlsFilter - Filter
+A multi-bandpass filter. Use this if you would like to have multiple discrete bands.
+
+### Properties
+- n - int: The length of the filter
+- bands - np.ndarray: The band edges. Pass as either np.array([0, 1, 2, 3, 4, 5]) or np.array([[0, 1], [2, 3], [4, 5]]).
+- desired - np.ndarray: A sequence the same size as bands containing the desired gain at the start and end point of each band.
+
 ## HanningWindow - Stage
-Applies a [hanning window](https://en.wikipedia.org/wiki/Hann_function) to incoming data. Simply a **stage** that applies a hanning window.
+Applies a [hanning window](https://en.wikipedia.org/wiki/Hann_function) to incoming data. Simply a **stage** that applies a hanning window. Remember to use this before a fft to remove spectral leakage.
 
 ## FFT - Stage
 Applies FFT to data. Returns complex data to match [scipy](https://docs.scipy.org/doc/scipy/reference/generated/scipy.fft.fft.html#scipy.fft.fft).
@@ -367,7 +375,7 @@ def main():
   )
 
   # Filter
-  filt = dsp.FIRWINFilter(
+  filt = dsp.FirwinFilter(
     n=101,
     num_channels=len(elements),
     cutoff=2000,

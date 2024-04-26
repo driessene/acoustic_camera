@@ -135,13 +135,13 @@ class ButterFilter(Filter):
         super().__init__(b, a, samplerate, num_channels, method, remove_offset, normalize, port_size, destinations)
 
 
-class FIRWINFilter(Filter):
+class FirwinFilter(Filter):
     """
-    Implements a filter using an ideal FIR filter via the window method. Very sharp cutoff, ideal in digital systems
+    FIR filter design using the window method.
     """
     def __init__(self,
                  n: int,
-                 cutoff: int or np.array,
+                 cutoff: int or np.ndarray,
                  samplerate: int,
                  num_channels: int,
                  method='filtfilt',
@@ -154,6 +154,32 @@ class FIRWINFilter(Filter):
         :param cutoff: Cutoff frequency(s) of the filter in Hz
         """
         b = sig.firwin(n, cutoff, fs=samplerate)
+        super().__init__(b, np.array(1), samplerate, num_channels, method, remove_offset, normalize, port_size,
+                         destinations)
+
+
+class FirlsFilter(Filter):
+    """
+    FIR filter design using least-squares error minimization.
+    """
+    def __init__(self,
+                 n: int,  # MUST BE ODD
+                 bands: np.ndarray,
+                 desired: np.ndarray,
+                 samplerate: int,
+                 num_channels: int,
+                 method: str = 'filtfilt',
+                 remove_offset=True,
+                 normalize=True,
+                 port_size=4,
+                 destinations=None):
+        """
+        :param n: Length of the FIR filter
+        :param bands: Bands of the filter in Hz
+        :param desired: A sequence the same size as bands containing the desired gain at the start and end point of each
+            band.
+        """
+        b = sig.firls(n, bands, desired, fs=samplerate)
         super().__init__(b, np.array(1), samplerate, num_channels, method, remove_offset, normalize, port_size,
                          destinations)
 
