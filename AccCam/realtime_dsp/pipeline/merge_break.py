@@ -43,7 +43,7 @@ def verify_timestamps(messages: list[control.Message], threshold: float) -> bool
 
 class ChannelPicker(control.Stage):
     """
-    takes and input matrix, picks a channel, and pushes the channel
+    takes an input matrix, picks a channel, and pushes the channel
     """
     def __init__(self, channel, port_size=4, destinations=None):
         """
