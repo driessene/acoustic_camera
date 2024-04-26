@@ -340,97 +340,85 @@ The most accurate and most computationally expensive algorithm. Gives extremely 
 import AccCam.realtime_dsp as dsp
 import AccCam.direction_of_arrival as doa
 import numpy as np
+from itertools import product
 
 
 def main():
-  # Variables
-  samplerate = 44100
-  blocksize = 1024
-  wave_number = 10
-  speed_of_sound = 343
 
-  elements = [doa.Element([-1.25, 0, 0]),
-              doa.Element([-0.75, 0, 0]),
-              doa.Element([-0.25, 0, 0]),
-              doa.Element([0.25, 0, 0]),
-              doa.Element([0.75, 0, 0]),
-              doa.Element([1.25, 0, 0]),
-              doa.Element([0, -1.25, 0]),
-              doa.Element([0, -0.75, 0]),
-              doa.Element([0, -0.25, 0]),
-              doa.Element([0, 0.25, 0]),
-              doa.Element([0, 0.75, 0]),
-              doa.Element([0, 1.25, 0]),
-              doa.Element([0, 0, 0.25]),
-              doa.Element([0, 0, 0.75]),
-              doa.Element([0, 0, 1.25])]
+    # Variables
+    samplerate = 44100
+    blocksize = 1024
+    wavenumber = 10
+    speed_of_sound = 343
 
-  wave_vectors = [
-    doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 0.98, 1, 1])), speed_of_sound),
-    doa.WaveVector(doa.spherical_to_cartesian(np.array([wave_number * 1.02, 2, 2])), speed_of_sound),
-  ]
+    # Sphere
+    elements = [doa.Element(doa.spherical_to_cartesian(np.array([1, inclination, azimuth])), samplerate)
+                for (inclination, azimuth) in
+                product(np.linspace(0.1 * np.pi, 0.9 * np.pi, 5), np.linspace(0, 1.8 * np.pi, 10))]
 
-  # Print frequencies for debug
-  for vector in wave_vectors:
-    print(vector.linear_frequency)
+    structure = doa.Structure(
+        elements=elements,
+        wavenumber=wavenumber,
+        snr=50,
+        blocksize=blocksize,
+    )
+    structure.visualize()
 
-  # Recorder to get data
-  recorder = dsp.AudioSimulator(
-    elements=elements,
-    wave_vectors=wave_vectors,
-    snr=50,
-    samplerate=samplerate,
-    blocksize=blocksize,
-    sleep=True
-  )
+    wavevectors = [
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 0.98, 1, 1])), speed_of_sound),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.02, 2, 2])), speed_of_sound),
+    ]
 
-  # Filter
-  filt = dsp.FirwinFilter(
-    n=101,
-    num_channels=len(elements),
-    cutoff=2000,
-    samplerate=samplerate,
-    method='filtfilt',
-  )
+    # Print frequencies for debug
+    for vector in wavevectors:
+        print(vector.linear_frequency)
 
-  # MUSIC
-  azimuth_angles = np.linspace(0, 2 * np.pi, 500)
-  inclination_angles = np.linspace(0, np.pi, 500)
-  matrix = doa.SteeringMatrix(
-    elements=elements,
-    azimuths=azimuth_angles,
-    inclinations=inclination_angles,
-    wavenumber=wave_number
-  )
-  estimator = doa.MVDRBeamformer(matrix)
+    # Recorder to get data
+    recorder = dsp.AudioSimulator(
+        structure=structure,
+        wavevectors=wavevectors
+    )
 
-  music = dsp.DOAEstimator(estimator)
+    # Filter
+    filt = dsp.FirwinFilter(
+        n=101,
+        num_channels=len(elements),
+        cutoff=2000,
+        samplerate=samplerate,
+        method='filtfilt',
+    )
 
-  # Plot
-  plot = dsp.HeatmapPlotter(
-    title='MUSIC',
-    x_label="inclination",
-    y_label="azimuth",
-    x_data=inclination_angles,
-    y_data=azimuth_angles,
-    interval=blocksize / samplerate,
-    cmap='inferno'
-  )
+    # MUSIC
+    estimator = doa.MVDRBeamformer(structure)
 
-  # Linking
-  recorder.link_to_destination(filt, 0)
-  filt.link_to_destination(music, 0)
-  music.link_to_destination(plot, 0)
+    music = dsp.DOAEstimator(estimator)
 
-  # Start processes
-  recorder.start()
-  filt.start()
-  music.start()
-  plot.start()
-  plot.show()
+    # Plot
+    plot = dsp.HeatmapPlotter(
+        title='MUSIC',
+        x_label="inclination",
+        y_label="azimuth",
+        x_data=structure.inclination_values,
+        y_data=structure.azimuths_values,
+        interval=blocksize/samplerate,
+        cmap='inferno'
+    )
+
+    # Linking
+    recorder.link_to_destination(filt, 0)
+    filt.link_to_destination(music, 0)
+    music.link_to_destination(plot, 0)
+
+    # Start processes
+    recorder.start()
+    filt.start()
+    music.start()
+    plot.start()
+    plot.show()
 
 
 if __name__ == '__main__':
-  main()
+    main()
+
 
 ```
