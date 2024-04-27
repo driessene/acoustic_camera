@@ -180,12 +180,12 @@ Applies FFT to data. Can return different results of the fft such as complex dat
   - phase: Return the phase of the fft
   - abs: Return the absolute value (magnitude) of the fft
   - power: return the special power of the fft.
-- shift: If true, shift the zero-frequency component to the center of the spectrum. Use for plotting.
+- shift: If true, shift the zero-frequency component to the center of the spectrum. False by default.
 
-### Note:
+### Note
 When plotting fft, make sure to provide x_data of the plot the following to get accurate results:
-scipy.fft.fftshift(scipy.fft.fftfreq(blocksize, 1/samplerate))
-This provides the frequency of each index to the plotter. If you are not shifting, remove the fftshift.
+np.fft.fftfreq(blocksize, 1/samplerate)
+This provides the frequency of each index to the plotter.
 
 ## DOAEstimator - Stage
 Takes a DoA estimator and places it into the pipeline.
@@ -319,20 +319,30 @@ A base class for all estimators. Do not use directly
 ### Methods
 - process(self, data): Runs the algorithm on incoming data. Reservation for subclasses. Raises a NotImplementedError by default.
 
-## DelaySumBeamformer
+## DelaySumBeamformer - Estimator
 A classical beamformer. The easiest to understand and use. However, this is expensive to use and gives sub-par results, thus it is not recommended for this program. Only needs steering_matrix property.
 
-## BartlettBeamformer
+## BartlettBeamformer - Estimator
 A beamformer much more efficient than DelaySumBeamformer. Gives similar results to DelaySUmBeamformer. Only needs steering_matrix property.
 
-## MVDRBeamformer
+## MVDRBeamformer - Estimator
 A very accurate beamformer while being more computationally expensive. Gives, in general, good results. Only needs steering_matrix
 
-## Music
+## Music - Estimator
 The most accurate and most computationally expensive algorithm. Gives extremely accurate results when in an optimal environment.
 
 ### Properties
 - num_sources: The number of sources in the environment.
+
+## hz_to_cm - function
+Calculates ideal spacing between uniform element spacing arrays. Useful for setting up a structure in real life.
+
+### Parameters
+- linear_frequency: Hz of the wave you would like to measure
+- wave_speed: The speed of the wave in the environment in meters per second. Sound waves are 343 meters per second.
+
+### Returns
+Distance between each element in cm if this is a uniform structure.
 
 # Example
 

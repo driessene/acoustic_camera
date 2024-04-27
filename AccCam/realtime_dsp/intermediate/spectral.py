@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.fft as fft
 import AccCam.realtime_dsp.pipeline as pipe
 
 
@@ -24,10 +23,10 @@ class FFT(pipe.Stage):
         message = self.port_get()[0]
         data = message.payload
 
-        f = fft.fft(data, axis=0)
+        f = np.fft.fft(data, axis=0)
 
         if self.shift:
-            f = fft.fftshift(f)
+            f = np.fft.fftshift(f)
 
         match self.type:
             case 'complex':
