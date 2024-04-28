@@ -27,10 +27,6 @@ class AudioSimulator(pipe.Stage):
         self.wait = wait
         self.randomize_phase = randomize_phase
 
-        # Mock inherited properties
-        self.channels = len(self.structure.elements)
-        self.virtual_channels = self.channels
-
     def run(self):
         """
         Updated properties that need to be updated every frame (i.e. noise)
