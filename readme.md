@@ -277,12 +277,6 @@ Holds wavevector. Remember to always pass (kx, ky, kz). If you want to pass (wav
 - linear_frequency - float: The linear frequency of the wavevector. Equal to angular_frequency / (2 * pi).
 - linear_period - float: The linear period of the wavevector. Equal to angular_period * (2 * pi).
 
-## calculate_steering_vector
-Calculates a steering vector when given:
-- elements - list[Elements]: A list of elements to project the wavevector onto
-- wavevector - WaveVector: A wave vector to project onto elements.
-Returns a wavevector with type of np.array.
-
 ## Structure
 Represents and assembly of elements. Takes several elements and provided functionality with the elements.
 
@@ -306,6 +300,8 @@ Represents and assembly of elements. Takes several elements and provided functio
   - wavevectors: A list of wavevectors which hit the structure.
   - random_phase: If true, randomize the phase of elements. All elements will have the same randomized phase. Default is True.
 - visualize(self): Shows a 3D scatterplot with element positions. Helps verify that the structure is what the user expects.
+- steering_vector: Calculates a steering vector when given a wavevector. Returns a steering vector which correlates to the structure.
+  - wavevector - WaveVector: A wave vector to project onto elements.
 
 ### Calculated properties
 - matrix - np.array: The resulting steering matrix
