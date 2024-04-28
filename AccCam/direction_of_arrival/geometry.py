@@ -163,17 +163,18 @@ class Structure:
     def azimuths_values(self):
         return np.linspace(*self.azimuth_range, self.azimuth_resolution)
 
+    @cached_property
+    def positions(self):
+        return np.array([element.position for element in self.elements])
+
     def steering_vector(self, wavevector: WaveVector):
         """
         Calculates a steering vector based on the structure and a given wave vector.
         :param wavevector: The wavevector to project onto the elements
         :returns: a steering vector which describes the reaction of the elements to the wavevector
         """
-        # Get positions of elements
-        positions = np.array([element.position for element in self.elements])
-
         # Algorithm for steering vector: e^(j * (pos . k))
-        return np.exp(1j * (positions @ wavevector.k))
+        return np.exp(1j * (self.positions @ wavevector.k))
 
     @cached_property
     def steering_matrix(self):
@@ -185,11 +186,11 @@ class Structure:
                                      inclinations_mesh.ravel(),                                  # inclination
                                      azimuths_mesh.ravel()]).T                                   # azimuth
 
-        # Convert spherical coordinates to wave vectors for each set of angles
+        # Convert spherical coordinates to wave vectors for each set of angles. Wave speed does not matter here
         wavevectors = [WaveVector(spherical_to_cartesian(coord), 1) for coord in spherical_coords]
 
         # Calculate steering vectors for all elements and all set of angles
-        steering_vectors = np.array([self.steering_vector(wave_vector) for wave_vector in wavevectors]).T
+        steering_vectors = np.array([self.steering_vector(wavevector) for wavevector in wavevectors]).T
 
         # Reshape the 3d matrix to 2d for DoA algorithms
         return steering_vectors.reshape(len(self.elements), self.inclination_resolution * self.azimuth_resolution)
