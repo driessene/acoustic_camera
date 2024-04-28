@@ -52,11 +52,34 @@ timestamp - datetime.time: The time the message was created. This is also automa
 kwargs: Pass any other key word arguments as metadata if wanted. For example: source, size, state, etc.
 
 ## FunctionStage
-Pass a function to this class to create a stage which runs the function on input data. The function must only have one parameter which accepts data from other stages. This is simpler than creating subclasses for Stage, but is limited in functionality. For example, use this if you would like to call np.ravel() on data, or something just as simple.
-The function passed must meet the following requirements:
-- Can only have one parameter. The parameter must expect the type: list[Message].
-- Must return a single Message.
+Pass a function to this class to create a stage which runs the function on input data. This is simpler than creating subclasses for Stage, but is limited in functionality. For example, use this if you would like to call np.ravel() on data, or something just as simple.
 
+It is okay to use this over creating a subclass when:
+- The function will ever only be used once. If it is to be reused in the future, make a subclass of Stage.
+- The function is simple and does not require any parameters to function. 
+
+The function passed must meet the following requirements:
+- Can only have one parameter. The parameter must expect a singular payload (typically has the type of numpy.ndarray)
+- Must return a single value. This value will be wrapped into a message and pushed to destinations.
+- The function must be pickleable. For example, the function cannot be a lambda function.
+  - In order for the function to be pickleable, the function must be declared at the module level. For example, the function cannot be declared inside another function (main()).
+An example using FunctionStage is below:
+```python
+import AccCam.realtime_dsp as dsp
+import numpy as np
+
+def fft_function(x):
+    return np.abs(np.fft.fft(x, axis=0)) ** 2
+
+def main():
+    ...
+    fft = dsp.FunctionStage(fft_function)
+    ...
+    
+if __name__ == '__main__':
+    main()
+
+```
 ### Properties
 - function - function: The function of which to run on incoming data.
 

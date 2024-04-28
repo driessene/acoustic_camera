@@ -111,10 +111,10 @@ class FunctionStage(Stage):
     def __init__(self, function, port_size=4, destinations=None):
         """
         :param function: The function of which to run. Must be pass directly with the type "function". Function must
-        have one parameter which accepts: list[Message]. The function must return a Message.
+        have one parameter which accepts a singular payload of data (typically a numpy array).
         """
         super().__init__(1, port_size, destinations)
         self.function = function
 
     def run(self):
-        self.port_put(self.function(self.port_get()))
+        self.port_put(Message(self.function(self.port_get()[0].payload)))
