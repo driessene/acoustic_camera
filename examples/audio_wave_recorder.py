@@ -8,7 +8,7 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 1024
+    blocksize = 44100
     wavenumber = 10
 
     elements = [doa.Element(np.array([-1.25, 0, 0]), samplerate),
@@ -22,10 +22,7 @@ def main():
                 doa.Element(np.array([0, -0.25, 0]), samplerate),
                 doa.Element(np.array([0, 0.25, 0]), samplerate),
                 doa.Element(np.array([0, 0.75, 0]), samplerate),
-                doa.Element(np.array([0, 1.25, 0]), samplerate),
-                doa.Element(np.array([0, 0, 0.25]), samplerate),
-                doa.Element(np.array([0, 0, 0.75]), samplerate),
-                doa.Element(np.array([0, 0, 1.25]), samplerate)]
+                doa.Element(np.array([0, 1.25, 0]), samplerate)]
 
     structure = doa.Structure(
         elements=elements,
@@ -34,6 +31,9 @@ def main():
         blocksize=blocksize,
     )
     structure.visualize()
+
+    test_wavevector = doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber, 0, 0])), 343)
+    print(test_wavevector.linear_frequency)
 
     # Recorder to get data
     dsp.print_audio_devices()
@@ -58,13 +58,16 @@ def main():
     )
 
     # Filter
-    filt = dsp.FIRWINFilter(
+    filt = dsp.FirwinFilter(
         n=101,
         num_channels=len(elements),
-        cutoff=1000,
+        cutoff=2000,
         samplerate=samplerate,
         method='filtfilt',
+        normalize=False,
+        remove_offset=False
     )
+    filt.plot_response()
 
     # Plot
     plot = dsp.LinePlotter(

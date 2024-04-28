@@ -7,8 +7,17 @@ class FFT(pipe.Stage):
     """
     Applies an FFT to data
     """
-    def __init__(self, return_abs=False, port_size=4, destinations=None):
-        self.return_abs = return_abs
+    def __init__(self, type: str, shift=False, port_size=4, destinations=None):
+        """
+        :param type: The type of output.
+            - complex: return the raw complex output of the fft,
+            - phase: return the phase of the fft
+            - abs: return the absolute value of the fft
+            - power: return the power of the fft
+        :param shift: If true, move 0hz to the center of the array. Best for plotting
+        """
+        self.type = type
+        self.shift = shift
         super().__init__(1, port_size, destinations)
 
     def run(self):
@@ -16,6 +25,18 @@ class FFT(pipe.Stage):
         data = message.payload
 
         f = fft.fft(data, axis=0)
-        if self.return_abs:
-            f = np.abs(f)
+
+        if self.shift:
+            f = fft.fftshift(f)
+
+        match self.type:
+            case 'complex':
+                pass
+            case 'phase':
+                f = np.angle(f)
+            case 'abs':
+                f = np.abs(f)
+            case 'power':
+                f = np.square(np.abs(f))
+
         self.port_put(pipe.Message(f))

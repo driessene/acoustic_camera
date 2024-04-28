@@ -43,7 +43,7 @@ def verify_timestamps(messages: list[control.Message], threshold: float) -> bool
 
 class ChannelPicker(control.Stage):
     """
-    takes and input matrix, picks a channel, and pushes the channel
+    takes an input matrix, picks a channel, and pushes the channel
     """
     def __init__(self, channel, port_size=4, destinations=None):
         """
@@ -85,7 +85,7 @@ class Concatenator(control.Stage):
     def run(self):
         # Get message
         messages = self.port_get()
-        verify_timestamps(messages, 1)
+        # verify_timestamps(messages, 1)
 
         self.port_put(control.Message(np.concatenate([message.payload for message in messages], axis=self.axis)))
 
