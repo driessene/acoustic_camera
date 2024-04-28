@@ -100,3 +100,21 @@ class Stage(ABC):
         message.timestamp = datetime.now()
         for destination in self.destinations:
             destination.put(message)
+
+
+class FunctionStage(Stage):
+    """
+    Run a passed method in self.run. This allows for any custom method created in a script to be ran.
+    Simpler than creating a subclass if it is only going to be used once, or only uses one numpy method like ravel().
+    Can only have one port (remember, these are simple and designed to be one-time usages or numpy methods).
+    """
+    def __init__(self, function, port_size=4, destinations=None):
+        """
+        :param function: The function of which to run. Must be pass directly with the type "function". Function must
+        have one parameter which accepts: list[Message]. The function must return a Message.
+        """
+        super().__init__(1, port_size, destinations)
+        self.function = function
+
+    def run(self):
+        self.port_put(self.function(self.port_get()))

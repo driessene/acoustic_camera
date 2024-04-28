@@ -51,6 +51,15 @@ payload - any: The main content of the message.
 timestamp - datetime.time: The time the message was created. This is also automatically set.
 kwargs: Pass any other key word arguments as metadata if wanted. For example: source, size, state, etc.
 
+## FunctionStage
+Pass a function to this class to create a stage which runs the function on input data. The function must only have one parameter which accepts data from other stages. This is simpler than creating subclasses for Stage, but is limited in functionality. For example, use this if you would like to call np.ravel() on data, or something just as simple.
+The function passed must meet the following requirements:
+- Can only have one parameter. The parameter must expect the type: list[Message].
+- Must return a single Message.
+
+### Properties
+- function - function: The function of which to run on incoming data.
+
 ## Bus
 Buses are a stage which take several import ports, merges them into a tuple, and pushes to destinations. Useful for passing several stages to a single stage. It is preferred to have stages with several input ports, but this is an alternative if needed.
 
