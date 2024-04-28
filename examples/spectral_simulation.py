@@ -1,8 +1,6 @@
 import AccCam.realtime_dsp as dsp
 import AccCam.direction_of_arrival as doa
 import numpy as np
-import scipy.fft as fft
-from itertools import product
 
 
 def main():
@@ -30,7 +28,7 @@ def main():
     structure = doa.Structure(
         elements=elements,
         wavenumber=wavenumber,
-        snr=50,
+        snr=5,
         blocksize=blocksize,
     )
     structure.visualize()
@@ -43,6 +41,10 @@ def main():
     # Print frequencies for debug
     for vector in wavevectors:
         print(vector.linear_frequency)
+
+    # Print ideal spacing
+    for vector in wavevectors:
+        print(vector.linear_wavelength / 2)
 
     # Recorder to get data
     recorder = dsp.AudioSimulator(
@@ -63,8 +65,8 @@ def main():
     hanning = dsp.HanningWindow()
 
     # FFT
-    spect = dsp.FFT(type='power', shift=True)
-    freqs = fft.fftshift(fft.fftfreq(blocksize, 1/samplerate))
+    spect = dsp.FFT(type='power')
+    freqs = np.fft.fftfreq(blocksize, 1/samplerate)
     print(freqs)
 
     # Plot
