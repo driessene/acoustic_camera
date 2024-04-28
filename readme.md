@@ -300,7 +300,7 @@ Represents and assembly of elements. Takes several elements and provided functio
   - wavevectors: A list of wavevectors which hit the structure.
   - random_phase: If true, randomize the phase of elements. All elements will have the same randomized phase. Default is True.
 - visualize(self): Shows a 3D scatterplot with element positions. Helps verify that the structure is what the user expects.
-- calculate_steering_vector: Calculates a steering vector when given a wavevector. Returns a steering vector which correlates to the structure.
+- steering_vector: Calculates a steering vector when given a wavevector. Returns a steering vector which correlates to the structure.
   - wavevector - WaveVector: A wave vector to project onto elements.
 
 ### Calculated properties
