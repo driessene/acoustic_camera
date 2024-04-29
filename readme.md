@@ -51,7 +51,7 @@ payload - any: The main content of the message.
 timestamp - datetime.time: The time the message was created. This is also automatically set.
 kwargs: Pass any other key word arguments as metadata if wanted. For example: source, size, state, etc.
 
-## FunctionStage
+## FunctionStage - Stage
 Pass a function to this class to create a stage which runs the function on input data. This is simpler than creating subclasses for Stage, but is limited in functionality. For example, use this if you would like to call np.ravel() on data, or something just as simple.
 
 It is okay to use this over creating a subclass when:
@@ -83,7 +83,7 @@ if __name__ == '__main__':
 ### Properties
 - function - function: The function of which to run on incoming data.
 
-## Bus
+## Bus - Stage
 Buses are a stage which take several import ports, merges them into a tuple, and pushes to destinations. Useful for passing several stages to a single stage. It is preferred to have stages with several input ports, but this is an alternative if needed.
 
 ### Properties
@@ -91,7 +91,7 @@ Buses are a stage which take several import ports, merges them into a tuple, and
 - port_size - int: The size of the ports.
 - destinations - multiprocessing.queue: The destinations of the bus.
 
-## Concatinator
+## Concatinator - Stage
 Concatinators concatenate several signal matrices. For example, if there are several recorders to be merged into one recorder, a concatenator will concatenate the signal matrices together. Same properties and methods as bus.
 
 ### Properties
