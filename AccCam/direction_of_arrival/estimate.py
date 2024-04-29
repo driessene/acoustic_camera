@@ -56,6 +56,7 @@ class DelaySumBeamformer(Estimator):
         super().__init__(structure)
 
     def process(self, data: np.ndarray) -> np.ndarray:
+        # Delay and sum
         beamformed_data = np.var(self.structure.steering_matrix.conj().T @ data.T, axis=1).real
 
         # Normalize
@@ -74,6 +75,7 @@ class BartlettBeamformer(Estimator):
         super().__init__(structure)
 
     def process(self, data: np.ndarray) -> np.ndarray:
+        # Bartlett formula
         cov_matrix = calculate_covariance(data)
         beamformed_data = np.sum(self.structure.steering_matrix.conj().T *
                                  (cov_matrix @ self.structure.steering_matrix).T, axis=1).real
@@ -85,7 +87,7 @@ class BartlettBeamformer(Estimator):
 
 class MVDRBeamformer(Estimator):
     """
-    Implements a MVDR beamformer
+    Implements a Minimum Variance Distortionless Response (MVDR) beamformer
     """
     def __init__(self, structure: Structure):
         """
@@ -94,12 +96,17 @@ class MVDRBeamformer(Estimator):
         super().__init__(structure)
 
     def process(self, data: np.ndarray) -> np.ndarray:
+        # Get covariance
         cov_matrix = calculate_covariance(data)
-        beamformed_data = 1 / np.sum(self.structure.steering_matrix.conj().T *
-                                     np.linalg.lstsq(
-                                         cov_matrix,
-                                         self.structure.steering_matrix,
-                                         None)[0].T, axis=1).real
+
+        # Find minimum response
+        beamformed_data = 1 / np.sum(
+            self.structure.steering_matrix.conj().T *
+            np.linalg.lstsq(
+                cov_matrix,
+                self.structure.steering_matrix,
+                None)[0].T,
+            axis=1).real
 
         # Normalize
         beamformed_data /= np.max(beamformed_data)
@@ -118,7 +125,7 @@ class Music(Estimator):
         self.num_sources = num_sources
 
     def process(self, data: np.ndarray) -> np.ndarray:
-        # Calculate covaraince
+        # Calculate covariance
         cov_matrix = calculate_covariance(data)
 
         # Get noise subspace:

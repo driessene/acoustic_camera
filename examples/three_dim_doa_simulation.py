@@ -23,16 +23,11 @@ def main():
         snr=50,
         blocksize=blocksize,
     )
-    structure.visualize()
 
     wavevectors = [
         doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 0.98, 1, 1])), speed_of_sound),
         doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.02, 2, 2])), speed_of_sound),
     ]
-
-    # Print frequencies for debug
-    for vector in wavevectors:
-        print(vector.linear_frequency)
 
     # Recorder to get data
     recorder = dsp.AudioSimulator(
