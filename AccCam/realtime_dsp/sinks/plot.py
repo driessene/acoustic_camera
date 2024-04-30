@@ -3,6 +3,8 @@ import logging
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import AccCam.realtime_dsp.pipeline as pipe
+import AccCam.visual as vis
+import cv2 as cv
 
 
 # logging
@@ -23,8 +25,8 @@ class LinePlotter(pipe.Stage):
                  interval: float,
                  legend: bool = False,
                  x_data: np.ndarray = None,
-                 x_extent: list = None,
-                 y_extent: list = None,
+                 x_extent: tuple = None,
+                 y_extent: tuple = None,
                  port_size=4,
                  destinations=None):
         """
@@ -78,7 +80,7 @@ class LinePlotter(pipe.Stage):
         data = message.payload
 
         # Data checking
-        if data.shape != (self.num_points, self.num_lines):
+        if data.shape != (self.num_points, self.num_lines) and data.shape != (self.num_points,):
             logger.warning(f'Data shape of {data.shape} does not match expected shape of '
                            f'{(self.num_points, self.num_lines)}')
 
@@ -107,8 +109,8 @@ class PolarPlotter(pipe.Stage):
                  interval: float,
                  legend: bool = False,
                  theta_data: np.ndarray = None,
-                 theta_extent: list = None,
-                 radius_extent: list = None,
+                 theta_extent: tuple = None,
+                 radius_extent: tuple = None,
                  port_size=4,
                  destinations=None
                  ):
@@ -248,6 +250,63 @@ class HeatmapPlotter(pipe.Stage):
         # Plot
         self.plot.set_array(data)
         return self.plot,
+
+    @staticmethod
+    def show():
+        plt.show()
+
+
+class HeatmapPlotterVideo(pipe.Stage):
+    """
+    A HeatmapPlotter with a video feed displayed behind the heatmap. The spacing of angles of the Estimator must be
+    linear for this plotter, unlike HeatmapPlotter.
+    """
+
+    def __init__(self,
+                 camera: vis.Camera,
+                 title: str,
+                 x_label: str,
+                 y_label: str,
+                 x_len: int,
+                 y_len: int,
+                 interval: float,
+                 cmap = cv.COLORMAP_JET,
+                 port_size=4,
+                 destinations=None):
+        super().__init__(1, port_size, destinations, False)
+
+        self.interval = interval
+
+        self.fig, self.ax = plt.subplots()
+        self.ax.set_title(title)
+        self.ax.set_xlabel(x_label)
+        self.ax.set_ylabel(y_label)
+
+        self.cmap = cmap
+
+        self.plot = self.ax.imshow(np.zeros((x_len, y_len, 3)))
+
+        self.anim = FuncAnimation(self.fig, self._on_frame_update, interval=self.interval)
+
+        # Video
+        self.camera = camera
+
+    def _on_frame_update(self, frame):
+        # Audio get
+        message = self.port_get()[0]
+        payload = message.payload
+        payload_uint8 = np.uint8(payload * 255)
+        raw_audio = payload_uint8.reshape(500, 500)
+        audio = cv.applyColorMap(raw_audio, self.cmap)
+
+        # Image get
+        image = self.camera.read()
+
+        # Superimpose
+        superimpose = cv.addWeighted(image, 0.5, audio, 0.5, 0)
+
+        # Plot
+        self.plot.set_array(superimpose)
 
     @staticmethod
     def show():
