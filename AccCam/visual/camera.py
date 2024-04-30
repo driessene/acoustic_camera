@@ -1,4 +1,5 @@
 import logging
+import pickle
 import glob
 import cv2 as cv
 import numpy as np
@@ -14,14 +15,11 @@ class Camera:
                  output_resolution: tuple[int],
                  inclination_fov: tuple[float],
                  azimuth_fov: tuple[float],
-                 calibration=None,
                  ):
         """
         :param output_resolution: The output resolution of the camera
         :param inclination_fov: The fov on the inclination axis
         :param azimuth_fov: The fov on the azimuth axis
-        :param calibration: The calibration profile of the camera. Optional. Can either pass it here or generate a new
-        profile with calibrate(). Must be organized to match cv.undistort (mtx, dist, None, cameramtx). See
         documentation in calibrate()
         """
         self.camera = cv.VideoCapture(0)
@@ -31,7 +29,7 @@ class Camera:
         self.inclination_fov = inclination_fov
         self.azimuth_fov = azimuth_fov
 
-        self.calibration = calibration
+        self.calibration = None
 
     def read(self):
         """
@@ -106,5 +104,20 @@ class Camera:
         # Pack in order to unpack in cv.undistort
         self.calibration = (mtx, dist, None, newcameramtx)
 
-        # Return incase the programs wants it back to save for a later use
-        return self.calibration
+    def save_calibration(self, path):
+        """
+        Saves a calibration profile to a pickle file
+        :param path: The path to save the file to
+        :return: None
+        """
+        with open(path, 'wb') as output_file:
+            pickle.dump(self.calibration, output_file)
+
+    def load_calibration(self, path):
+        """
+        Loads a calibration profile from a pickle file
+        :param path: The path to get the pickle file from
+        :return: None
+        """
+        with open(path, 'rb') as input_file:
+            self.calibration = pickle.load(input_file)

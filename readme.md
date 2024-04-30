@@ -372,6 +372,37 @@ Calculates ideal spacing between uniform element spacing arrays. Useful for sett
 ### Returns
 Distance between each element in cm if this is a uniform structure.
 
+# visual
+Hold classes to manage visual asspects of this project, such as cameras
+
+## Camera
+This class manages a camera. It can get a picture from the camera, calibrate the image, and create calibration profiles for the camera.
+
+### Properties
+- output_resolution: The size of the image to return when calling read().
+- inclination_fov: The field of view (fov) on the inclination axis.
+- azimuth_fov: The fov on the azimuth axis.
+
+### Methods
+
+## read
+Returns an image from the camera. If a calibration profile is present, it will pass the image though the calibration, then return it. Otherwise, it will change the resolution to the output resolution of the instance.
+
+## calibrate
+Calibrates the camera and creates a calibration profile. Requires images to be present in calibration_images. The images must be images of a checkerboard. It will display the points on the checkerboard for user verification, then create a calibration profile. The profile is automaticly applied to the instace.
+
+## save_calibration
+Saves the current calibration to a python pickle file for later instances of the same camera.
+
+### Parameters
+- path: The path to save the calibration to
+
+## load_calibration
+Loads a previous calibration of the same camera to the current instance. The previous calibration must be saved by save_calibration
+
+### Parameters
+- path: The path to load the calibration from
+
 # Example
 
 ```python
