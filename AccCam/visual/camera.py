@@ -21,7 +21,7 @@ class Camera:
         :param inclination_fov: The fov on the inclination axis
         :param azimuth_fov: The fov on the azimuth axis
         :param calibration: The calibration profile of the camera. Optional. Can either pass it here or generate a new
-        profile with calibrate(). Must be organized to match cv.undistort (mtx, dist, None, newcameramtx). See
+        profile with calibrate(). Must be organized to match cv.undistort (mtx, dist, None, cameramtx). See
         documentation in calibrate()
         """
         self.camera = cv.VideoCapture(0)
