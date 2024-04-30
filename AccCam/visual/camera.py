@@ -12,13 +12,13 @@ class Camera:
     Hold camera data. Can give frames with calibration, resizing, and other modifications
     """
     def __init__(self,
-                 output_resolution: tuple[int],
-                 inclination_fov: tuple[float],
-                 azimuth_fov: tuple[float],
+                 output_resolution: tuple,
+                 inclination_fov: tuple,
+                 azimuth_fov: tuple,
                  ):
         """
-        :param output_resolution: The output resolution of the camera
-        :param inclination_fov: The fov on the inclination axis
+        :param output_resolution: The output resolution of the camera with (min, max) angles
+        :param inclination_fov: The fov on the inclination axis with (min, max) angles
         :param azimuth_fov: The fov on the azimuth axis
         documentation in calibrate()
         """
@@ -53,7 +53,7 @@ class Camera:
         # Return image
         return image
 
-    def calibrate(self, checkerboard_size: tuple[int]):
+    def calibrate(self, checkerboard_size: tuple):
         """
         Calibrate the camera
         :return: None
@@ -61,14 +61,14 @@ class Camera:
 
         # Get camera resolution if needed
         if self.camera_resolution is None:
-            self.read() # Read finds camera resolution from a test image
+            self.read()     # Read finds camera resolution from a test image
 
         # termination criteria
         criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
         # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
         objp = np.zeros((checkerboard_size[0] * checkerboard_size[1], 3), np.float32)
-        objp[:, :2] = np.mgrid[0:7, 0:6].T.reshape(-1, 2)
+        objp[:, :2] = np.mgrid[0:checkerboard_size[1], 0:checkerboard_size[0]].T.reshape(-1, 2)
 
         # Arrays to store object points and image points from all the images.
         objpoints = []  # 3d point in real world space
