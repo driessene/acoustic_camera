@@ -366,24 +366,31 @@ The most accurate and most computationally expensive algorithm. Gives extremely 
 Calculates ideal spacing between uniform element spacing arrays. Useful for setting up a structure in real life.
 
 ### Parameters
-- linear_frequency: Hz of the wave you would like to measure
-- wave_speed: The speed of the wave in the environment in meters per second. Sound waves are 343 meters per second.
+- linear_frequency - float: Hz of the wave you would like to measure
+- wave_speed - float: The speed of the wave in the environment in meters per second. Sound waves are 343 meters per second.
 
 ### Returns
 Distance between each element in cm if this is a uniform structure.
 
 # visual
-Hold classes to manage visual asspects of this project, such as cameras
+Hold classes to manage visual aspects of this project, such as cameras
 
 ## Camera
 This class manages a camera. It can get a picture from the camera, calibrate the image, and create calibration profiles for the camera.
 
 ### Properties
-- output_resolution: The size of the image to return when calling read().
-- inclination_fov: The field of view (fov) on the inclination axis.
-- azimuth_fov: The fov on the azimuth axis.
+- output_resolution - tuple: The size of the image to return when calling read().
+- inclination_fov - tuple: The field of view (fov) on the inclination axis in the form of (min angle, max angle).
+- azimuth_fov - tuple: The fov on the azimuth axis in the form of (min angle, max angle).
+- video_source - int or str: The source of the video stream. Default is 0. Can be either an id (int) or an url (str).
 
 ### Methods
+
+## open
+Opens the camera feed. Automatically ran during object initialization. Run if you release the camera and want to open it again.
+
+## release
+Releases the camera feed. Run at the end of the script, if it has an end (similar to Stage).
 
 ## read
 Returns an image from the camera. If a calibration profile is present, it will pass the image though the calibration, then return it. Otherwise, it will change the resolution to the output resolution of the instance.
@@ -395,13 +402,13 @@ Calibrates the camera and creates a calibration profile. Requires images to be p
 Saves the current calibration to a python pickle file for later instances of the same camera.
 
 ### Parameters
-- path: The path to save the calibration to
+- path: The path to save the calibration to.  File should have extension .pickle.
 
 ## load_calibration
 Loads a previous calibration of the same camera to the current instance. The previous calibration must be saved by save_calibration
 
 ### Parameters
-- path: The path to load the calibration from
+- path: The path to load the calibration from. File should have extension .pickle.
 
 # Example
 

@@ -15,14 +15,17 @@ class Camera:
                  output_resolution: tuple,
                  inclination_fov: tuple,
                  azimuth_fov: tuple,
+                 video_source=0
                  ):
         """
         :param output_resolution: The output resolution of the camera with (min, max) angles
         :param inclination_fov: The fov on the inclination axis with (min, max) angles
         :param azimuth_fov: The fov on the azimuth axis
+        :param video_source: The source of the video stream. Default is 0. Can be either an id (int) or an url (str).
         documentation in calibrate()
         """
-        self.camera = cv.VideoCapture(0)
+        self.video_source = video_source
+        self.camera = None
 
         self.camera_resolution = None   # Must take first image to get this
         self.output_resolution = output_resolution
@@ -30,6 +33,30 @@ class Camera:
         self.azimuth_fov = azimuth_fov
 
         self.calibration = None
+
+        self.open()
+
+    def open(self):
+        """
+        Open the camera source.
+        :return: None
+        """
+
+        if self.camera is None:
+            self.camera = cv.VideoCapture(self.video_source)
+            return
+
+        if not self.camera.isOpened:
+            self.camera.open(self.video_source)
+            return
+
+    def release(self):
+        """
+        Release the camera, effectively stopping the instance of this class.
+        :return:
+        """
+        if self.camera.isOpened:
+            self.camera.release()
 
     def read(self):
         """
@@ -107,7 +134,7 @@ class Camera:
     def save_calibration(self, path):
         """
         Saves a calibration profile to a pickle file
-        :param path: The path to save the file to
+        :param path: The path to save the file to. File should have extension .pickle
         :return: None
         """
         with open(path, 'wb') as output_file:
@@ -116,7 +143,7 @@ class Camera:
     def load_calibration(self, path):
         """
         Loads a calibration profile from a pickle file
-        :param path: The path to get the pickle file from
+        :param path: The path to get the pickle file from. File should have extension .pickle
         :return: None
         """
         with open(path, 'rb') as input_file:
