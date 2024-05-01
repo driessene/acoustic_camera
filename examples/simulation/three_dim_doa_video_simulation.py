@@ -1,5 +1,6 @@
 import AccCam.realtime_dsp as dsp
 import AccCam.direction_of_arrival as doa
+import AccCam.visual as vis
 import numpy as np
 
 
@@ -61,8 +62,12 @@ def main():
 
     music = dsp.DOAEstimator(estimator)
 
+    camera = vis.Camera((100, 100), (0, np.pi), (0, 2 * np.pi), video_source='rtsp://admin:Password123!@192.168.0.254:8000')
+
     # Plot
     plot = dsp.HeatmapPlotterVideo(
+        structure=structure,
+        camera=camera,
         title='MUSIC',
         x_label="inclination",
         y_label="azimuth",

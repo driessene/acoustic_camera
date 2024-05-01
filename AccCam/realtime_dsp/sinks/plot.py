@@ -2,6 +2,7 @@ import numpy as np
 import logging
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import AccCam.direction_of_arrival as doa
 import AccCam.realtime_dsp.pipeline as pipe
 import AccCam.visual as vis
 import cv2 as cv
@@ -263,6 +264,7 @@ class HeatmapPlotterVideo(pipe.Stage):
     """
 
     def __init__(self,
+                 structure: doa.Structure,
                  camera: vis.Camera,
                  title: str,
                  x_label: str,
@@ -291,12 +293,15 @@ class HeatmapPlotterVideo(pipe.Stage):
         # Video
         self.camera = camera
 
+        # Audio
+        self.structure = structure
+
     def _on_frame_update(self, frame):
         # Audio get
         message = self.port_get()[0]
         payload = message.payload
         payload_uint8 = np.uint8(payload * 255)
-        raw_audio = payload_uint8.reshape(500, 500)
+        raw_audio = payload_uint8.reshape(self.structure.inclination_resolution, self.structure.azimuth_resolution)
         audio = cv.applyColorMap(raw_audio, self.cmap)
 
         # Image get
