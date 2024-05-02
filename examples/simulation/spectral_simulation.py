@@ -8,7 +8,7 @@ def main():
     # Variables
     samplerate = 44100
     blocksize = 44100
-    wavenumber = 10
+    wavenumber = 12.3
     speed_of_sound = 343
 
     # Sphere
@@ -54,11 +54,13 @@ def main():
 
     # Filter
     filt = dsp.FirwinFilter(
-        n=101,
+        n=501,
         num_channels=len(elements),
-        cutoff=2000,
+        cutoff=np.array([1, 300, 1000, samplerate / 2 - 1]),
         samplerate=samplerate,
         method='filtfilt',
+        normalize=True,
+        remove_offset=True
     )
 
     # Hanning window

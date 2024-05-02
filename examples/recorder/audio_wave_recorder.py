@@ -9,20 +9,14 @@ def main():
     # Variables
     samplerate = 44100
     blocksize = 44100
-    wavenumber = 10
+    wavenumber = 12.3
 
     elements = [doa.Element(np.array([-1.25, 0, 0]), samplerate),
                 doa.Element(np.array([-0.75, 0, 0]), samplerate),
                 doa.Element(np.array([-0.25, 0, 0]), samplerate),
                 doa.Element(np.array([0.25, 0, 0]), samplerate),
                 doa.Element(np.array([0.75, 0, 0]), samplerate),
-                doa.Element(np.array([1.25, 0, 0]), samplerate),
-                doa.Element(np.array([0, -1.25, 0]), samplerate),
-                doa.Element(np.array([0, -0.75, 0]), samplerate),
-                doa.Element(np.array([0, -0.25, 0]), samplerate),
-                doa.Element(np.array([0, 0.25, 0]), samplerate),
-                doa.Element(np.array([0, 0.75, 0]), samplerate),
-                doa.Element(np.array([0, 1.25, 0]), samplerate)]
+                doa.Element(np.array([1.25, 0, 0]), samplerate)]
 
     structure = doa.Structure(
         elements=elements,
@@ -37,35 +31,23 @@ def main():
 
     # Recorder to get data
     dsp.print_audio_devices()
-    recorder_x = dsp.AudioRecorder(
-        device_id=24,
+    recorder = dsp.AudioRecorder(
+        device_id=14,
         samplerate=44100,
         num_channels=8,
         blocksize=blocksize,
         channel_map=[2, 3, 4, 5, 6, 7],
-    )
-    recorder_y = dsp.AudioRecorder(
-        device_id=23,
-        samplerate=44100,
-        num_channels=8,
-        blocksize=blocksize,
-        channel_map=[2, 3, 4, 5, 6, 7],
-    )
-
-    # Combine recorders
-    concat = dsp.Concatenator(
-        num_ports=2,
     )
 
     # Filter
     filt = dsp.FirwinFilter(
-        n=101,
+        n=501,
         num_channels=len(elements),
-        cutoff=2000,
+        cutoff=np.array([1, 300, 1000, samplerate / 2 - 1]),
         samplerate=samplerate,
         method='filtfilt',
-        normalize=False,
-        remove_offset=False
+        normalize=True,
+        remove_offset=True
     )
     filt.plot_response()
 
@@ -83,15 +65,11 @@ def main():
     )
 
     # Linking
-    recorder_x.link_to_destination(concat, 0)
-    recorder_y.link_to_destination(concat, 1)
-    concat.link_to_destination(filt, 0)
+    recorder.link_to_destination(filt, 0)
     filt.link_to_destination(plot, 0)
 
     # Start processes
-    recorder_x.start()
-    recorder_y.start()
-    concat.start()
+    recorder.start()
     filt.start()
     plot.start()
     show()

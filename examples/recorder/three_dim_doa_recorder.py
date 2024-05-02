@@ -8,7 +8,7 @@ def main():
     # Variables
     samplerate = 44100
     blocksize = 44100
-    wavenumber = 10
+    wavenumber = 12.3
 
     elements = [doa.Element(np.array([-1.25, 0, 0]), samplerate),
                 doa.Element(np.array([-0.75, 0, 0]), samplerate),
@@ -29,7 +29,7 @@ def main():
         snr=50,
         blocksize=blocksize,
     )
-    # structure.visualize()
+    structure.visualize()
 
     # Recorder to get data
     dsp.print_audio_devices()
@@ -55,11 +55,13 @@ def main():
 
     # Filter
     filt = dsp.FirwinFilter(
-        n=101,
+        n=501,
         num_channels=len(elements),
-        cutoff=1000,
+        cutoff=np.array([1, 300, 1000, samplerate / 2 - 1]),
         samplerate=samplerate,
         method='filtfilt',
+        normalize=True,
+        remove_offset=True
     )
 
     # MUSIC
