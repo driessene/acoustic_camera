@@ -8,7 +8,7 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 1024
+    blocksize = 44100
     wavenumber = 12.3
     speed_of_sound = 343
 

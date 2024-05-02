@@ -8,7 +8,7 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 1024
+    blocksize = 44100
     wavenumber = 12.3
     speed_of_sound = 343
 
@@ -44,6 +44,10 @@ def main():
         doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.02, 2, 2])), speed_of_sound),
     ]
 
+    # Get hz for debugging
+    for wavevector in wavevectors:
+        print(wavevector.linear_frequency)
+
     # Recorder to get data
     recorder = dsp.AudioSimulator(
         structure=structure,
@@ -51,15 +55,18 @@ def main():
     )
 
     # Filter
-    filt = dsp.FirwinFilter(
-        n=501,
+    filt = dsp.FirlsFilter(
+        n=1001,
         num_channels=len(elements),
-        cutoff=np.array([1, 300, 1000, samplerate / 2 - 1]),
+        bands=np.array([0, 399.99, 400, 800, 800.01, samplerate/2]),
+        desired=np.array([0, 0, 1, 1, 0, 0]),
         samplerate=samplerate,
         method='filtfilt',
         normalize=True,
         remove_offset=True
     )
+    filt.plot_response()
+    filt.plot_coefficients()
 
     # MUSIC
     estimator = doa.MVDRBeamformer(structure)

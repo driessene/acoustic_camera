@@ -7,7 +7,7 @@ def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 10240
+    blocksize = 44100
     wavenumber = 12.3
     speed_of_sound = 343
 
@@ -50,10 +50,11 @@ def main():
     )
 
     # Filter
-    filt = dsp.FirwinFilter(
-        n=501,
+    filt = dsp.FirlsFilter(
+        n=1001,
         num_channels=len(elements),
-        cutoff=np.array([1, 300, 1000, samplerate / 2 - 1]),
+        bands=np.array([0, 399.99, 400, 800, 800.01, samplerate/2]),
+        desired=np.array([0, 0, 1, 1, 0, 0]),
         samplerate=samplerate,
         method='filtfilt',
         normalize=True,
