@@ -52,9 +52,10 @@ def main():
 
     # Filter
     filt = dsp.FirwinFilter(
-        n=501,
+        n=1001,
         num_channels=len(elements),
-        cutoff=np.array([1, 300, 1000, samplerate / 2 - 1]),
+        cutoff=np.array([400, 800]),
+        type='bandpass',
         samplerate=samplerate,
         method='filtfilt',
         normalize=True,

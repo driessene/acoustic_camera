@@ -53,11 +53,11 @@ def main():
     )
 
     # Filter
-    filt = dsp.FirlsFilter(
+    filt = dsp.FirwinFilter(
         n=1001,
         num_channels=len(elements),
-        bands=np.array([0, 399.99, 400, 800, 800.01, samplerate/2]),
-        desired=np.array([0, 0, 1, 1, 0, 0]),
+        cutoff=np.array([400, 800]),
+        type='bandpass',
         samplerate=samplerate,
         method='filtfilt',
         normalize=True,

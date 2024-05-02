@@ -144,6 +144,7 @@ class FirwinFilter(Filter):
                  cutoff: int or np.ndarray,
                  samplerate: int,
                  num_channels: int,
+                 type: str = 'lowpass',
                  method='filtfilt',
                  remove_offset=True,
                  normalize=True,
@@ -152,8 +153,9 @@ class FirwinFilter(Filter):
         """
         :param n: Length of the FIR filter
         :param cutoff: Cutoff frequency(s) of the filter in Hz
+        :param type: The type of filter. can be lowpass, highpass, bandpass, or bandstop. Default is lowpass
         """
-        b = sig.firwin(n, cutoff, fs=samplerate)
+        b = sig.firwin(n, cutoff, fs=samplerate, pass_zero=type)
         super().__init__(b, np.array(1), samplerate, num_channels, method, remove_offset, normalize, port_size,
                          destinations)
 
