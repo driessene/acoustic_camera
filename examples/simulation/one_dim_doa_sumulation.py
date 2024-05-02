@@ -74,7 +74,7 @@ def main():
         num_lines=1,
         interval=blocksize/samplerate,
         theta_data=structure.azimuths_values,
-        radius_extent=[0, 1]
+        radius_extent=(0, 1)
     )
 
     # Linking

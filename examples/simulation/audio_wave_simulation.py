@@ -69,7 +69,7 @@ def main():
         y_label="Amplitude",
         num_lines=len(elements),
         num_points=blocksize,
-        y_extent=[-1, 1],
+        y_extent=(-1, 1),
         interval=blocksize/samplerate
     )
 

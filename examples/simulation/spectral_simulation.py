@@ -83,8 +83,8 @@ def main():
         interval=blocksize/samplerate,
         legend=True,
         x_data=freqs,
-        x_extent=[-10000, 10000],
-        y_extent=[0, 10000]
+        x_extent=(-10000, 10000),
+        y_extent=(0, 10000)
     )
 
     # Linking

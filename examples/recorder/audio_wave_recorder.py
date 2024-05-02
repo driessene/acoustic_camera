@@ -60,8 +60,8 @@ def main():
         num_lines=len(elements),
         num_points=blocksize,
         interval=blocksize/samplerate,
-        x_extent=[0, blocksize],
-        y_extent=[-1, 1],
+        x_extent=(0, blocksize),
+        y_extent=(-1, 1),
         legend=True
     )
 
