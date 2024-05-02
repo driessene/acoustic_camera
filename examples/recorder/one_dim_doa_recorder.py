@@ -22,14 +22,14 @@ def main():
         wavenumber=wavenumber,
         snr=50,
         blocksize=blocksize,
-        inclination_resolution=500,
-        inclination_range=(0, 2 * np.pi),
+        azimuth_range=(0, 0),
         azimuth_resolution=1,
-        azimuth_range=(0, 0)
+        inclination_range=(0, np.pi),
+        inclination_resolution=100
     )
     structure.visualize()
 
-    # Get ideal frequency
+    # Get ideal frequency, print target frequency and spacing in inches
     test_wavevector = doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber, 0, 0])), 343)
     print(test_wavevector.linear_frequency)
     print(test_wavevector.linear_wavelength * 39.3701 / 2)
@@ -65,11 +65,11 @@ def main():
     # Plot
     plot = dsp.PolarPlotter(
         title='MUSIC',
-        num_points=blocksize,
+        num_points=structure.inclination_resolution,
         num_lines=1,
         interval=blocksize/samplerate,
         theta_data=structure.inclination_values,
-        radius_extent=(0, 1),
+        radius_extent=(0, 1)
     )
 
     # Linking

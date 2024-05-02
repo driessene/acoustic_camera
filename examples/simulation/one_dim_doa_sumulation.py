@@ -17,27 +17,22 @@ def main():
                 doa.Element(np.array([0.25, 0, 0]), samplerate),
                 doa.Element(np.array([0.75, 0, 0]), samplerate),
                 doa.Element(np.array([1.25, 0, 0]), samplerate),
-                doa.Element(np.array([0, -1.25, 0]), samplerate),
-                doa.Element(np.array([0, -0.75, 0]), samplerate),
-                doa.Element(np.array([0, -0.25, 0]), samplerate),
-                doa.Element(np.array([0, 0.25, 0]), samplerate),
-                doa.Element(np.array([0, 0.75, 0]), samplerate),
-                doa.Element(np.array([0, 1.25, 0]), samplerate),
-                doa.Element(np.array([0, 0, 0.25]), samplerate),
-                doa.Element(np.array([0, 0, 0.75]), samplerate),
-                doa.Element(np.array([0, 0, 1.25]), samplerate)]
+                ]
 
     structure = doa.Structure(
         elements=elements,
         wavenumber=wavenumber,
         snr=50,
         blocksize=blocksize,
+        azimuth_range=(0, 0),
+        azimuth_resolution=1,
+        inclination_range=(0, np.pi),
+        inclination_resolution=100
     )
     structure.visualize()
 
     wavevectors = [
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 0.98, 1, 1])), speed_of_sound),
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.02, 2, 2])), speed_of_sound),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 0.98, np.deg2rad(50), 0])), speed_of_sound),
     ]
 
     # Print frequencies for debug
@@ -63,17 +58,17 @@ def main():
     )
 
     # MUSIC
-    estimator = doa.Music(structure, 4)
+    estimator = doa.MVDRBeamformer(structure)
 
     music = dsp.DOAEstimator(estimator)
 
     # Plot
     plot = dsp.PolarPlotter(
         title='MUSIC',
-        num_points=structure.azimuth_resolution,
+        num_points=structure.inclination_resolution,
         num_lines=1,
         interval=blocksize/samplerate,
-        theta_data=structure.azimuths_values,
+        theta_data=structure.inclination_values,
         radius_extent=(0, 1)
     )
 
