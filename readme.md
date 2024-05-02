@@ -182,7 +182,7 @@ A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). Th
 A lowpass [butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter). A subclass of filter, inheriting all properties and functions
 
 ### Properties
-- N - int: The order of the filter.
+- n - int: The order of the filter.
 - cutoff - float: The cutoff frequency of the filter in Hz.
 - type - str: The type of filter. can be lowpass, highpass, bandpass, or bandstop. Default is lowpass
 
