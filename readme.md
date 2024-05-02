@@ -408,6 +408,9 @@ Returns an image from the camera. If a calibration profile is present, it will p
 ## calibrate
 Calibrates the camera and creates a calibration profile. Requires images to be present in calibration_images. The images must be images of a checkerboard. It will display the points on the checkerboard for user verification, then create a calibration profile. The profile is automaticly applied to the instace.
 
+### Parameters:
+- checkerboard_size - tuple: The number of rows and columns of the checkerboard provided as (row, cols).
+
 ## save_calibration
 Saves the current calibration to a python pickle file for later instances of the same camera.
 
@@ -426,27 +429,40 @@ Loads a previous calibration of the same camera to the current instance. The pre
 import AccCam.realtime_dsp as dsp
 import AccCam.direction_of_arrival as doa
 import numpy as np
-from itertools import product
 
 
 def main():
 
     # Variables
     samplerate = 44100
-    blocksize = 1024
-    wavenumber = 10
+    blocksize = 44100
+    wavenumber = 12.3
     speed_of_sound = 343
 
     # Sphere
-    elements = [doa.Element(doa.spherical_to_cartesian(np.array([1, inclination, azimuth])), samplerate)
-                for (inclination, azimuth) in
-                product(np.linspace(0.1 * np.pi, 0.9 * np.pi, 5), np.linspace(0, 1.8 * np.pi, 10))]
+    elements = [doa.Element(np.array([-1.25, 0, 0]), samplerate),
+                doa.Element(np.array([-0.75, 0, 0]), samplerate),
+                doa.Element(np.array([-0.25, 0, 0]), samplerate),
+                doa.Element(np.array([0.25, 0, 0]), samplerate),
+                doa.Element(np.array([0.75, 0, 0]), samplerate),
+                doa.Element(np.array([1.25, 0, 0]), samplerate),
+                doa.Element(np.array([0, -1.25, 0]), samplerate),
+                doa.Element(np.array([0, -0.75, 0]), samplerate),
+                doa.Element(np.array([0, -0.25, 0]), samplerate),
+                doa.Element(np.array([0, 0.25, 0]), samplerate),
+                doa.Element(np.array([0, 0.75, 0]), samplerate),
+                doa.Element(np.array([0, 1.25, 0]), samplerate),
+                doa.Element(np.array([0, 0, 0.25]), samplerate),
+                doa.Element(np.array([0, 0, 0.75]), samplerate),
+                doa.Element(np.array([0, 0, 1.25]), samplerate)]
 
     structure = doa.Structure(
         elements=elements,
         wavenumber=wavenumber,
         snr=50,
         blocksize=blocksize,
+        inclination_resolution=100,
+        azimuth_resolution=100
     )
     structure.visualize()
 
@@ -455,9 +471,9 @@ def main():
         doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.02, 2, 2])), speed_of_sound),
     ]
 
-    # Print frequencies for debug
-    for vector in wavevectors:
-        print(vector.linear_frequency)
+    # Get hz for debugging
+    for wavevector in wavevectors:
+        print(wavevector.linear_frequency)
 
     # Recorder to get data
     recorder = dsp.AudioSimulator(
@@ -466,13 +482,18 @@ def main():
     )
 
     # Filter
-    filt = dsp.FirwinFilter(
-        n=101,
+    filt = dsp.FirlsFilter(
+        n=1001,
         num_channels=len(elements),
-        cutoff=2000,
+        bands=np.array([0, 399.99, 400, 800, 800.01, samplerate/2]),
+        desired=np.array([0, 0, 1, 1, 0, 0]),
         samplerate=samplerate,
         method='filtfilt',
+        normalize=True,
+        remove_offset=True
     )
+    filt.plot_response()
+    filt.plot_coefficients()
 
     # MUSIC
     estimator = doa.MVDRBeamformer(structure)
@@ -505,6 +526,5 @@ def main():
 
 if __name__ == '__main__':
     main()
-
 
 ```
