@@ -185,15 +185,25 @@ A lowpass [butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter)
 - N - int: The order of the filter.
 - cutoff - float: The cutoff frequency of the filter in Hz.
 
-## Firwinilter - Filter
+## FirwinFilter - Filter
 A lowpass [ideal filter](https://en.wikipedia.org/wiki/Sinc_filter) using the window method. This is mathematically better than ButterFilter and is recommended. Can have extremely sharp cutoffs. A subclass of filter, inheriting all properties and methods.
+
+### Properties
+- n - int: The order of the filter.
+- cutoff - float: The cutoff frequency of the filter in Hz.
 
 ### Properties
 - n - int: The length of the filter
 - cutoff - float: The cutoff frequency of the filter in Hz
 
 ## FirlsFilter - Filter
-A multi-bandpass filter. Use this if you would like to have multiple discrete bands.
+A multi-bandpass filter. Optimized via least-squares error minimization. This offers more control over FirwinFilters at the cost of complexity.
+
+### Properties
+Documentation of sourced from scipy.
+- n - int: The order of the filter. Must be odd
+- bands - np.array: A monotonic nondecreasing sequence containing the band edges in Hz. All elements must be non-negative and less than or equal to the Nyquist frequency given by nyq. The bands are specified as frequency pairs, thus, if using a 1D array, its length must be even, e.g., np.array([0, 1, 2, 3, 4, 5]). Alternatively, the bands can be specified as an nx2 sized 2D array, where n is the number of bands, e.g, np.array([[0, 1], [2, 3], [4, 5]]).
+- desired - np.array: A sequence the same size as bands containing the desired gain at the start and end point of each band.
 
 ### Properties
 - n - int: The length of the filter
