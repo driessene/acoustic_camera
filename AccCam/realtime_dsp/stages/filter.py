@@ -122,6 +122,7 @@ class ButterFilter(Filter):
                  cutoff: int,
                  samplerate,
                  num_channels,
+                 type: str = 'lowpass',
                  method='filtfilt',
                  remove_offset=True,
                  normalize=True,
@@ -130,8 +131,9 @@ class ButterFilter(Filter):
         """
         :param n: Order of the filter
         :param cutoff: Cutoff frequency of the filter in Hz
+        :param type: The type of filter. can be lowpass, highpass, bandpass, or bandstop. Default is lowpass
         """
-        b, a = sig.butter(N=n, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype='lowpass')
+        b, a = sig.butter(N=n, Wn=(cutoff * 2 * np.pi), fs=samplerate, btype=type)
         super().__init__(b, a, samplerate, num_channels, method, remove_offset, normalize, port_size, destinations)
 
 
