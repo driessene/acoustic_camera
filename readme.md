@@ -1,3 +1,92 @@
+- [Introduction](#introduction)
+  - [Background knowledge](#background-knowledge)
+    - [Array processing](#array-processing)
+      - [Steering vector](#steering-vector)
+      - [Steering matrix](#steering-matrix)
+- [Realtime DSP](#realtime-dsp)
+  - [Stage](#stage)
+    - [Properties](#properties)
+    - [methods](#methods)
+  - [Message](#message)
+    - [Properties](#properties-1)
+  - [FunctionStage - Stage](#functionstage---stage)
+    - [Properties](#properties-2)
+  - [Bus - Stage](#bus---stage)
+    - [Properties](#properties-3)
+  - [Concatinator - Stage](#concatinator---stage)
+    - [Properties](#properties-4)
+  - [ChannelPicker - Stage](#channelpicker---stage)
+    - [Properties](#properties-5)
+  - [Accumulator - Stage](#accumulator---stage)
+    - [Properties](#properties-6)
+  - [ToDisk - Stage](#todisk---stage)
+    - [Properties](#properties-7)
+  - [FromDisk - Stage](#fromdisk---stage)
+  - [Tap - Stage](#tap---stage)
+    - [Properties](#properties-8)
+    - [Methods](#methods-1)
+  - [print\_audio\_devices - Function](#print_audio_devices---function)
+  - [AudioRecorder - Stage](#audiorecorder---stage)
+    - [Properties](#properties-9)
+    - [Methods](#methods-2)
+  - [AudioSimulator - Stage](#audiosimulator---stage)
+    - [Properties](#properties-10)
+  - [Filter - Stage](#filter---stage)
+    - [Properties](#properties-11)
+    - [Methods](#methods-3)
+  - [ButterFilter - Filter](#butterfilter---filter)
+    - [Properties](#properties-12)
+  - [FirwinFilter - Filter](#firwinfilter---filter)
+    - [Properties](#properties-13)
+  - [FirlsFilter - Filter](#firlsfilter---filter)
+    - [Properties](#properties-14)
+  - [HanningWindow - Stage](#hanningwindow---stage)
+  - [FFT - Stage](#fft---stage)
+    - [Properties](#properties-15)
+    - [Note](#note)
+  - [DOAEstimator - Stage](#doaestimator---stage)
+    - [Properties](#properties-16)
+  - [LinePlotter - Stage](#lineplotter---stage)
+    - [Properties](#properties-17)
+    - [Methods](#methods-4)
+  - [PolarPlotter - Stage](#polarplotter---stage)
+    - [Properties](#properties-18)
+  - [HeatmapPlotter - Stage](#heatmapplotter---stage)
+  - [AudioPlayback - Stage](#audioplayback---stage)
+    - [Properties](#properties-19)
+      - [Properties](#properties-20)
+- [Direction of Arrival](#Direction-of-Arrival)
+  - [spherical\_to\_cartesian - function](#spherical_to_cartesian---function)
+  - [cartesian\_to\_spherical - function](#cartesian_to_spherical---function)
+  - [Element](#element)
+    - [Properties](#properties-21)
+      - [Calculated properties](#calculated-properties)
+  - [WaveVector](#wavevector)
+    - [Properties](#properties-22)
+      - [Calculated properties](#calculated-properties-1)
+  - [Structure](#structure)
+    - [Properties](#properties-23)
+    - [Calculated properties](#calculated-properties-2)
+    - [Methods](#methods-5)
+    - [Calculated properties](#calculated-properties-3)
+  - [Estimator](#estimator)
+    - [Properties](#properties-24)
+    - [Methods](#methods-6)
+  - [DelaySumBeamformer - Estimator](#delaysumbeamformer---estimator)
+  - [BartlettBeamformer - Estimator](#bartlettbeamformer---estimator)
+  - [MVDRBeamformer - Estimator](#mvdrbeamformer---estimator)
+  - [Music - Estimator](#music---estimator)
+    - [Properties](#properties-25)
+  - [hz\_to\_cm - function](#hz_to_cm---function)
+    - [Parameters](#parameters)
+    - [Returns](#returns)
+- [Visual](#visual)
+  - [Camera](#camera)
+    - [Properties](#properties-26)
+    - [Methods](#methods-7)
+- [Example](#example)
+
+
 # Introduction
 This project creates real-time pipelines to record, simulate, process, and plot signal data. The following are key features and highlights:
 - Real-time processing
@@ -223,7 +312,7 @@ This provides the frequency of each index to the plotter.
 Takes a DoA estimator and places it into the pipeline.
 
 ### Properties
-- estimator - direction_of_arrival.Estimator: The estimator to utilize.
+- estimator - direction_of_arrival.Estimator: The estimator to utilize. See documentation in [Estimator](#estimator)
 
 ## LinePlotter - Stage
 Plots one line or several lines on a grid. If input data is a vector, plot one line. If a matrix, plot one line per list on axis=0.
@@ -271,7 +360,7 @@ Play data back out to your speakers. Useful for hearing how filters effect data 
 - label - str: The label to pass to the file name.
 - path - str: The path of where to save the file. Must be a folder with no / or \ at the end of the string.
 
-# direction of arrival
+# Direction of Arrival
 Holds elements, wave vectors, steering vectors, and steering matrices. Use to calculate steering vectors for simulators and steering matrices for DoA algorithms.
 
 ## spherical_to_cartesian - function
@@ -377,7 +466,7 @@ Calculates ideal spacing between uniform element spacing arrays. Useful for sett
 ### Returns
 Distance between each element in cm if this is a uniform structure.
 
-# visual
+# Visual
 Hold classes to manage visual aspects of this project, such as cameras
 
 ## Camera
