@@ -30,26 +30,26 @@ Stages also introduce multiprocessing. Each stage is ran by its own processes, l
 To use a stage, one must create a subclass which inherits the stage class. The new subclass will create the correct amount of input ports , the length of the input ports (default is 4), and destinations.
 
 ### Properties
-- num_ports - int: The number of ports. i.e., the number of sources of data the stage requires
-- port_size - int: Ports are essentially queues inherited from multiprocessing. This is the length of the queue
+- num_ports - int: The number of ports. i.e., the number of sources of data the stage requires.
+- port_size - int: Ports are essentially queues inherited from multiprocessing. This is the length of the queue.
 - destinations - multiprocessing.queue: Default to none. A list of ports from another stage. Recall that ports are multiprocessing queues of a stage.
 - has_process - bool: Default is true. Set to false if the stage does not require a process. For example, when using matplotlib for plotting, matplotlib runs its own thread to update plots, thus a process is not needed.
 
 ### methods
 - run(self): To be implemented by a subclass. Runs forever in a while true loop. This is the code that the subclass customizes to it own purpose.
-- start(self): Starts the stage. Run whenever you are ready to begin the process
+- start(self): Starts the stage. Run whenever you are ready to begin the process.
 - stop(self): Stops the stage.
 - link_to_destination(self): Adds a new destination to the stage. This is easier to read than providing all destinations at once when creating the object.
 - port_get(self): Gets data from all ports. Always use this than accessing individual queues/ports. If a single port is used, add [0] to the end of the call to get the data. This is a blocking operation.
-- port_put(self, data): Puts data to all destination ports.
+- port_put(self, data): Puts data to all destinations.
 
 ## Message
 Messages are used to send data between stages. They are similar in thinking of emails between people. Messages have a main payload and metadata about the payload.
 
 ### Properties
-payload - any: The main content of the message.
-timestamp - datetime.time: The time the message was created. This is also automatically set.
-kwargs: Pass any other key word arguments as metadata if wanted. For example: source, size, state, etc.
+- payload - any: The main content of the message.
+- timestamp - datetime.time: The time the message was created. This is also automatically set.
+- kwargs: Pass any other key word arguments as metadata if wanted. For example: source, size, state, etc.
 
 ## FunctionStage - Stage
 Pass a function to this class to create a stage which runs the function on input data. This is simpler than creating subclasses for Stage, but is limited in functionality. For example, use this if you would like to call np.ravel() on data, or something just as simple.
@@ -101,29 +101,26 @@ Concatinators concatenate several signal matrices. For example, if there are sev
 When given a matrix, return a column of the matrix. Useful for example when you would like to play back a single channel of a signal matrix.
 
 ### Properties
-- channel - int: The index of the channel to grab
+- channel - int: The index of the channel to grab.
 
 ## Accumulator - Stage
 Waits and merges several messages together. For example, wait until ten messages are received, put them together, and continue. Useful for saving data to CSV files for example.
 
 ### Properties
-- num_messages - int: The number of messages to merge
-- concatenate - int: If given, rather than returning a list of messages, return a numpy array of several payloads (which must be numpy arrays if ture) concatenated together. Give the axis to concatenate to (typically either 0 or 1)
-
-### Properties
-- function - function: The function of which to run on incoming data.
+- num_messages - int: The number of messages to merge.
+- concatenate - int: If given, rather than returning a list of messages, return a numpy array of several payloads (which must be numpy arrays if ture) concatenated together. Give the axis to concatenate to (typically either 0 or 1).
 
 ## ToDisk - Stage
 Writes every payload it receives to disk. Be careful as this can flood data to a disk quickly. Only use when you actually need to record everything. Use a Tap for intermittent recording. It is recommended to put an Accumulator before this to collect data.
 
 ### Properties
-- label - str: The label to put in the file-name. Every file name has a label and a timestamp
+- label - str: The label to put in the file-name. Every file name has a label and a timestamp.
 - path - str: The folder where to save data. Do not include a / or \ at the end of the string.
 
 ## FromDisk - Stage
-Takes a file, snips it into blocks, and injects it into a pipeline. Usefully for reading back data from ToDisk or Taps. Data must be saved by numpy. The stage automatically stops when the file is fully read.
-- path - str: The path to the file to load
-- blocksize - int: The size of the blocks to inject into the pipelines
+Takes a file, snips it into blocks, and injects it into a pipeline. Useful for reading back data from ToDisk or Taps. Data must be saved by numpy. The stage automatically stops when the file is fully read.
+- path - str: The path to the file to load.
+- blocksize - int: The size of the blocks to inject into the pipelines.
 
 ## Tap - Stage
 A tap into a pipeline. Does nothing to the data, but saves the last message and makes it user-accessible.
@@ -135,15 +132,15 @@ A tap into a pipeline. Does nothing to the data, but saves the last message and 
 - tap(self): Returns a list of messages. The length of messages matches num_ports.
 
 ## print_audio_devices - Function
-This function prints all available audio devices to the terminal. Useful for finding the ID of the device you are looking to record data from
+This function prints all available audio devices to the terminal. Useful for finding the ID of the device you are looking to record data from.
 
 ## AudioRecorder - Stage
 Manages an audio device and pushes data to destinations.
 
 ### Properties
-- device-id - int: The ID of the device to record from. Use print_audio_devices to find it.
+- device_id - int: The ID of the device to record from. Use print_audio_devices to find it.
 - samplerate - int: The sample rate of the device.
-- num_channels: - int The number of channels of the device. Must match the channels listed from print_audio_devices()
+- num_channels: - int The number of channels of the device. Must match the channels listed from print_audio_devices().
 - blocksize - int: The number of samples per block of data.
 - channel_map - list: Pass a list to reorganize the channels. For example [2, 3, 1, 0] will swap the channels so that channel 2 is in index 0, 3 to 1, 1 to 2, and 0 to 3.
 
@@ -166,10 +163,10 @@ A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). Th
 ### Properties
 - b_coefficients - np.array: b coefficients of the filter.
 - a_coefficients - np.array: a coefficients of the filter.
-- samplerate - int: The sample rate of the incoming data
-- num_channels - int: The number of elements of the incoming data
-- method - str: The method of which to apply the filter
-  - lfilter: [Normal convolusion](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.lfilter.html)
+- samplerate - int: The sample rate of the incoming data.
+- num_channels - int: The number of elements of the incoming data.
+- method - str: The method of which to apply the filter.
+  - lfilter: [Normal convolusion](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.lfilter.html).
   - filtfilt: [apply the filter forwards, then backwards again](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html#scipy.signal.filtfilt). This guaranties that the phase of the data is not changed **(this is very important for DoA estimators)**, but squares the response of the filter. This is recommended over lfilter for this reason. Note that this is a non-causal operation, but that is okay since all data is known in the block.
 - remove_offset - bool: Sets the DC component of the data to zero if true.
 - normalize - bool: Set the maximum value of the signal to one if true.
@@ -179,7 +176,7 @@ A filter is a [digital filter](https://en.wikipedia.org/wiki/Digital_filter). Th
 - plot_coefficients(self): Plots the coefficients of the filter. This is a blocking operation.
 
 ## ButterFilter - Filter
-A lowpass [butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter). A subclass of filter, inheriting all properties and functions
+A [butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter).
 
 ### Properties
 - n - int: The order of the filter.
@@ -192,25 +189,16 @@ A lowpass [ideal filter](https://en.wikipedia.org/wiki/Sinc_filter) using the wi
 ### Properties
 - n - int: The order of the filter.
 - cutoff - float: The cutoff frequency of the filter in Hz.
-- type - str: The type of filter. can be lowpass, highpass, bandpass, or bandstop. Default is lowpass
-
-### Properties
-- n - int: The length of the filter
-- cutoff - float: The cutoff frequency of the filter in Hz
+- type - str: The type of filter. can be lowpass, highpass, bandpass, or bandstop. Default is lowpass.
 
 ## FirlsFilter - Filter
 A multi-bandpass filter. Optimized via least-squares error minimization. This offers more control over FirwinFilters at the cost of complexity.
 
 ### Properties
-Documentation of sourced from scipy.
+Documentation sourced from scipy.
 - n - int: The order of the filter. Must be odd
-- bands - np.array: A monotonic nondecreasing sequence containing the band edges in Hz. All elements must be non-negative and less than or equal to the Nyquist frequency given by nyq. The bands are specified as frequency pairs, thus, if using a 1D array, its length must be even, e.g., np.array([0, 1, 2, 3, 4, 5]). Alternatively, the bands can be specified as an nx2 sized 2D array, where n is the number of bands, e.g, np.array([[0, 1], [2, 3], [4, 5]]).
+- bands - np.array: A monotonic nondecreasing sequence containing the band edges in Hz. All elements must be non-negative and less than or equal to the Nyquist frequency given by nyq. The bands are specified as frequency pairs, thus, if using a 1D array, its length must be even, e.g., np.array([0, 1, 2, 3, 4, 5]). Alternatively, the bands can be specified as a nx2 sized 2D array, where n is the number of bands, e.g, np.array([[0, 1], [2, 3], [4, 5]]).
 - desired - np.array: A sequence the same size as bands containing the desired gain at the start and end point of each band.
-
-### Properties
-- n - int: The length of the filter
-- bands - np.ndarray: The band edges. Pass as either np.array([0, 1, 2, 3, 4, 5]) or np.array([[0, 1], [2, 3], [4, 5]]).
-- desired - np.ndarray: A sequence the same size as bands containing the desired gain at the start and end point of each band.
 
 ## HanningWindow - Stage
 Applies a [hanning window](https://en.wikipedia.org/wiki/Hann_function) to incoming data. Simply a **stage** that applies a hanning window. Remember to use this before a fft to remove spectral leakage.
@@ -220,14 +208,14 @@ Applies FFT to data. Can return different results of the fft such as complex dat
 
 ### Properties
 - type - str: The type of output of the fft.
-  - complex: Return the raw complex output of the fft
-  - phase: Return the phase of the fft
-  - abs: Return the absolute value (magnitude) of the fft
+  - complex: Return the raw complex output of the fft.
+  - phase: Return the phase of the fft.
+  - abs: Return the absolute value (magnitude) of the fft.
   - power: return the special power of the fft.
 - shift: If true, shift the zero-frequency component to the center of the spectrum. False by default.
 
 ### Note
-When plotting fft, make sure to provide x_data of the plot the following to get accurate results:
+When plotting fft, make sure to provide x_data of the plot to the following to get accurate results:
 np.fft.fftfreq(blocksize, 1/samplerate)
 This provides the frequency of each index to the plotter.
 
@@ -235,7 +223,7 @@ This provides the frequency of each index to the plotter.
 Takes a DoA estimator and places it into the pipeline.
 
 ### Properties
-- estimator - direction_of_arrival.Estimator: The estimator to utilize
+- estimator - direction_of_arrival.Estimator: The estimator to utilize.
 
 ## LinePlotter - Stage
 Plots one line or several lines on a grid. If input data is a vector, plot one line. If a matrix, plot one line per list on axis=0.
@@ -246,13 +234,13 @@ Plots one line or several lines on a grid. If input data is a vector, plot one l
 - y_label - str: The Y label of the plot.
 - num_points - int: The number of points per line. Should match .shape[0] of incoming data if a matrix of length of the data if a vector.
 - num_lines - int: The number of lines to draw. Should match .shape[1] of incoming data if a matrix, or simply one if the data is a vector.
-- interval - float: The delay in seconds between frame updates. Should match the period of data arrivals to the port (blocksize / samplerate)
+- interval - float: The delay in seconds between frame updates. Should match the period of data arrivals to the port (blocksize / samplerate).
 - x_data - np.array: If provided, use this as the x-axis data component. If not provided, it is 0 to num_points.
-- x_extent - tuple: If provided, show this range on the x-axis by cropping
-- y_extent - tuple: If provided, show this range on the y-axis by cropping
+- x_extent - tuple: If provided, show this range on the x-axis by cropping.
+- y_extent - tuple: If provided, show this range on the y-axis by cropping.
 
 ### Methods
-- show: Show the plot. This is a blocking methods. Call it at the end of your script.
+- show - static: Show the plot. This is a blocking methods. Call it at the end of your script.
 
 ## PolarPlotter - Stage
 Similar to LienPlotter, but plots (theta, radius) rather than (x, y).
@@ -261,10 +249,10 @@ Similar to LienPlotter, but plots (theta, radius) rather than (x, y).
 - title - str: The title of the plot.
 - num_points - int: The number of points per line. Should match .shape[0] of incoming data if a matrix of length of the data if a vector.
 - num_lines - int: The number of lines to draw. Should match .shape[1] of incoming data if a matrix, or simply one if the data is a vector.
-- interval - float: The delay in seconds between frame updates. Should match the period of data arrivals to the port (blocksize / samplerate)
+- interval - float: The delay in seconds between frame updates. Should match the period of data arrivals to the port (blocksize / samplerate).
 - theta_data - np.array: If provided, use this as the x-axis data component. If not provided, it is 0 to num_points, incrementing by 1 (this is never right, always give this. It is optional just for consistency).
-- theta_extent - tuple: If provided, show this range on the theta-axis by cropping
-- radius_extent - tuple: If provided, show this range on the radius-axis by cropping
+- theta_extent - tuple: If provided, show this range on the theta-axis by cropping.
+- radius_extent - tuple: If provided, show this range on the radius-axis by cropping.
 
 ## HeatmapPlotter - Stage
 Plots a matrix on a heatmap. Same properties and methods as LinePlotter with the addition of:
@@ -272,19 +260,19 @@ Plots a matrix on a heatmap. Same properties and methods as LinePlotter with the
 - cmap - str: The [color map](https://matplotlib.org/stable/users/explain/colors/colormaps.html) which to use for the heatmap. Default is viridis.
 
 ## AudioPlayback - Stage
-Play data back out to your speakers. Useful for hearing how filters effect data easily for demonstrative purposes. Expects a matrix to keep consistency from recorders and simulators
+Play data back out to your speakers. Useful for hearing how filters effect data easily for demonstrative purposes. Expects a matrix to keep consistency.
 
 ### Properties
-- samplerate - int: The sample rate of the data
-- blocksize - int: The blocksize of the data
-- channel - int: The channel which to play
+- samplerate - int: The sample rate of the data.
+- blocksize - int: The blocksize of the data.
+- channel - int: The channel which to play.
 
 #### Properties
-- label - str: The label to pass to the file name
+- label - str: The label to pass to the file name.
 - path - str: The path of where to save the file. Must be a folder with no / or \ at the end of the string.
 
 # direction of arrival
-Holds elements, wave vectors, steering vectors, and steering matrices. Use to calculate steering vectors for simulators and steering matrices for DoA algorithms. All classes here are dataclass. They have no methods, only hold and calculate data
+Holds elements, wave vectors, steering vectors, and steering matrices. Use to calculate steering vectors for simulators and steering matrices for DoA algorithms.
 
 ## spherical_to_cartesian - function
 Takes np.array([radius, inclination, azimuth]) and returns np.array([x, y, z]).
@@ -293,26 +281,26 @@ Takes np.array([radius, inclination, azimuth]) and returns np.array([x, y, z]).
 Takes np.array([x, y, z]) are returns np.array([radius, inclination, azimuth]).
 
 ## Element
-Represents and element (a microphone or antenna).
+Represents an element (a microphone or antenna).
 
 ### Properties
 - position - np.array: A numpy array holding (x, y, z) position. Units are in wavelengths of a theoretical wavevector.
 - samplerate - int: The sample rate of the element.
 
 #### Calculated properties
-- spherical_position - np.array: A tuple holding (r, inclination, azimuth) position
+- spherical_position - np.array: A tuple holding (r, inclination, azimuth) position.
 
 ## WaveVector
 Holds wavevector. Remember to always pass (kx, ky, kz). If you want to pass (wavenumber, inclination, azimuth), which is more common, translate using spherical_to_cartesian inside the declaration.
 
 ### Properties
-- k - np.array: A numpy array holding (kx, ky, kz)
+- k - np.array: A numpy array holding (kx, ky, kz).
 
 #### Calculated properties
-- spherical_k - tuple: numpy array holding (wavenumber, inclination, azimuth)
+- spherical_k - tuple: numpy array holding (wavenumber, inclination, azimuth).
 - inclination - float: The inclination angle of the wavevector in radians. Equal to arctan(ky / kx). 
 - azimuth - float: The azimuth angle of the wavevector in radians. Equal to np.arccos(kz / |k|).
-- angular_wavenumber - float: The angular wavenumber of the wavevector. |k|.
+- angular_wavenumber - float: The angular wavenumber of the wavevector. Equal to |k|.
 - angular_wavelength - float: The angular wavelength of the wavevector. Equal to 1 / angular_wavenumber.
 - angular_frequency - float: The angular frequency of the wavevector. Equal to angular_wavenumber * wave_speed.
 - angular_period - float: The angular period of the wavevector. Equal to 1 / angular_frequency.
@@ -321,18 +309,23 @@ Holds wavevector. Remember to always pass (kx, ky, kz). If you want to pass (wav
 - linear_frequency - float: The linear frequency of the wavevector. Equal to angular_frequency / (2 * pi).
 - linear_period - float: The linear period of the wavevector. Equal to angular_period * (2 * pi).
 
+![Graphic of unit conversions](https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Commutative_diagram_of_harmonic_wave_properties.svg/450px-Commutative_diagram_of_harmonic_wave_properties.svg.png)
+
+_A diagram representing the relationships between wavenumbers and other properties_
+
+
 ## Structure
-Represents and assembly of elements. Takes several elements and provided functionality with the elements.
+Represents an assembly of elements. Takes several elements and provided functionality with the elements.
 
 ### Properties
-- elements - List[Element]: A list of elements to project a wavevector onto
-- wavenumber - float: The wave number of the incoming signal
+- elements - List[Element]: A list of elements to project a wavevector onto.
+- wavenumber - float: The wave number of the incoming signal.
 - snr - float: The expected or to be simulated signal-to-noise ratio of the audio waves.
 - samplerate - int: The global samplerate of the structure. This is taken from the first element. All elements should have the same samplerate.
 - inclination_range - tuple(float): The range of possible inclinations the structure is capable of scanning.
 - azimuth_range - tuple(float): The range of possible azimuths the structure is capable of scanning.
-- inclination_resolution: The number of inclinations to scan for. The higher the number, the more accurate the structure is with the cost of computation time.
-- azimuth_resolution: The number of azimuths to scan for. Same compromises as inclination_resolution.
+- inclination_resolution - int: The number of inclinations to scan for. The higher the number, the more accurate the structure is with the cost of computation time.
+- azimuth_resolution - int: The number of azimuths to scan for. Same compromises as inclination_resolution.
 
 ### Calculated properties
 - inclination_values - np.array: An array of inclinations which it scans for. This can be helpfully for getting axis data for plotters.
@@ -340,18 +333,18 @@ Represents and assembly of elements. Takes several elements and provided functio
 - steering_matrix - np.array: The steering matrix of the structure. Holds all possible steering vectors when considering its elements, wavenumber, ranges, and resolutions.
 
 ### Methods
-- simulate_audio(self, wavevectors: list[WaveVector], random_phase). Simulates ideal audio from the structure
-  - wavevectors: A list of wavevectors which hit the structure.
+- simulate_audio(self, wavevectors, random_phase). Simulates ideal audio from the structure
+  - wavevectors - list[WaveVector]: A list of wavevectors which hit the structure.
   - random_phase: If true, randomize the phase of elements. All elements will have the same randomized phase. Default is True.
 - visualize(self): Shows a 3D scatterplot with element positions. Helps verify that the structure is what the user expects.
-- steering_vector: Calculates a steering vector when given a wavevector. Returns a steering vector which correlates to the structure.
+- steering_vector(self, wavevector): Calculates a steering vector when given a wavevector. Returns a steering vector which correlates to the structure.
   - wavevector - WaveVector: A wave vector to project onto elements.
 
 ### Calculated properties
-- matrix - np.array: The resulting steering matrix
+- steering_matrix - np.array: The steering matrix accosted with the structure. Dependent on elements, azimuth and inclination ranges and resolutions. Heavily used in DoA algorithms and the core of this module.
 
 ## Estimator
-A base class for all estimators. Do not use directly
+A base class for all estimators. Do not use directly as this is an abstract base class.
 
 ### Properties
 - steering_matrix - SteeringMatrix: The main steering matrix to use in the algorithm. All subclasses have a steering matrix.
@@ -378,7 +371,7 @@ The most accurate and most computationally expensive algorithm. Gives extremely 
 Calculates ideal spacing between uniform element spacing arrays. Useful for setting up a structure in real life.
 
 ### Parameters
-- linear_frequency - float: Hz of the wave you would like to measure
+- linear_frequency - float: Hz of the wave you would like to measure.
 - wave_speed - float: The speed of the wave in the environment in meters per second. Sound waves are 343 meters per second.
 
 ### Returns
@@ -398,32 +391,16 @@ This class manages a camera. It can get a picture from the camera, calibrate the
 
 ### Methods
 
-## open
-Opens the camera feed. Automatically ran during object initialization. Run if you release the camera and want to open it again.
 
-## release
-Releases the camera feed. Run at the end of the script, if it has an end (similar to Stage).
-
-## read
-Returns an image from the camera. If a calibration profile is present, it will pass the image though the calibration, then return it. Otherwise, it will change the resolution to the output resolution of the instance.
-
-## calibrate
-Calibrates the camera and creates a calibration profile. Requires images to be present in calibration_images. The images must be images of a checkerboard. It will display the points on the checkerboard for user verification, then create a calibration profile. The profile is automaticly applied to the instace.
-
-### Parameters:
-- checkerboard_size - tuple: The number of rows and columns of the checkerboard provided as (row, cols).
-
-## save_calibration
-Saves the current calibration to a python pickle file for later instances of the same camera.
-
-### Parameters
-- path: The path to save the calibration to.  File should have extension .pickle.
-
-## load_calibration
-Loads a previous calibration of the same camera to the current instance. The previous calibration must be saved by save_calibration
-
-### Parameters
-- path: The path to load the calibration from. File should have extension .pickle.
+- open(self): Opens the camera feed. Automatically ran during object initialization. Run if you release the camera and want to open it again.
+- release(self): Releases the camera feed. Run at the end of the script, if it has an end (similar to Stage).
+- read(self): Returns an image from the camera. If a calibration profile is present, it will pass the image though the calibration, then return it. Otherwise, it will change the resolution to the output resolution of the instance.
+- calibrate(self, checkerboard_size): Calibrates the camera and creates a calibration profile. Requires images to be present in calibration_images. The images must be images of a checkerboard. It will display the points on the checkerboard for user verification, then create a calibration profile. The profile is automaticly applied to the instace.
+  - checkerboard_size - tuple: The number of rows and columns of the checkerboard provided as (row, cols).
+- save_calibration(self, path): Saves the current calibration to a python pickle file for later instances of the same camera.
+  - path - str: The path to save the calibration to.  File should have extension .pickle.
+- load_calibration(self, path):Loads a previous calibration of the same camera to the current instance. The previous calibration must be saved by save_calibration
+  - path: The path to load the calibration from. File should have extension .pickle.
 
 # Example
 
