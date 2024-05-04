@@ -1,6 +1,12 @@
+from AccCam.__config__ import __USE_CUPY__
+
+if __USE_CUPY__:
+    import cupy as np
+else:
+    import numpy as np
+
 import AccCam.realtime_dsp as dsp
 import AccCam.direction_of_arrival as doa
-import numpy as np
 
 
 def main():
@@ -33,8 +39,6 @@ def main():
         wavenumber=wavenumber,
         snr=50,
         blocksize=blocksize,
-        inclination_resolution=100,
-        azimuth_resolution=100
     )
     structure.visualize()
 
@@ -50,7 +54,8 @@ def main():
     # Recorder to get data
     recorder = dsp.AudioSimulator(
         structure=structure,
-        wavevectors=wavevectors
+        wavevectors=wavevectors,
+        wait=False
     )
 
     # Filter
@@ -79,7 +84,7 @@ def main():
         y_label="azimuth",
         x_data=structure.inclination_values,
         y_data=structure.azimuths_values,
-        interval=blocksize/samplerate,
+        interval=0,
         cmap='inferno'
     )
 

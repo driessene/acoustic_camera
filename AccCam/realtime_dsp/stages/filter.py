@@ -1,6 +1,13 @@
+from AccCam.__config__ import __USE_CUPY__
+
+if __USE_CUPY__:
+    import cupy as np
+    import cupyx.scipy.signal as sig
+else:
+    import numpy as np
+    import scipy.signal as sig
+
 import AccCam.realtime_dsp.pipeline as pipe
-import numpy as np
-import scipy.signal as sig
 import logging
 import matplotlib.pyplot as plt
 
@@ -85,12 +92,22 @@ class Filter(pipe.Stage):
         freq_hz = w * self.samplerate / (2 * np.pi)  # Convert frequency axis to Hz
         fig, ax1 = plt.subplots()
         ax1.set_title('Digital filter frequency response')
-        ax1.plot(freq_hz, (20 * np.log10(abs(h))), 'b')
+
+        if __USE_CUPY__:
+            ax1.plot(freq_hz.get(), (20 * np.log10(np.abs(h)).get()), 'b')
+        else:
+            ax1.plot(freq_hz, (20 * np.log10(abs(h))), 'b')
+
         ax1.set_ylabel('Amplitude [dB]', color='b')
         ax1.set_xlabel('Frequency [Hz]')
         ax2 = ax1.twinx()
         angles = np.unwrap(np.angle(h))
-        ax2.plot(freq_hz, np.rad2deg(angles), 'g')
+
+        if __USE_CUPY__:
+            ax2.plot(freq_hz.get(), np.rad2deg(angles).get(), 'g')
+        else:
+            ax2.plot(freq_hz, np.rad2deg(angles), 'g')
+
         ax2.set_ylabel('Angle (degrees)', color='g')
         ax2.grid()
         ax2.axis('tight')
@@ -103,11 +120,21 @@ class Filter(pipe.Stage):
         """
         fig, ax1 = plt.subplots()
         ax1.set_title('Digital filter coefficients')
-        ax1.plot(self.b, 'b')
+
+        if __USE_CUPY__:
+            ax1.plot(self.b.get(), 'b')
+        else:
+            ax1.plot(self.b, 'b')
+
         ax1.set_ylabel('B Coefficient', color='b')
         ax1.set_xlabel('N')
         ax2 = ax1.twinx()
-        ax2.plot(self.a, 'g')
+
+        if __USE_CUPY__:
+            ax2.plot(self.a.get(), 'g')
+        else:
+            ax2.plot(self.a, 'g')
+
         ax2.set_ylabel('A Coefficient', color='g')
         ax2.grid()
         ax2.axis('tight')

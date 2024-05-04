@@ -1,4 +1,10 @@
-import numpy as np
+from AccCam.__config__ import __USE_CUPY__
+
+if __USE_CUPY__:
+    import cupy as np
+else:
+    import numpy as np
+
 from functools import cached_property
 import matplotlib.pyplot as plt
 import logging
@@ -230,6 +236,10 @@ class Structure:
 
         positions = np.array([element.position for element in self.elements])
         xs, ys, zs = positions[:, 0], positions[:, 1], positions[:, 2]
+
+        if __USE_CUPY__:
+            xs, ys, zs = xs.get(), ys.get(), zs.get()
+
         ax.scatter(xs, ys, zs)
 
         ax.set_title('Element Positions')

@@ -1,4 +1,10 @@
-import numpy as np
+from AccCam.__config__ import __USE_CUPY__
+
+if __USE_CUPY__:
+    import cupy as np
+else:
+    import numpy as np
+
 import logging
 import sounddevice as sd
 import AccCam.realtime_dsp.pipeline as pipe

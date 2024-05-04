@@ -1,5 +1,11 @@
+from AccCam.__config__ import __USE_CUPY__
+
+if __USE_CUPY__:
+    import cupy as np
+else:
+    import numpy as np
+
 import AccCam.realtime_dsp.pipeline as control
-import numpy as np
 import logging
 from itertools import combinations
 

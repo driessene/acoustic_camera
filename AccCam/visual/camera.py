@@ -1,8 +1,14 @@
+from AccCam.__config__ import __USE_CUPY__
+
+if __USE_CUPY__:
+    import cupy as np
+else:
+    import numpy as np
+
 import logging
 import pickle
 import glob
 import cv2 as cv
-import numpy as np
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,10 @@
-import numpy as np
+from AccCam.__config__ import __USE_CUPY__
+
+if __USE_CUPY__:
+    import cupy as np
+else:
+    import numpy as np
+
 import logging
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
@@ -60,14 +66,26 @@ class LinePlotter(pipe.Stage):
         if self.x is None:
             self.x = np.arange(num_points)
 
+        # Convert to numpy if needed
+        if __USE_CUPY__:
+            self.x = self.x.get()
+
         # Set ranges if asked
         if x_extent is not None:
             self.ax.set_xlim(x_extent)
         if y_extent is not None:
             self.ax.set_ylim(y_extent)
 
+        # Temporary Y
+        temp_y = np.zeros_like(self.x)
+
+        # Convert to numpy if needed
+        if __USE_CUPY__:
+            self.x = self.x.get()
+            temp_y = temp_y.get()
+
         # Initialize each line
-        self.plots = [self.ax.plot(self.x, np.zeros_like(self.x))[0] for _ in range(num_lines)]
+        self.plots = [self.ax.plot(self.x, temp_y)[0] for _ in range(num_lines)]
 
         # Set a legend if asked
         if legend:
@@ -88,6 +106,10 @@ class LinePlotter(pipe.Stage):
         # If a signal matrix, transpose
         if data.ndim > 1:
             data = data.T
+
+        # If cupy, convert to numpy
+        if __USE_CUPY__:
+            data = data.get()
 
         # Plot
         for (y, plot) in zip(data, self.plots):
@@ -135,8 +157,14 @@ class PolarPlotter(pipe.Stage):
 
         # Setup theta data for each line
         self.theta = theta_data
+        temp_r = np.zeros_like(self.theta)
         if self.theta is None:
             self.theta = np.arange(num_points)
+
+        # Convert to nupy if needed
+        if __USE_CUPY__:
+            self.theta = self.theta.get()
+            temp_r = temp_r.get()
 
         # Set ranges if asked
         if theta_extent is not None:
@@ -145,7 +173,7 @@ class PolarPlotter(pipe.Stage):
             self.ax.set_ylim(radius_extent)
 
         # Initialize each line
-        self.plots = [self.ax.plot(self.theta, np.zeros_like(self.theta))[0] for _ in range(num_lines)]
+        self.plots = [self.ax.plot(self.theta, temp_r)[0] for _ in range(num_lines)]
 
         # Set a legend if asked
         if legend:
@@ -157,6 +185,10 @@ class PolarPlotter(pipe.Stage):
     def _on_frame_update(self, frame):
         message = self.port_get()[0]
         data = message.payload
+
+        # Convert to numpy if needed:
+        if __USE_CUPY__:
+            data = data.get()
 
         # Data checking
         if data.shape != (self.num_points, self.num_lines) and data.shape != (self.num_points,):
@@ -235,7 +267,13 @@ class HeatmapPlotter(pipe.Stage):
         if self.z_extent is None:
             self.z_extent = (0, 1)
 
-        self.plot = self.ax.pcolormesh(self.xx, self.yy, np.zeros_like(self.xx),
+        temp_z = np.zeros_like(self.xx)
+
+        # Convert to numpy if needed
+        if __USE_CUPY__:
+            self.xx, self.yy, temp_z = self.xx.get(), self.yy.get(), temp_z.get()
+
+        self.plot = self.ax.pcolormesh(self.xx, self.yy, temp_z,
                                        vmin=self.z_extent[0], vmax=self.z_extent[1], cmap=self.cmap)
 
         self.anim = FuncAnimation(self.fig, self._on_frame_update, interval=self.interval)
@@ -247,6 +285,10 @@ class HeatmapPlotter(pipe.Stage):
         # Data checking
         if data.size != self.xx.size:
             logger.warning(f'Data shape of {data.shape} does not match expected shape of {self.xx.shape}')
+
+        # Convert to numpy if needed
+        if __USE_CUPY__:
+            data = data.get()
 
         # Plot
         self.plot.set_array(data)
@@ -286,7 +328,11 @@ class HeatmapPlotterVideo(pipe.Stage):
 
         self.cmap = cmap
 
-        self.plot = self.ax.imshow(np.zeros((x_len, y_len, 3)))
+        temp = np.zeros((x_len, y_len, 3))
+        if __USE_CUPY__:
+            temp = temp.get()
+
+        self.plot = self.ax.imshow(temp)
 
         self.anim = FuncAnimation(self.fig, self._on_frame_update, interval=self.interval)
 
@@ -301,6 +347,11 @@ class HeatmapPlotterVideo(pipe.Stage):
         message = self.port_get()[0]
         payload = message.payload
         payload_uint8 = np.uint8(payload * 255)
+
+        # Convert to numpy if needed
+        if __USE_CUPY__:
+            payload_uint8 = payload_uint8.get()
+
         raw_audio = payload_uint8.reshape(self.structure.inclination_resolution, self.structure.azimuth_resolution)
         audio = cv.applyColorMap(raw_audio, self.cmap)
 
