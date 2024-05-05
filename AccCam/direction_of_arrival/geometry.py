@@ -215,7 +215,7 @@ class Structure:
         # Reshape the 3d matrix to 2d for DoA algorithms
         return steering_vectors.reshape(len(self.elements), self.inclination_resolution * self.azimuth_resolution)
 
-    def simulate_audio(self, wavevectors: list[WaveVector], random_phase: bool = True) -> np.ndarray:
+    def simulate_audio(self, wavevectors: tuple[WaveVector], random_phase: bool = True) -> np.ndarray:
         # Randomize phase
         phase = 0
         if random_phase:
@@ -230,8 +230,7 @@ class Structure:
         steering_vectors = self.steering_vector(wavevectors)
 
         # Apply wave vectors and sum signals to each element
-        signal_matrix = np.sum(np.array([np.outer(sig, vector) for (sig, vector) in zip(waveforms, steering_vectors)]),
-                               axis=0).real
+        signal_matrix = np.dot(waveforms.T, steering_vectors).real
 
         # Generate noise
         signal_power = np.mean(np.abs(signal_matrix) ** 2)
