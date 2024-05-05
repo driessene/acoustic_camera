@@ -66,10 +66,6 @@ class LinePlotter(pipe.Stage):
         if self.x is None:
             self.x = np.arange(num_points)
 
-        # Convert to numpy if needed
-        if __USE_CUPY__:
-            self.x = self.x.get()
-
         # Set ranges if asked
         if x_extent is not None:
             self.ax.set_xlim(x_extent)
@@ -346,11 +342,11 @@ class HeatmapPlotterVideo(pipe.Stage):
         # Audio get
         message = self.port_get()[0]
         payload = message.payload
-        payload_uint8 = np.uint8(payload * 255)
 
-        # Convert to numpy if needed
         if __USE_CUPY__:
-            payload_uint8 = payload_uint8.get()
+            payload = payload.get()
+
+        payload_uint8 = np.uint8(payload * 255)
 
         raw_audio = payload_uint8.reshape(self.structure.inclination_resolution, self.structure.azimuth_resolution)
         audio = cv.applyColorMap(raw_audio, self.cmap)
