@@ -8,27 +8,38 @@ else:
 from functools import cached_property
 import matplotlib.pyplot as plt
 import logging
+from time import perf_counter
 
 logger = logging.getLogger(__name__)
 
 
 def spherical_to_cartesian(spherical_pos: np.ndarray):
+    if len(spherical_pos.shape) == 1:
+        spherical_pos = spherical_pos.reshape(1, -1)
     # (radius, inclination, azimuth) -> (x, y, z)
-    return np.array([
-        spherical_pos[0] * np.sin(spherical_pos[1]) * np.cos(spherical_pos[2]),
-        spherical_pos[0] * np.sin(spherical_pos[1]) * np.sin(spherical_pos[2]),
-        spherical_pos[0] * np.cos(spherical_pos[1])
-    ])
+    result = np.stack([
+        spherical_pos[:, 0] * np.sin(spherical_pos[:, 1]) * np.cos(spherical_pos[:, 2]),
+        spherical_pos[:, 0] * np.sin(spherical_pos[:, 1]) * np.sin(spherical_pos[:, 2]),
+        spherical_pos[:, 0] * np.cos(spherical_pos[:, 1])
+    ], axis=-1)
+    if result.shape[0] == 1:
+        return result[0]
+    return result
 
 
 def cartesian_to_spherical(cartesian_pos: np.ndarray):
+    if len(cartesian_pos.shape) == 1:
+        cartesian_pos = cartesian_pos.reshape(1, -1)
     # (x, y, z) -> (radius, inclination, azimuth)
-    r = np.sqrt(np.sum(np.square(cartesian_pos)))
-    return np.array([
+    r = np.sqrt(np.sum(np.square(cartesian_pos), axis=-1))
+    result = np.stack([
         r,
-        np.arctan(cartesian_pos[1] / cartesian_pos[0]),
-        np.arccos(cartesian_pos[2] / r)
-    ])
+        np.arctan2(cartesian_pos[:, 1], cartesian_pos[:, 0]),
+        np.arccos(cartesian_pos[:, 2] / r)
+    ], axis=-1)
+    if result.shape[0] == 1:
+        return result[0]
+    return result
 
 
 class Element:
@@ -173,17 +184,21 @@ class Structure:
     def positions(self):
         return np.array([element.position for element in self.elements])
 
-    def steering_vector(self, wavevector: WaveVector):
+    def steering_vector(self, wavevectors: tuple[WaveVector]):
         """
-        Calculates a steering vector based on the structure and a given wave vector.
-        :param wavevector: The wavevector to project onto the elements
-        :returns: a steering vector which describes the reaction of the elements to the wavevector
+        Calculates a steering vector based on the structure and a given set of wavevectors.
+        :param wavevectors: A list of WaveVector objects representing the wavevectors.
+        :returns: A NumPy array representing the steering vector.
         """
-        # Algorithm for steering vector: e^(j * (pos . k))
-        return np.exp(1j * (self.positions @ wavevector.k))
+        # Extract wavevector components
+        ks = np.vstack([wv.k for wv in wavevectors])
+
+        # Efficiently calculate steering vector using broadcasting
+        return np.exp(1j * ks @ self.positions.T)
 
     @cached_property
     def steering_matrix(self):
+        st = perf_counter()
         # Create 3D grid of inclination and azimuth. This gives every combination of angles on a grid
         inclinations_mesh, azimuths_mesh = np.meshgrid(self.inclination_values, self.azimuths_values)
 
@@ -191,14 +206,17 @@ class Structure:
         spherical_coords = np.array([self.wavenumber * np.ones_like(inclinations_mesh.ravel()),  # Wave number
                                      inclinations_mesh.ravel(),                                  # inclination
                                      azimuths_mesh.ravel()]).T                                   # azimuth
+        cartesian_coords = spherical_to_cartesian(spherical_coords)
 
         # Convert spherical coordinates to wave vectors for each set of angles. Wave speed does not matter here
-        wavevectors = [WaveVector(spherical_to_cartesian(coord), 1) for coord in spherical_coords]
+        wavevectors = (WaveVector(coord, 1) for coord in cartesian_coords)
 
         # Calculate steering vectors for all elements and all set of angles
-        steering_vectors = np.array([self.steering_vector(wavevector) for wavevector in wavevectors]).T
+        steering_vectors = self.steering_vector(wavevectors).T
 
         # Reshape the 3d matrix to 2d for DoA algorithms
+        ft = perf_counter()
+        print(ft-st)
         return steering_vectors.reshape(len(self.elements), self.inclination_resolution * self.azimuth_resolution)
 
     def simulate_audio(self, wavevectors: list[WaveVector], random_phase: bool = True) -> np.ndarray:
@@ -211,9 +229,9 @@ class Structure:
         time_vector = np.arange(self.blocksize) / self.samplerate
 
         # Individual signals
-        frequencies = [wave_vector.angular_frequency for wave_vector in wavevectors]
+        frequencies = (wave_vector.angular_frequency for wave_vector in wavevectors)
         waveforms = np.array([np.exp(1j * freq * time_vector + phase) for freq in frequencies])
-        steering_vectors = np.array([self.steering_vector(wave_vector) for wave_vector in wavevectors])
+        steering_vectors = self.steering_vector(wavevectors)
 
         # Apply wave vectors and sum signals to each element
         signal_matrix = np.sum(np.array([np.outer(sig, vector) for (sig, vector) in zip(waveforms, steering_vectors)]),

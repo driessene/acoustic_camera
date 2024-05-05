@@ -3,6 +3,7 @@
     - [Array processing](#array-processing)
       - [Steering vector](#steering-vector)
       - [Steering matrix](#steering-matrix)
+- [Configuration File](#configuration-file)
 - [Realtime DSP](#realtime-dsp)
   - [Stage](#stage)
     - [Properties](#properties)
@@ -110,6 +111,10 @@ Steering vectors are vectors which describe how a signal changes as elements rec
 ![Graphic of a steering matrix](https://ars.els-cdn.com/content/image/3-s2.0-B978012398499900008X-f08-03-9780123984999.jpg)
 #### Steering matrix
 A steering matrix is composed of several steering vectors at several different angles. Each row on the matrix describes a different steering vector at a different angle. These matrices are used in DoA estimation algorithms.
+
+# Configuration File
+Hold configuration info for the AccCam library, primarily flags.
+- __USE_CUPY__ - bool: If true, replace numpy and scipy with cupy. Highly recommended when possible as it offers drastic performance improvements. When true, the project can be up to x20 faster. Cupy must be installed. Follow installation instructions [here](https://docs.cupy.dev/en/stable/install.html).
 
 # Realtime DSP
 
@@ -364,10 +369,10 @@ Play data back out to your speakers. Useful for hearing how filters effect data 
 Holds elements, wave vectors, steering vectors, and steering matrices. Use to calculate steering vectors for simulators and steering matrices for DoA algorithms.
 
 ## spherical_to_cartesian - function
-Takes np.array([radius, inclination, azimuth]) and returns np.array([x, y, z]).
+Takes np.array([radius, inclination, azimuth]) and returns np.array([x, y, z]). Can accept a 2d array in the form of [[x1, y1, z1], [x2, y2, z2], ...]. Use this method rather than for loops for performance improvements.
 
 ## cartesian_to_spherical - function
-Takes np.array([x, y, z]) are returns np.array([radius, inclination, azimuth]).
+Takes np.array([x, y, z]) are returns np.array([radius, inclination, azimuth]). Can also accept 2d arrays like spherical_to_cartesian.
 
 ## Element
 Represents an element (a microphone or antenna).
@@ -422,7 +427,9 @@ Represents an assembly of elements. Takes several elements and provided function
 - steering_matrix - np.array: The steering matrix of the structure. Holds all possible steering vectors when considering its elements, wavenumber, ranges, and resolutions.
 
 ### Methods
-- simulate_audio(self, wavevectors, random_phase). Simulates ideal audio from the structure
+- steering_vector(self, wavevectors): Get a steering vector for the structure when provided a list of wavevectors. If only one wavevector exists, pass it as a list of one vector.
+  - wavevectors - list[WaveVector]: A list of wavevectors which hit the structure.
+- simulate_audio(self, wavevectors, random_phase): Simulates ideal audio from the structure
   - wavevectors - list[WaveVector]: A list of wavevectors which hit the structure.
   - random_phase: If true, randomize the phase of elements. All elements will have the same randomized phase. Default is True.
 - visualize(self): Shows a 3D scatterplot with element positions. Helps verify that the structure is what the user expects.
