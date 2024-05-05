@@ -8,7 +8,6 @@ else:
 from functools import cached_property
 import matplotlib.pyplot as plt
 import logging
-from time import perf_counter
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +197,6 @@ class Structure:
 
     @cached_property
     def steering_matrix(self):
-        st = perf_counter()
         # Create 3D grid of inclination and azimuth. This gives every combination of angles on a grid
         inclinations_mesh, azimuths_mesh = np.meshgrid(self.inclination_values, self.azimuths_values)
 
@@ -215,8 +213,6 @@ class Structure:
         steering_vectors = self.steering_vector(wavevectors).T
 
         # Reshape the 3d matrix to 2d for DoA algorithms
-        ft = perf_counter()
-        print(ft-st)
         return steering_vectors.reshape(len(self.elements), self.inclination_resolution * self.azimuth_resolution)
 
     def simulate_audio(self, wavevectors: list[WaveVector], random_phase: bool = True) -> np.ndarray:
