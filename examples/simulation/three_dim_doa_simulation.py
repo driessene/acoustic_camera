@@ -18,21 +18,9 @@ def main():
     speed_of_sound = 343
 
     # Sphere
-    elements = [doa.Element(np.array([-1.25, 0, 0]), samplerate),
-                doa.Element(np.array([-0.75, 0, 0]), samplerate),
-                doa.Element(np.array([-0.25, 0, 0]), samplerate),
-                doa.Element(np.array([0.25, 0, 0]), samplerate),
-                doa.Element(np.array([0.75, 0, 0]), samplerate),
-                doa.Element(np.array([1.25, 0, 0]), samplerate),
-                doa.Element(np.array([0, -1.25, 0]), samplerate),
-                doa.Element(np.array([0, -0.75, 0]), samplerate),
-                doa.Element(np.array([0, -0.25, 0]), samplerate),
-                doa.Element(np.array([0, 0.25, 0]), samplerate),
-                doa.Element(np.array([0, 0.75, 0]), samplerate),
-                doa.Element(np.array([0, 1.25, 0]), samplerate),
-                doa.Element(np.array([0, 0, 0.25]), samplerate),
-                doa.Element(np.array([0, 0, 0.75]), samplerate),
-                doa.Element(np.array([0, 0, 1.25]), samplerate)]
+    coord = np.arange(0, 3, 0.5)
+    elements = [doa.Element(np.array([i, j ,k]), samplerate) for i in coord for j in coord for k in coord]
+    print(len(elements))
 
     structure = doa.Structure(
         elements=elements,
@@ -40,7 +28,7 @@ def main():
         snr=50,
         blocksize=blocksize,
     )
-    structure.visualize()
+    #structure.visualize()
 
     wavevectors = [
         doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 0.98, 1, 1])), speed_of_sound),
@@ -69,8 +57,8 @@ def main():
         normalize=True,
         remove_offset=True
     )
-    filt.plot_response()
-    filt.plot_coefficients()
+    #filt.plot_response()
+    #filt.plot_coefficients()
 
     # MUSIC
     estimator = doa.MVDRBeamformer(structure)

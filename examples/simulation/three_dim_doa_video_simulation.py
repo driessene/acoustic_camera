@@ -1,7 +1,13 @@
+from AccCam.__config__ import __USE_CUPY__
+
+if __USE_CUPY__:
+    import cupy as np
+else:
+    import numpy as np
+
 import AccCam.realtime_dsp as dsp
 import AccCam.direction_of_arrival as doa
 import AccCam.visual as vis
-import numpy as np
 
 
 def main():
@@ -33,9 +39,7 @@ def main():
         elements=elements,
         wavenumber=wavenumber,
         snr=50,
-        blocksize=blocksize,
-        inclination_resolution=100,
-        azimuth_resolution=100
+        blocksize=blocksize
     )
     # structure.visualize()
 
@@ -64,10 +68,9 @@ def main():
 
     # MUSIC
     estimator = doa.MVDRBeamformer(structure)
-
     music = dsp.DOAEstimator(estimator)
 
-    camera = vis.Camera((100, 100), (0, np.pi), (0, 2 * np.pi), video_source='rtsp://admin:Password123!@192.168.0.254:554')
+    camera = vis.Camera((500, 500), (0, np.pi), (0, 2 * np.pi), video_source=0)
 
     # Plot
     plot = dsp.HeatmapPlotterVideo(
