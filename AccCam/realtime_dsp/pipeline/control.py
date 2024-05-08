@@ -7,14 +7,14 @@ class Message:
     """
     A message class for transferring  data between stages in a pipeline.
     """
-    def __init__(self, payload, timestamp=None, **kwargs):
+    def __init__(self, payload, **kwargs):
         """
         :param payload: Main data to be sent to a stage
         :param timestamp: The time the message was sent. Automatically set
         :param kwargs: Other information about the message
         """
         self.payload = payload
-        self.timestamp = timestamp
+        self.timestamp = datetime.now()
 
         for k, v in kwargs.items():
             setattr(self, k, v)
