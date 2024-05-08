@@ -213,7 +213,7 @@ class Structure:
         steering_vectors = self.steering_vector(wavevectors).T
 
         # Reshape the 3d matrix to 2d for DoA algorithms
-        return steering_vectors.reshape(len(self.elements), self.inclination_resolution * self.azimuth_resolution)
+        return steering_vectors
 
     def simulate_audio(self, wavevectors: tuple[WaveVector], random_phase: bool = True) -> np.ndarray:
         # Randomize phase
