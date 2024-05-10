@@ -176,7 +176,7 @@ class Structure:
         return np.linspace(*self.inclination_range, self.inclination_resolution)
 
     @cached_property
-    def azimuths_values(self):
+    def azimuth_values(self):
         return np.linspace(*self.azimuth_range, self.azimuth_resolution)
 
     @cached_property
@@ -198,7 +198,7 @@ class Structure:
     @cached_property
     def steering_matrix(self):
         # Create 3D grid of inclination and azimuth. This gives every combination of angles on a grid
-        inclinations_mesh, azimuths_mesh = np.meshgrid(self.inclination_values, self.azimuths_values)
+        inclinations_mesh, azimuths_mesh = np.meshgrid(self.inclination_values, self.azimuth_values)
 
         # Convert inclination and azimuth to spherical coordinates
         spherical_coords = np.array([self.wavenumber * np.ones_like(inclinations_mesh.ravel()),  # Wave number
