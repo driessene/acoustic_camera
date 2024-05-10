@@ -8,6 +8,7 @@ else:
 import logging
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from abc import ABC, abstractmethod
 import AccCam.direction_of_arrival as doa
 import AccCam.realtime_dsp.pipeline as pipe
 import AccCam.visual as vis
@@ -18,7 +19,34 @@ import cv2 as cv
 logger = logging.getLogger(__name__)
 
 
-class LinePlotter(pipe.Stage):
+class Plotter(pipe.Stage, ABC):
+    """
+    Abstract base class which initializes all requirements for a plotter
+    """
+    def __init__(self, subplot_params: dict = None, interval: float = 0, port_size=4, destinations=None):
+        """
+        :param subplot_params: Any parameters to pass to plt.subplots() during initialization.
+        :param interval: The time delay in seconds between each frame update
+        """
+        super().__init__(1, port_size, destinations, False)
+
+        if subplot_params is None:
+            subplot_params = {}
+
+        self.fig, self.ax = plt.subplots(**subplot_params)
+        self.anim = FuncAnimation(self.fig, self._on_frame_update, interval=interval)
+
+    @abstractmethod
+    def _on_frame_update(self, frame):
+        """
+        Run every frame update
+        :param frame: Not used
+        :return: None
+        """
+        pass
+
+
+class LinePlotter(Plotter):
     """
     Plot a line or several lines on a plot. Data is expected to be 2d, with each 0'th axis being a line
     (1d for one line).
@@ -42,21 +70,18 @@ class LinePlotter(pipe.Stage):
         :param y_label: The y label of the plot
         :param num_points: The number of data points per line
         :param num_lines: The number of lines to plot
-        :param interval: The time delay in seconds between each frame update
         :param legend: If ture, show a legend for each line
         :param x_data: If provided, set the x component for each line to this
         :param x_extent: If provided, set the visual range of the plot on the x-axis to this
         :param y_extent: If provided, set the visual range of the plot on the y-axis to this
-        :param port_size: The size of the input port
         """
-        super().__init__(1, port_size, destinations, False)
+        super().__init__(interval=interval, port_size=port_size, destinations=destinations)
 
         # Properties
         self.num_points = num_points
         self.num_lines = num_lines
 
         # Setup ax and fig
-        self.fig, self.ax = plt.subplots()
         self.ax.set_title(title)
         self.ax.set_xlabel(x_label)
         self.ax.set_ylabel(y_label)
@@ -87,9 +112,6 @@ class LinePlotter(pipe.Stage):
         if legend:
             self.ax.legend(self.plots, [f'Channel {i}' for i in range(len(self.plots))], loc='upper right')
 
-        # Setup animation
-        self.anim = FuncAnimation(self.fig, self._on_frame_update, interval=interval)
-
     def _on_frame_update(self, frame):
         message = self.port_get()[0]
         data = message.payload
@@ -116,9 +138,9 @@ class LinePlotter(pipe.Stage):
         plt.show()
 
 
-class PolarPlotter(pipe.Stage):
+class PolarPlotter(Plotter):
     """
-    Take a vector (1d numpy array) and plot it on a pollar plot. Same as LinePlotter, but plots r, theta rather
+    Take a vector (1d numpy array) and plot it on a polar plot. Same as LinePlotter, but plots r, theta rather
     than x, y
     """
     def __init__(self,
@@ -141,21 +163,24 @@ class PolarPlotter(pipe.Stage):
         :param legend: If ture, show a legend for each line
         :param theta_data: If provided, set the theta component for each line to this
         """
-        super().__init__(1, port_size, destinations, False)
+        super().__init__(
+            subplot_params={'subplot_kw': {'projection': 'polar'}},
+            interval=interval,
+            port_size=port_size,
+            destinations=destinations)
 
         # Properties
         self.num_points = num_points
         self.num_lines = num_lines
 
         # Setup ax and fig
-        self.fig, self.ax = plt.subplots(subplot_kw={'projection': 'polar'})
         self.ax.set_title(title)
 
         # Setup theta data for each line
         self.theta = theta_data
         temp_r = np.zeros_like(self.theta)
         if self.theta is None:
-            self.theta = np.arange(num_points)
+            self.theta = np.linspace(0, 2*np.pi, num_points)
 
         # Convert to nupy if needed
         if __USE_CUPY__:
@@ -174,9 +199,6 @@ class PolarPlotter(pipe.Stage):
         # Set a legend if asked
         if legend:
             self.ax.legend(self.plots, [f'Channel {i}' for i in range(len(self.plots))], loc='upper right')
-
-        # Setup animation
-        self.anim = FuncAnimation(self.fig, self._on_frame_update, interval=interval)
 
     def _on_frame_update(self, frame):
         message = self.port_get()[0]
@@ -211,7 +233,7 @@ class PolarPlotter(pipe.Stage):
         plt.show()
 
 
-class HeatmapPlotter(pipe.Stage):
+class HeatmapPlotter(Plotter):
     """
     Plots a 2d matrix flat on a surface. Data is expected to be 1D, which is from a 2D matrix, but flattened. Use
     np.ravel() if needed to flatten a matrix. For example, a MUSIC output can have 2 axes (inclination, azimuth), but is
@@ -236,18 +258,14 @@ class HeatmapPlotter(pipe.Stage):
         :param y_label: The y label of the plot
         :param x_data: The x-axis data of the incoming data. If unknown, set to np.arrange(data.shape[0])
         :param y_data: The y-axis data of the incoming data. If unknown, set to np.arrange(data.shape[1])
-        :param interval: The time delay in seconds between each frame update
         :param x_extent: If provided, set the visual range of the plot on the x-axis to this
         :param y_extent: If provided, set the visual range of the plot on the y-axis to this
         :param z_extent: If provided, set the visual range of the plot on the z-axis to this
-        :param port_size: The size of the input port
         """
-        super().__init__(1, port_size, destinations, False)
+        super().__init__(interval=interval, port_size=port_size, destinations=destinations)
 
         self.xx, self.yy = np.meshgrid(x_data, y_data)
-        self.interval = interval
 
-        self.fig, self.ax = plt.subplots()
         self.ax.set_title(title)
         self.ax.set_xlabel(x_label)
         self.ax.set_ylabel(y_label)
@@ -272,8 +290,6 @@ class HeatmapPlotter(pipe.Stage):
         self.plot = self.ax.pcolormesh(self.xx, self.yy, temp_z,
                                        vmin=self.z_extent[0], vmax=self.z_extent[1], cmap=self.cmap)
 
-        self.anim = FuncAnimation(self.fig, self._on_frame_update, interval=self.interval)
-
     def _on_frame_update(self, frame):
         message = self.port_get()[0]
         data = message.payload
@@ -295,7 +311,7 @@ class HeatmapPlotter(pipe.Stage):
         plt.show()
 
 
-class HeatmapPlotterVideo(pipe.Stage):
+class HeatmapPlotterVideo(Plotter):
     """
     A HeatmapPlotter with a video feed displayed behind the heatmap. The spacing of angles of the Estimator must be
     linear for this plotter, unlike HeatmapPlotter.
@@ -310,12 +326,10 @@ class HeatmapPlotterVideo(pipe.Stage):
                  x_len: int,
                  y_len: int,
                  interval: float,
-                 cmap = cv.COLORMAP_JET,
+                 cmap=cv.COLORMAP_JET,
                  port_size=4,
                  destinations=None):
-        super().__init__(1, port_size, destinations, False)
-
-        self.interval = interval
+        super().__init__(interval=interval, port_size=port_size, destinations=destinations)
 
         self.fig, self.ax = plt.subplots()
         self.ax.set_title(title)
@@ -329,8 +343,6 @@ class HeatmapPlotterVideo(pipe.Stage):
             temp = temp.get()
 
         self.plot = self.ax.imshow(temp)
-
-        self.anim = FuncAnimation(self.fig, self._on_frame_update, interval=self.interval)
 
         # Video
         self.camera = camera
