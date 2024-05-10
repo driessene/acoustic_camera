@@ -81,7 +81,7 @@ def main():
         x_label="inclination",
         y_label="azimuth",
         x_data=structure.inclination_values,
-        y_data=structure.azimuths_values,
+        y_data=structure.azimuth_values,
         interval=blocksize/samplerate
     )
 

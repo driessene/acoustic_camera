@@ -18,9 +18,18 @@ def main():
     speed_of_sound = 343
 
     # Sphere
-    coord = np.arange(0, 3, 0.5)
-    elements = [doa.Element(np.array([i, j ,k]), samplerate) for i in coord for j in coord for k in coord]
-    print(len(elements))
+    elements = [doa.Element(np.array([-1.25, 0, 0]), samplerate),
+                doa.Element(np.array([-0.75, 0, 0]), samplerate),
+                doa.Element(np.array([-0.25, 0, 0]), samplerate),
+                doa.Element(np.array([0.25, 0, 0]), samplerate),
+                doa.Element(np.array([0.75, 0, 0]), samplerate),
+                doa.Element(np.array([1.25, 0, 0]), samplerate),
+                doa.Element(np.array([0, -1.25, 0]), samplerate),
+                doa.Element(np.array([0, -0.75, 0]), samplerate),
+                doa.Element(np.array([0, -0.25, 0]), samplerate),
+                doa.Element(np.array([0, 0.25, 0]), samplerate),
+                doa.Element(np.array([0, 0.75, 0]), samplerate),
+                doa.Element(np.array([0, 1.25, 0]), samplerate)]
 
     structure = doa.Structure(
         elements=elements,
@@ -71,7 +80,7 @@ def main():
         x_label="inclination",
         y_label="azimuth",
         x_data=structure.inclination_values,
-        y_data=structure.azimuths_values,
+        y_data=structure.azimuth_values,
         interval=0,
         cmap='inferno'
     )

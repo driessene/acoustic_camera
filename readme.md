@@ -344,7 +344,7 @@ Similar to LienPlotter, but plots (theta, radius) rather than (x, y).
 - num_points - int: The number of points per line. Should match .shape[0] of incoming data if a matrix of length of the data if a vector.
 - num_lines - int: The number of lines to draw. Should match .shape[1] of incoming data if a matrix, or simply one if the data is a vector.
 - interval - float: The delay in seconds between frame updates. Should match the period of data arrivals to the port (blocksize / samplerate).
-- theta_data - np.array: If provided, use this as the x-axis data component. If not provided, it is 0 to num_points, incrementing by 1 (this is never right, always give this. It is optional just for consistency).
+- theta_data - np.array: If provided, use this as the theta-axis data component. If not provided, it is 0 to 2pi with num_points points.
 - theta_extent - tuple: If provided, show this range on the theta-axis by cropping.
 - radius_extent - tuple: If provided, show this range on the radius-axis by cropping.
 
@@ -393,7 +393,7 @@ Holds wavevector. Remember to always pass (kx, ky, kz). If you want to pass (wav
 #### Calculated properties
 - spherical_k - tuple: numpy array holding (wavenumber, inclination, azimuth).
 - inclination - float: The inclination angle of the wavevector in radians. Equal to arctan(ky / kx). 
-- azimuth - float: The azimuth angle of the wavevector in radians. Equal to np.arccos(kz / |k|).
+- azimuth - float: The azimuth angle of the wavevector in radians. Equal to arccos(kz / |k|).
 - angular_wavenumber - float: The angular wavenumber of the wavevector. Equal to |k|.
 - angular_wavelength - float: The angular wavelength of the wavevector. Equal to 1 / angular_wavenumber.
 - angular_frequency - float: The angular frequency of the wavevector. Equal to angular_wavenumber * wave_speed.
@@ -507,7 +507,6 @@ import numpy as np
 
 
 def main():
-
     # Variables
     samplerate = 44100
     blocksize = 44100
@@ -581,8 +580,8 @@ def main():
         x_label="inclination",
         y_label="azimuth",
         x_data=structure.inclination_values,
-        y_data=structure.azimuths_values,
-        interval=blocksize/samplerate,
+        y_data=structure.azimuth_values,
+        interval=blocksize / samplerate,
         cmap='inferno'
     )
 
