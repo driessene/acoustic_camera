@@ -389,6 +389,8 @@ Holds wavevector. Remember to always pass (kx, ky, kz). If you want to pass (wav
 
 ### Properties
 - k - np.array: A numpy array holding (kx, ky, kz).
+- power - float: The power of the signal generated from the wavevector. Default is 1
+- wavespeed - float: The wave proportion speed of the environment which holds the wavevector. Default is 343, the speed of sound.
 
 #### Calculated properties
 - spherical_k - tuple: numpy array holding (wavenumber, inclination, azimuth).

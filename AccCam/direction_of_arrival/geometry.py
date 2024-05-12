@@ -64,15 +64,17 @@ class WaveVector:
     Defines a wave vector. K must be given as np.array([kx, ky, kz]) in units of angular wavenumber.
     Provides all properties of the wavevector as properties.
     """
-    def __init__(self, k: np.ndarray, wave_speed: float):
+    def __init__(self, k: np.ndarray, power: float = 1, wave_speed: float = 343):
         """
         :param k: The 3-dimensional vector representing the wavevector (kx, ky, kz). Each of these are the angular
             wavenumber in said dimension. If you would like fo give (wavenumber, inclination, azimuth), which is more
             common. use spherical_to_cartesian(np.array([wavenumber, inclination, azimuth]).
+        :param power: The power of the wave. Default is 1.
         :param wave_speed: The speed of wave propagation in meters per second. Note that the speed of sound in air is
         always 343 meters per second unless extreme air pressures or atmospheres are present.
         """
         self.k = k
+        self.power = power
         self.wave_speed = wave_speed
 
     @cached_property
@@ -123,6 +125,11 @@ class WaveVector:
     @cached_property
     def linear_period(self):
         return self.angular_period * (2 * np.pi)
+
+    # OTHER
+    @cached_property
+    def amplitude(self):
+        return self.power ** 0.5
 
 
 class Structure:
@@ -225,12 +232,15 @@ class Structure:
         time_vector = np.arange(self.blocksize) / self.samplerate
 
         # Individual signals
-        frequencies = (wave_vector.angular_frequency for wave_vector in wavevectors)
-        waveforms = np.array([np.exp(1j * freq * time_vector + phase) for freq in frequencies])
+        frequencies = np.array([wave_vector.angular_frequency for wave_vector in wavevectors])
+        amplitudes = np.array([wave_vector.amplitude for wave_vector in wavevectors])
+
+        waveforms = amplitudes[:, np.newaxis] * np.array([np.sin(freq * time_vector + phase) for freq in frequencies])
+
         steering_vectors = self.steering_vector(wavevectors)
 
         # Apply wave vectors and sum signals to each element
-        signal_matrix = np.dot(waveforms.T, steering_vectors).real
+        signal_matrix = np.dot(waveforms.T, steering_vectors)
 
         # Generate noise
         signal_power = np.mean(np.abs(signal_matrix) ** 2)
