@@ -36,7 +36,7 @@ def main():
     structure.visualize()
 
     # Get ideal frequency, print target frequency and spacing in inches
-    test_wavevector = doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber, 0, 0])), 343)
+    test_wavevector = doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber, 0, 0])))
     print(test_wavevector.linear_frequency)
     print(test_wavevector.linear_wavelength * 39.3701 / 2)
 

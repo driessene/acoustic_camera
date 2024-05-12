@@ -15,7 +15,6 @@ def main():
     samplerate = 44100
     blocksize = 44100
     wavenumber = 12.3
-    speed_of_sound = 343
 
     # Sphere
     elements = [doa.Element(np.array([-1.25, 0, 0]), samplerate),
@@ -40,8 +39,8 @@ def main():
     structure.visualize()
 
     wavevectors = [
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 0.98, 1, 1])), speed_of_sound),
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.02, 2, 2])), speed_of_sound),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 0.98, 1, 1]))),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.02, 2, 2]))),
     ]
 
     # Print frequencies for debug

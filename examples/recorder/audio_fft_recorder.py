@@ -32,7 +32,7 @@ def main():
     )
     structure.visualize()
 
-    test_wavevector = doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber, 0, 0])), 343)
+    test_wavevector = doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber, 0, 0])))
     print(test_wavevector.linear_frequency)
 
     # Recorder to get data

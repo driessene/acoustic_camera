@@ -15,7 +15,6 @@ def main():
     samplerate = 44100
     blocksize = 44100
     wavenumber = 12.3
-    speed_of_sound = 343
 
     elements = [doa.Element(np.array([-1.25, 0, 0]), samplerate),
                 doa.Element(np.array([-0.75, 0, 0]), samplerate),
@@ -41,8 +40,13 @@ def main():
     )
     structure.visualize()
 
+    n = list(range(1, 21))
+    freq_scale = [2 * i - 1 for i in n]
+    powr_scale = [1 / i for i in freq_scale]
+
     wavevectors = [
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.00, 1, 1])), speed_of_sound)
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * fs, 1, 1])), power=ps) for
+        (fs, ps) in zip(freq_scale, powr_scale)
     ]
 
     # Print frequency for debugging
@@ -52,21 +56,9 @@ def main():
     # Recorder to get data
     recorder = dsp.AudioSimulator(
         structure=structure,
-        wavevectors=wavevectors
+        wavevectors=wavevectors,
+        randomize_phase=False
     )
-
-    # Filter
-    filt = dsp.FirwinFilter(
-        n=1001,
-        num_channels=len(elements),
-        cutoff=np.array([400, 800]),
-        type='bandpass',
-        samplerate=samplerate,
-        method='filtfilt',
-        normalize=True,
-        remove_offset=True
-    )
-    filt.plot_response()
 
     # Plot
     plot = dsp.LinePlotter(
@@ -76,16 +68,15 @@ def main():
         num_lines=len(elements),
         num_points=blocksize,
         y_extent=(-1, 1),
+        x_extent=(1000, 1500),
         interval=blocksize/samplerate
     )
 
     # Linking
-    recorder.link_to_destination(filt, 0)
-    filt.link_to_destination(plot, 0)
+    recorder.link_to_destination(plot, 0)
 
     # Start processes
     recorder.start()
-    filt.start()
     plot.start()
     plot.show()
 

@@ -503,17 +503,23 @@ This class manages a camera. It can get a picture from the camera, calibrate the
 # Example
 
 ```python
+from AccCam.__config__ import __USE_CUPY__
+
+if __USE_CUPY__:
+    import cupy as np
+else:
+    import numpy as np
+
 import AccCam.realtime_dsp as dsp
 import AccCam.direction_of_arrival as doa
-import numpy as np
 
 
 def main():
+
     # Variables
     samplerate = 44100
     blocksize = 44100
     wavenumber = 12.3
-    speed_of_sound = 343
 
     # Sphere
     elements = [doa.Element(np.array([-1.25, 0, 0]), samplerate),
@@ -527,24 +533,19 @@ def main():
                 doa.Element(np.array([0, -0.25, 0]), samplerate),
                 doa.Element(np.array([0, 0.25, 0]), samplerate),
                 doa.Element(np.array([0, 0.75, 0]), samplerate),
-                doa.Element(np.array([0, 1.25, 0]), samplerate),
-                doa.Element(np.array([0, 0, 0.25]), samplerate),
-                doa.Element(np.array([0, 0, 0.75]), samplerate),
-                doa.Element(np.array([0, 0, 1.25]), samplerate)]
+                doa.Element(np.array([0, 1.25, 0]), samplerate)]
 
     structure = doa.Structure(
         elements=elements,
         wavenumber=wavenumber,
         snr=50,
         blocksize=blocksize,
-        inclination_resolution=100,
-        azimuth_resolution=100
     )
-    structure.visualize()
+    #structure.visualize()
 
     wavevectors = [
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 0.98, 1, 1])), speed_of_sound),
-        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.02, 2, 2])), speed_of_sound),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 0.98, 1, 1]))),
+        doa.WaveVector(doa.spherical_to_cartesian(np.array([wavenumber * 1.02, 2, 2]))),
     ]
 
     # Get hz for debugging
@@ -554,7 +555,8 @@ def main():
     # Recorder to get data
     recorder = dsp.AudioSimulator(
         structure=structure,
-        wavevectors=wavevectors
+        wavevectors=wavevectors,
+        wait=False
     )
 
     # Filter
@@ -568,8 +570,8 @@ def main():
         normalize=True,
         remove_offset=True
     )
-    filt.plot_response()
-    filt.plot_coefficients()
+    #filt.plot_response()
+    #filt.plot_coefficients()
 
     # MUSIC
     estimator = doa.MVDRBeamformer(structure)
@@ -583,7 +585,7 @@ def main():
         y_label="azimuth",
         x_data=structure.inclination_values,
         y_data=structure.azimuth_values,
-        interval=blocksize / samplerate,
+        interval=0,
         cmap='inferno'
     )
 
@@ -602,6 +604,5 @@ def main():
 
 if __name__ == '__main__':
     main()
-
 
 ```
